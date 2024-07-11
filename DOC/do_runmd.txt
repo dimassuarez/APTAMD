@@ -1,5 +1,5 @@
 ###############################################################################
-        GEUO SUITE: Scripts for Automating Molecular Modelling Tasks
+        APTAMD SUITE: Scripts for Automating Molecular Modelling Tasks
 ###############################################################################
   
   SCRIPT's NAME:  do_runmd.sh 
@@ -11,7 +11,8 @@
   of solvent and solute coordinates; ii) thermalization; iii) presurization; 
   iv) MD production. 
 
-  See $GEUO/DOC/MD_settings.txt for further details about stages i-iv.
+  See $APTAMD/DOC/MD_settings.txt for further details about stages i-iv.
+  See also $APTAMD/RUNMD for details about the SANDER/PMEMD input files.
 
   USAGE : do_runmd.sh MOL MD_TYPE 
 
@@ -27,7 +28,7 @@
   This script must be called from the main directory containing the 
   MOL_MD or MOL_GAMD directories including the 1.EDITION subdirectory.
 
-  See also $GEUO/DOC/directory_tree.txt for further details.
+  See also $APTAMD/DOC/directory_tree.txt for further details.
 
   OPTIONS: (selected by environment variables) 
 
@@ -52,5 +53,7 @@
                        # Solute+watershell coords are saved every SIEVEx2.5 ps
                        # Note that solute+watershell includes also counterions.
                        # Def PEEL=14 
+    PEELONLY="NO"      # If PEELONLY="YES" then full MD trajectory files are
+                       # are deleted after peeling 
 
 ###############################################################################

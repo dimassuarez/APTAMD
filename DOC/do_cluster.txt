@@ -1,5 +1,5 @@
 ###############################################################################
-        GEUO SUITE: Scripts for Automating Molecular Modelling Tasks
+        APTAMD SUITE: Scripts for Automating Molecular Modelling Tasks
 ###############################################################################
   
   SCRIPT's NAME:  do_cluster.sh             
@@ -10,6 +10,17 @@
   of MD trajectories. Only the summary.dat file (with fractional populations)
   and the PDBs of the cluster representatives are produced. Modify 
   the cpptraj input file in do_cluster.sh if further info is needed.
+
+  Besides cpptraj clustering, this script can perform other tasks:
+
+     a) To carry out DSSP analysis of secondary structure of peptides
+        and proteins on the MD frames considered for clustering. 
+        To this end, the latest version of the mkdssp software is required.
+
+     b) To perform clustering with the t-Distributed stochastc neighbor embedding
+        (TSNE) metthod as described in https://doi.org/10.1021/acs.jctc.3c00224.
+        This is a sophisticated method that requires a careful choice of 
+        options. See the TSNE reference for further details.
  
   USAGE : do_cluster.sh  "MOL1 MOL2 ..."   MD_TYPE
 
@@ -24,7 +35,7 @@
 
   This script must be called from the main directory where the MD/GAMD 
   directories are located.  
-  See $GEUO/DOC/directory_tree.txt for details.
+  See $APTAMD/DOC/directory_tree.txt for details.
 
   OPTIONS: (selected by environment variables) 
     MOL='alias'        # Project alias. Several aliases can be grouped
@@ -40,6 +51,9 @@
                        # In principle, the script can detect APT or PEP
                        # automatically
     EPS=2.0            # RMSD threshold for clustering. Def 2.0 Angs.
+                       # It is possible to select a list of RMSD values.
+                       # For example, RMSD="3.0 4.0 5.0" requests three
+                       # separate clustering calculations. 
     MASK='2:14@C'      # Specific mask used for RMSD clustering
     SIEVE=50           # Clustering is done with sieve=#SIEVE of frames
                        # Def 50 
@@ -47,6 +61,16 @@
                        # frames are ignored, but if CLUST_ALL='YES' 
                        # they are assigned to the resulting cluster sets.             
                        # Def NO
+    TSNE="NO"          # If TSNE="YES" then the TSNE method is applied
+                       # If TSHE="ONLY" then cpptraj clustering is not
+                       # performed. Some options (PERP0, PERP1, PERPX, 
+                       # KCLUST0,KCLUST1,KCLUSTX) control the settings
+                       # of TSNE calcs. See the TSNE_KMEANS_CLUST.py 
+                       # script for details.
+                       
+    DSSP="NO"          # If DSSP="YES" then mkdssp software is used to
+                       # characterize the MD frames selected for clustering.
+
     NPROCS=6           # Number of cores to be used. Def all available.
 
     CLUSTER_DIR='CLUSTER'  # Directory name for the clustering calculations
@@ -57,5 +81,11 @@
     The list of mdcrd files to be processed is built by the command:
     ls ${MD_PROD}/${PREFIX_MDCRD}*{SUFFIX_MDCRD}
     Def values are suitable for trajectories generated with do_runmd.sh
+
+    PERCEN=0           # It is possible to use a percentage of the MD trajec-
+                       # tory files. If PERCEN=0 or 100 all trajectory files 
+                       # are sued. If PERCEN=-33 then only the last one third
+                       # of files is used. If PERCEN=50 then the first half of
+                       # the trajectory files is considered, .... Def PERCEN=0
 
 ###############################################################################

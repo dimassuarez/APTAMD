@@ -1,0 +1,27 @@
+NPT (no restraints, IOD, gAMD dual boost)
+The simulation goes
+1-- >  ++ntcmdprep (Eq) ----> ++ntcmd (collecting data for gAMD param) --> ++ntebprep (gAMD eq.) --> ++nteb (gAMD collecting
+statistics for further gAMD parameterization) --> up to ntslim (production gAMD run) 
+
+ &cntrl
+   ntx=5, irest=1, ntxo=2, 
+   ntc=2, ntf=2, tol=0.000001,
+   nstlim=25000000, 
+   ntpr=10000, ntwx=1250,
+   ntwr=10000, ioutfm=1, 
+   dt=0.002, cut=9.,
+   ntb=2, ntp=1, barostat=2, 
+   temp0=300.0, ntt=3, ig=-1, gamma_ln=2.0,
+   igamd = 3, iE = 1, irest_gamd = 1,
+   ntcmdprep = 0, 
+   ntcmd = 0, 
+   ntebprep = 0,
+   nteb = 0, 
+   ntave = DUMMY_NTAVE,
+   sigma0P = 6.0, sigma0D = 6.0,
+
+ /
+ &ewald
+ dsum_tol=0.000005,
+ /
+

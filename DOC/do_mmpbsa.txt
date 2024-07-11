@@ -1,5 +1,5 @@
 ###############################################################################
-        GEUO SUITE: Scripts for Automating Molecular Modelling Tasks
+        APTAMD SUITE: Scripts for Automating Molecular Modelling Tasks
 ###############################################################################
   
   SCRIPT's NAME:  do_mmpbsa.sh             
@@ -25,7 +25,9 @@
   vdW_int refers to a non-polar solvation model in which an explicit
   layer of water molecules around the solute is preserved. Then vdW
   interactions between solute and solvent atoms are evaluated. Cavitation
-  energy is estimated using Pierotti's model (typically used in PCM calcs).
+  energy is estimated using a surface-area dependant approximation (probably
+  the most reliable for large and flexible molecules ) or Pierotti's model as 
+  typically used in QM PCM calcs.
 
   QM/MM calculations can be carried out using the QM models and interfaces
   implemented in sander. By default, one can use the SCC-DFTB3 Hamiltonian
@@ -37,15 +39,16 @@
   function provided that PDBQT files are provided for each molecular fragment
   and, of course,  the AutoDock program is available.
 
-  The GEUO scripts implement also the possiblity of incorporating a set
+  The APTAMD scripts implement also the possiblity of incorporating a set
   of Na+ ions into the solute molecules. Each Na+ ion is surrounded by 6 waters.
   This option is useful to analyze MD trajectories of DNA (aptamer) systems. 
   The details of this approach will be reported soon. 
 
   Finally, note that there is a small collection of scripts to perform
-  the MMPBSA calcs. In this way do_mmpbsa.sh is basically the driver script.
+  the MMPBSA calcs. In this way do_mmpbsa.sh is basically a driver script.
 
-  For further details of the MMPBSA-like calcs, see $GEUO/DOC/energy_analysis.txt
+  For further details of the MMPBSA-like calcs, see $APTAMD/DOC/energy_analysis.txt
+  and the scripts files in $APTAMD/MMPBSA
 
   USAGE : do_mmpbsa.sh  "MOL1 MOL2 ..."   MD_TYPE  
 
@@ -59,7 +62,7 @@
   the various options indicated below.
 
   This script must be called from the main directory where the MD/GAMD 
-  directories are located. See $GEUO/DOC/directory_tree.txt for details.
+  directories are located. See $APTAMD/DOC/directory_tree.txt for details.
 
   OPTIONS: (selected by environment variables) 
 
@@ -116,7 +119,7 @@
     ================
 
     QM_CMPLX_MASK=':3-5'   # AMBER mask selecting the QM atoms in the solute atoms. 
-       or                  # CMPLX refers to the case total system  in case of 
+       or                  # CMPLX refers to the total system in case of 
     QM_MASK=':3-5'         # a molecular complex.
 
     QM_CMPLX_CHARGE=0      # Charge of the QM region 

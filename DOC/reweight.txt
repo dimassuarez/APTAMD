@@ -1,5 +1,5 @@
 ###############################################################################
-        GEUO SUITE: Scripts for Automating Molecular Modelling Tasks
+        APTAMD SUITE: Scripts for Automating Molecular Modelling Tasks
 ###############################################################################
   
  The enhanced MD methods allow the calculation of a potential of mean force by 
@@ -21,7 +21,7 @@
  The CE2 approach is implemented in the Python scripts developed by Miao .
  In particular, do_reweight_gamd.sh calls the PyReweighting-2D.py script
  retrieved from http://miaolab.org/PyReweighting/.
- Further details of the GAMD reweighting can be found in 
+ Further details about GAMD reweighting can be found at:
  http://miaolab.org/GaMD/ and the references cited therein.
 
  The do_reweight_gamd.sh script usually represents 2D free energy maps in terms 
@@ -29,9 +29,11 @@
  each coordinate. The resulting 2D map is plotted in the CE2.png file.
  In addition, the unweighted population distribution over 
  the 2D bins is also plotted (CE2_pop.png). The representative
- snapshots are extracted from  the subset of GaMD snapshots located within 
+ snapshots are extracted from the subset of GaMD snapshots located within 
  a low energy basin in the free energy map. In particular, the snapshots that 
  have the lower values of the boost potential are selected, which would be 
  presumably closer to those structures that populate the canonical NPT ensemble. 
+
+ A careful inspection of the the selected snapshots is recommended.
 
 ###############################################################################

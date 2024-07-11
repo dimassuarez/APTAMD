@@ -1,0 +1,15 @@
+2500 Minimization steps (water and counterions)
+ &cntrl
+   imin=1, ncyc=500,  ntmin=1,  drms=0.001, maxcyc=2500,
+   ntb=2,
+   ntp=1,
+   ntf=1, cut=10.00,
+   nsnb=25,
+   ntc=1,
+   ibelly=1,
+   bellymask=':WAT,Cl-,Na+' 
+ /
+ &ewald
+   dsum_tol=0.000005,
+ /
+

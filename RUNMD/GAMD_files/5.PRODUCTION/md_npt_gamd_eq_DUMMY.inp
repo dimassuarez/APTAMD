@@ -1,0 +1,33 @@
+NPT (no restraints, IOD, gAMD dual boost)
+The simulation goes
+1-- >  ++ntcmdprep (Eq) ----> ++ntcmd (collecting data for gAMD param) --> ++ntebprep (gAMD eq.) --> ++nteb (gAMD collecting
+statistics for further gAMD parameterization) --> up to ntslim (production gAMD run) 
+
+ntave: number of simulation steps used to calculate the average and standard deviation of potential energies.
+
+It is recommended to be updated as about 4 times of the total number of atoms in the system.
+Note that ntcmd and nteb need to be multiples of ntave
+Present values adjusted for DUMMY_NAT atoms 
+
+ &cntrl
+   ntx=5, irest=1, ntxo=2, 
+   ntc=2, ntf=2, tol=0.000001,
+   nstlim=DUMMY_NTSLIM, 
+   ntpr=500000, ntwx=50000,
+   ntwr=500000, ioutfm=1, 
+   dt=0.002, cut=9.,
+   ntb=2, ntp=1, barostat=2, 
+   temp0=300.0, ntt=3, ig=-1, gamma_ln=2.0,
+   igamd = 3, iE = 1, irest_gamd = 0,
+   ntcmdprep = DUMMY_NTCMDPREP, 
+   ntcmd = DUMMY_NTCMD, 
+   ntebprep = DUMMY_NTEBPREP,
+   nteb = DUMMY_NTEB, 
+   ntave = DUMMY_NTAVE,
+   sigma0P = 6.0, sigma0D = 6.0,
+
+ /
+ &ewald
+ dsum_tol=0.000005,
+ /
+

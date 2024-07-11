@@ -1,0 +1,20 @@
+SHAKE applied to all X-H bonds
+PME Method Applied
+TIME STEP 1.0 fs NSNB=25
+Thermalization Run at constant V: 10 ps
+
+ &cntrl
+   imin=0,  nmropt=0,
+   nstlim=10000,  dt=0.0010,
+   ntb=1,
+   irest=1, ntx=5,
+   ntpr=50,
+   nsnb=25,
+   ntf=2, cut=10.0,
+   temp0=100.0, ntt=3, ig=-1, gamma_ln=2.0,
+   ntc=2,
+   ntwe=1000, ntwx=1000,
+ /
+ &ewald
+   dsum_tol=0.000005, 
+ /

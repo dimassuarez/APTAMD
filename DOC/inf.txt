@@ -1,5 +1,5 @@
 ###############################################################################
-        GEUO SUITE: Scripts for Automating Molecular Modelling Tasks
+        APTAMD SUITE: Scripts for Automating Molecular Modelling Tasks
 ###############################################################################
   
   To characterize the shape and conformation of the peptide/apatmer molecule
@@ -19,8 +19,8 @@
   All heavy atoms are taken into account in the calculation of the
   radius of gyration
 
-  INF: interaction network fidelity (RNA, 2009, 15, 1875)
-  =========================================================
+  INF: interaction network fidelity (RNA, 2009, 15, 1875 doi: 10.1261/rna.1700409)
+  ===========================================================
   The so-called interaction network fidelity index (INF) is built
   from the sets of characteristic intramolecular interactions in a reference 
   structure (Sr) and in a given snapshot (Sm). 
@@ -35,7 +35,7 @@
   (iii) the number of interactions absent in the MD snapshot, but present
    in the reference structure, which are termed false negatives. Fn= Sr \ Sm
 
-  The INF index is defined  as a Mathews correlation coefficient considering 
+  The INF index is defined as a Mathews correlation coefficient considering 
   true and false positives and negatives: 
 
   INF = sqrt (  ( |Tp| / ( |Tp| + |Fp|  ) ) * ( |Tp| / ( |Tp| + |Fn| ) )  ) 

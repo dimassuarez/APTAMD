@@ -1,5 +1,5 @@
 ###############################################################################
-        GEUO SUITE: Scripts for Automating Molecular Modelling Tasks
+        APTAMD SUITE: Scripts for Automating Molecular Modelling Tasks
 ###############################################################################
   
   SCRIPT's NAME:  do_snapshots.sh             
@@ -22,13 +22,13 @@
  
           do_snapshots.sh  input.src       
  
-  If the input filename has src extension then do_snapshots.sh sources its 
-  the line in the src file that should contain variable declarations for 
+  If the input filename has src extension then do_snapshots.sh sources it.
+  This input.src file should contain variable declarations for 
   the various options indicated below.
 
   This script must be called from the main directory where the MD/GAMD 
   directories are located.  
-  See $GEUO/DOC/directory_tree.txt for details.
+  See $APTAMD/DOC/directory_tree.txt for details.
 
   OPTIONS: (selected by environment variables) 
 
@@ -41,6 +41,8 @@
                        # solute atoms. Def 14
     SIEVE=50           # PDB files are extracted every #SIEVE of frames
                        # Def 50 
+    SKIP_PDB="NO"      # PDB extraction can be skipped so that only
+                       # Na+ contact analysis is performed.
     SNAPSHOTS_DIR='SNAPSHOTS'   # Name of the subdirectory in which
                                 # the PDB are saved. Def SNAPSHOTS
     NPROCS=6           # Number of cores to be used. Def all available.

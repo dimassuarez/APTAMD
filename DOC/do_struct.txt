@@ -1,5 +1,5 @@
 ###############################################################################
-        GEUO SUITE: Scripts for Automating Molecular Modelling Tasks
+        APTAMD SUITE: Scripts for Automating Molecular Modelling Tasks
 ###############################################################################
   
   SCRIPT's NAME:  do_struct.sh
@@ -12,7 +12,7 @@
        c) Molecular (Connolly's) surface 
        d) INF index of intramolecular interactions ( HBs for
        peptides and interbase/stacking for aptamers ) with respect to a 
-       a reference PDB structure.  See $GEUO/DOC/inf.txt for further details.
+       a reference PDB structure.  See $APTAMD/DOC/inf.txt for further details.
  
   USAGE : do_struct.sh  "MOL1 MOL2 ..."   MD_TYPE
 
@@ -27,18 +27,19 @@
 
   This script must be called from the main directory where the MD/GAMD 
   directories are located.  
-  See $GEUO/DOC/directory_tree.txt for details.
+
+  See $APTAMD/DOC/directory_tree.txt for details.
 
   OPTIONS: (selected by environment variables) 
 
     MOL='alias'        # System alias. Several aliases can be grouped
                        # into a single variable MD_TRAJ='MOL1 MOl2 ...'
     MD_TYPE='MD'       # Either MD or GAMD
-    SOLUTE_TYPE='PEP'  # selecting both the reference solute atoms for computing 
+    SOLUTE_TYPE='PEP'  # Selecting both the reference solute atoms for computing 
                        # the RMSD values and the type of contacts for INF 
-                       # if SOLUTE_TYPE='PEP'  (i.e., peptide) then 
+                       # If SOLUTE_TYPE='PEP'  (i.e., peptide) then 
                        # MASK='C,O,CA,N'  
-                       # if SOLUTE_TYPE='APT'  (i.e., aptamer) then 
+                       # If SOLUTE_TYPE='APT'  (i.e., aptamer) then 
                        # MASK"=P,OP1,OP2,O5',C5',C4',C3',C2',C1',O4',O3'"
                        # In principle, the script can detect APT or PEP
                        # automatically. For long 
@@ -58,6 +59,8 @@
                        # Select DO_SURF="YES" if required.
     DO_INF="YES"       # INF calculations are time consuming. If not
                        # needed, turn this option into "NO"
+    STRUCT_DIR="STRUCT"# Subdirectory name containing the output files
+                       # Def is STRUCT
 
     MD_PROD='5.PRODUCTION'
     PREFIX_MDCRD='md_'

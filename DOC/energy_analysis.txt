@@ -1,8 +1,8 @@
 ###############################################################################
-        GEUO SUITE: Scripts for Automating Molecular Modelling Tasks
+        APTAMD SUITE: Scripts for Automating Molecular Modelling Tasks
 ###############################################################################
 
-       METHODS HANDLED BY THE GEUO SCRIPTS FOR ENERGY ANALYSIS 
+       METHODS HANDLED BY THE APTAMD SCRIPTS FOR ENERGY ANALYSIS 
 
 See https://pubs.acs.org/doi/10.1021/acs.jcim.8b00805 and references 
 cited therein.
