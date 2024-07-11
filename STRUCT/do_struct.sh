@@ -3,7 +3,7 @@
 if [ -z "$APTAMD" ]; then echo "APTAMD variable is not defined!" ; exit; fi
 if [ "$#" -eq 0 ]; then more $APTAMD/DOC/do_struct.txt ; exit; fi
 
-source $APTAMD/ENV/geuo_env.sh
+source $APTAMD/ENV/aptamd_env.sh
 if [ -z "$X3DNAHOME" ]; then echo 'X3DNAHOME is not available, but needed'; exit; fi
 
 # Checking options

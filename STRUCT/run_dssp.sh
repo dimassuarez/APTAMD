@@ -1,7 +1,7 @@
 #/bin/bash
 
 if [ -z "$APTAMD" ]; then echo "APTAMD variable is not defined!" ; exit; fi
-source $APTAMD/ENV/geuo_env.sh
+source $APTAMD/ENV/aptamd_env.sh
 
 if [ ! -e $DSSPHOME/bin/mkdssp ]; then echo "mkdsssp binary needed, but not available"; exit; fi
 

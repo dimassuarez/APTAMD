@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ -z "$APTAMD" ]; then echo "APTAMD variable is not defined!" ; exit; fi
-source $APTAMD/ENV/geuo_env.sh
+source $APTAMD/ENV/aptamd_env.sh
 source $AMBERHOME/amber.sh
 
 #
@@ -152,7 +152,7 @@ NWAT_FRAG[18]="DUMMY_NWAT_FRAG_18"
 NWAT_FRAG[19]="DUMMY_NWAT_FRAG_19"
 NWAT_FRAG[20]="DUMMY_NWAT_FRAG_20"
 
-# WATER PEEL if required a water shell of thickness PEEL is prepared using SPDB (local tool=)
+# WATER PEEL if required a water shell of thickness PEEL is prepared 
 DO_PEEL="DUMMY_DO_PEEL"
 PEEL="DUMMY_PEEL"
 
@@ -396,7 +396,6 @@ fi
 
 # Auxiliary programs (in house; other tools could be used)
 PDBCRD="$TOOLS/pdbcrd"
-SPDB="$TOOLS/spdb"
 REORDER="$TOOLS/reorder"
 FIXPQRTOP="$TOOLS/fixpqrtop"
 GCAV="$TOOLS/gcav"

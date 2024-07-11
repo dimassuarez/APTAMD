@@ -5,7 +5,7 @@
 if [ -z "$APTAMD" ]; then echo "APTAMD variable is not defined!" ; exit; fi
 if [ "$#" -eq 0 ]; then more $APTAMD/DOC/do_runmd.txt ; exit; fi
 
-source $APTAMD/ENV/geuo_env.sh
+source $APTAMD/ENV/aptamd_env.sh
 
 # Checking options
 extension="${1##*.}"

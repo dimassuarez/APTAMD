@@ -3,7 +3,7 @@
 if [ -z "$APTAMD" ]; then echo "APTAMD variable is not defined!" ; exit; fi
 if [ "$#" -eq 0 ]; then more $APTAMD/DOC/do_reweight_gamd.txt ; exit; fi
 
-source $APTAMD/ENV/geuo_env.sh
+source $APTAMD/ENV/aptamd_env.sh
 PYTHON=/opt/apps/SL7/anaconda3/bin/python3
 if [ -z "$PYTHON" ]; then echo 'PYTHON is not available, but needed'; exit; fi
 

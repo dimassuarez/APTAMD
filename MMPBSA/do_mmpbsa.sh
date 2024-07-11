@@ -6,7 +6,7 @@
 if [ -z "$APTAMD" ]; then echo "APTAMD variable is not defined!" ; exit; fi
 if [ "$#" -eq 0 ]; then more $APTAMD/DOC/do_mmpbsa.txt ; exit; fi
 
-source $APTAMD/ENV/geuo_env.sh
+source $APTAMD/ENV/aptamd_env.sh
 
 # Checking options
 extension="${1##*.}"
@@ -44,7 +44,8 @@ then
    echo 'Usage: do_mmpbsa.sh "MOL1   MOL2 .."   [ MD | GAMD ]  "NSODIUM_FRAG_1  NSODIUM_FRAG_2 .." '
    echo
    echo 'Many, many other options about activating RISM, QMMM, ADCK, are controlled by defining' 
-   echo 'external BASH variables. See $APTAMD/DOC/do_mmpbsa.txt for details'
+   echo 'external BASH variables. '
+   echo 'See $APTAMD/DOC/do_mmpbsa.txt and $APTAMD/DOC/energy_analysis.txt for details.'
    exit
 fi
 
@@ -279,7 +280,7 @@ then
       then
            D3H4="NO"
            echo "However, the CUBY4 environmental variable is not defined"
-           echo "in geuo_env.sh so that D3H4 calcs can not be done."
+           echo "in aptamd_env.sh so that D3H4 calcs can not be done."
       fi
    fi
 fi

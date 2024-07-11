@@ -8,7 +8,7 @@ if [ "$#" -eq 0 ]; then more $APTAMD/DOC/do_aptamer_edition.txt ; exit; fi
 #    1) partial relaxation of sugar and base moieties"
 #    2) tleap edition adding counterions to satisfy the required ionic force"
 
-source $APTAMD/ENV/geuo_env.sh 
+source $APTAMD/ENV/aptamd_env.sh 
 
 extension="${1##*.}"
 if [ $extension == "src" ]
