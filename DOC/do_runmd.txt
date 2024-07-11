@@ -1,0 +1,56 @@
+###############################################################################
+        GEUO SUITE: Scripts for Automating Molecular Modelling Tasks
+###############################################################################
+  
+  SCRIPT's NAME:  do_runmd.sh 
+
+  GOAL: 
+
+  This script is an MD driver, which, in turn, relies on a set of small scripts
+  and SANDER/PMEMD input files. It performs several tasks: i) initial relaxation
+  of solvent and solute coordinates; ii) thermalization; iii) presurization; 
+  iv) MD production. 
+
+  See $GEUO/DOC/MD_settings.txt for further details about stages i-iv.
+
+  USAGE : do_runmd.sh MOL MD_TYPE 
+
+  where MOL is the project alias and MD_TYPE= MD or GAMD specifies the type
+  of MD simulation (conventional or Gaussian-Accelerated).
+ 
+          do_runmd.sh  input.src       
+ 
+  If the input filename has src extension then do_runmd.sh sources it.
+  The src file should contain variable declarations for the various options 
+  as indicated below.
+
+  This script must be called from the main directory containing the 
+  MOL_MD or MOL_GAMD directories including the 1.EDITION subdirectory.
+
+  See also $GEUO/DOC/directory_tree.txt for further details.
+
+  OPTIONS: (selected by environment variables) 
+
+    MOL='project_alias'# For example, MOL="aptX"
+    MD_TYPE='MD|GAMD'  # Type of MD simulations, either "MD" or "GAMD"
+    MULTI_MD=1         # If MULTI_MD > 1 do_runmd.sh creates MULTI_MD
+                       # directories for submitting multi-MD production tasks
+                       # MULTI_MD > 1 implies DO_PROD="NO"
+    USE_GPU='YES'      # PMEMD.CUDA runs. Def YES
+    NPROCS=12          # Number of processors for SANDER.MPI/PMEMD.MPI/CPPTRAJ.OMP 
+    DO_PROD='YES'      # Production phase. Def YES. If DO_PROD="NO" do_runmd.sh
+                       # stops after pressurization
+    NJOBS=20           # Number of MD production runs (50 ns each). Def 20
+
+    SIEVE=20           # If SIEVE > 1 postprocess MD trajectory files to generate
+                       # separate solute and solute+waters trajectories. 
+                       # Solute+water coords are saved every SIEVEx2.5 ps
+                       # Def SIEVE=20
+    PEEL=14            # If PEEL > 0 postprocess MD trajectory files to generate
+                       # a solute+watershell trajs. The PEEL
+                       # value defines the thickness of the solvent shell. 
+                       # Solute+watershell coords are saved every SIEVEx2.5 ps
+                       # Note that solute+watershell includes also counterions.
+                       # Def PEEL=14 
+
+###############################################################################

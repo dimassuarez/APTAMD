@@ -1,0 +1,37 @@
+###############################################################################
+        GEUO SUITE: Scripts for Automating Molecular Modelling Tasks
+###############################################################################
+  
+ The enhanced MD methods allow the calculation of a potential of mean force by 
+ estimating the canonical probability distribution p(A) along a selected 
+ coordinate. To this end, the probability distribution p*(A) derived from 
+ the enhanced simulation must be reweighted as,
+
+ p(A_j)=p*(A_j) * < exp( V(r) /kT ) >_j / Sum_i < exp( V(r) /kT ) >_i  
+ 
+ i=1, 2, ..., M 
+
+ where V is the boost potential and M is the selected number of bins
+ along the A coordinate. The GAMD approach adopts a harmonic boost potential 
+ that results in an accurate approximation of the exponential reweighting 
+ terms through a cumulant expansion to the second order (CE2). 
+
+ < exp( V(r) /kT ) > ~= exp ( <V>/kT + (<V^2> - <V>^2)/(2(kT)^2)  )
+
+ The CE2 approach is implemented in the Python scripts developed by Miao .
+ In particular, do_reweight_gamd.sh calls the PyReweighting-2D.py script
+ retrieved from http://miaolab.org/PyReweighting/.
+ Further details of the GAMD reweighting can be found in 
+ http://miaolab.org/GaMD/ and the references cited therein.
+
+ The do_reweight_gamd.sh script usually represents 2D free energy maps in terms 
+ of the RMSD/INF coordinates, selecting a number of bins M=~15-20 along 
+ each coordinate. The resulting 2D map is plotted in the CE2.png file.
+ In addition, the unweighted population distribution over 
+ the 2D bins is also plotted (CE2_pop.png). The representative
+ snapshots are extracted from  the subset of GaMD snapshots located within 
+ a low energy basin in the free energy map. In particular, the snapshots that 
+ have the lower values of the boost potential are selected, which would be 
+ presumably closer to those structures that populate the canonical NPT ensemble. 
+
+###############################################################################

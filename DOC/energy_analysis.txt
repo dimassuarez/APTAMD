@@ -1,0 +1,67 @@
+###############################################################################
+        GEUO SUITE: Scripts for Automating Molecular Modelling Tasks
+###############################################################################
+
+       METHODS HANDLED BY THE GEUO SCRIPTS FOR ENERGY ANALYSIS 
+
+See https://pubs.acs.org/doi/10.1021/acs.jcim.8b00805 and references 
+cited therein.
+  
+The MM/PBSA-like energy of a biomolecule (G) is normally derived from
+averages of calculations on snapshots extracted from MD simulations. 
+Typically, after having removed all solvent molecules and counterions 
+in explicit solvent simulations). These energies are computed according 
+to the following kind of equations: 
+
+G = 3*R*T + E_MM + DG_solv 
+ 		
+where E_MM is the gas-phase energy, 3RT is due to six translational 
+and rotational degrees of freedom and DG_solv is the solvation energy, which 
+is decomposed into polar and nonpolar contributions. Many specific methods and 
+approximations have been used to calculate E_MM and DG_solv. Most commonly, 
+the gas-phase energy is obtained using MM force fields, but quantum mechanical 
+(QM) and hybrid QM/MM methods can be also employed. The electrostatic solvation 
+energy is normally estimated by means of implicit solvent methods like the 
+Poisson-Boltzmann (PB)and Generalized-Born (GB)  methods. Both PB and GB 
+represent the solute molecule in terms of a set of atomic charges and 
+parameterized radii, but while PB determines the solute electrostatic 
+potential through the numerical solution of the Poisson equation, GB is 
+based on a modified Coulombic expression that is computationally faster. 
+
+The electrostatic PB(GB) solvation energies must be complemented with 
+the corresponding nonpolar part due to cavity formation and van der Waals 
+interactions between the solute and the solvent molecules. 
+Effective nonpolar solvent models that treat separately the cavity 
+(repulsive) and dispersion (attractive) energies are preferred. 
+The post-processing of explicit solvent MD simulations also allows 
+the evaluation of the dispersion part by computing the average 
+van der Waals interaction energy between solute and the water molecules 
+within a shell of 12-15 Å thickness. Alternatively, the PB(GB) and 
+nonpolar solvation energies can be replaced by those calculated with 
+the three-dimensional reference interaction site model (3D-RISM). 
+This method, which is based on a first-principles statistical mechanics theory, 
+yields the 3D distribution functions of the solvent atoms around each solute site
+allowing thus specific descriptions of polar and non-polar solvation effects 
+for each solute-solvent interaction site, albeit with larger computational cost 
+than that of the PB(GB)SA methods.
+
+
+The binding free energy estimate obtained with MM-PBSA-like methods consists 
+of the difference of average G energies derived from three independent 
+simulations, that is, 
+
+DG_bind = G_cmplx  - G_host  - G_lig 
+
+For a host-ligand complex, the interaction energy can be computed by 
+averaging relative G values: . 
+
+DG_int = G_cmplx  - G_host*  - G_lig* 
+
+In this expression, the asterisk means that the G energies of the host and 
+ligand molecules are evaluated using their distorted geometries in the complex. 
+In the case of small ligands, DG_bind may be approximated by DG_int.
+This is the so-called one-trajectory approximation, which minimizes statistical 
+uncertainty and facilitates the estimation of relative affinities 
+for a series of ligand molecules.  However, for relatively large complexes 
+in which a substantial structural rearrangement takes place upon binding, 
+the one-trajectory approximation ignores the distortion effects.

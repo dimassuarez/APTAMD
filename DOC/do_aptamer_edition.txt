@@ -1,0 +1,41 @@
+###############################################################################
+        GEUO SUITE: Scripts for Automating Molecular Modelling Tasks
+###############################################################################
+  
+  SCRIPT's NAME:  do_aptamer_edition.sh
+
+  GOAL: 
+  Starting from an aptamer pdb file, this scripts performs the following tasks:
+     1) partial relaxation of sugar and base moieties
+     2) tleap edition adding counterions to satisfy the required ionic force
+  
+  The script selects the bsc1 (DNA) and TIP3P (water) force field models.
+  To use other FFs, make a copy of the script and adapt it to your particular 
+  choices.
+
+  USAGE : do_aptamer_edition.sh  MOL_initial.pdb 
+
+  where "MOL_initial.pdb" is the initial PDB file. Note that MOL is the alias 
+  of the project associated to this system. For example, a valid filename can 
+  be aptX_initial.pdb, but not aptX.pdb. If the initial PDB file is generated
+  by RNAComposer then some residues and atoms are renamed to match DNA. 
+ 
+          do_aptamer_edition.sh  input.src       
+ 
+  If the input filename has src extension then do_aptamer_edition.sh sources 
+  it. The src file should contain variable declarations for the options 
+  indicated below.
+
+  This script must be called from the edition directory.
+  See $GEUO/DOC/directory_tree.txt for details.
+
+  OPTIONS: (selected by environment variables) 
+
+    INITIAL="MOL_initial.pdb"  # PDB input filename
+    IONIC=0.150                # NaCl(aq) Ionic strength. Def is 0.150 M.
+    BUFFER_SOLV=16.0           # Solvent buffer used to build the 
+                               # octahedral periodic box. Def 16.0 Angstrom
+    MAXCYC=500                 # Maximum opt cycles for sugar and backbone
+                               # relaxation. Def is 500.
+
+###############################################################################

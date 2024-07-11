@@ -1,0 +1,65 @@
+###############################################################################
+        GEUO SUITE: Scripts for Automating Molecular Modelling Tasks
+###############################################################################
+  
+  SCRIPT's NAME:  do_rmsd_rgyr_inf.sh
+
+  GOAL: 
+
+  To calculate structural descriptors of MD trajectories of peptides/aptamers:
+       a) RMSD with respect to a reference PDB structure
+       b) Radius of Gyration 
+       c) INF index of intramolecular interactions ( HBs for
+       peptides and interbase/stacking for aptamers ) with respect to a 
+       a reference PDB structure.  See $GEUO/DOC/inf.txt for further details.
+ 
+  USAGE : do_rmsd_rgyr_inf.sh  "MOL1 MOL2 ..."   MD_TYPE
+
+  where MOL1, MOL2 (enclosed in quotation marks) are the project alias of
+  the MD trajectories of interest. MD_TYPE can be either "MD" or "GAMD". 
+ 
+          do_rmsd_rgyr_inf.sh  input.src       
+ 
+  If the input filename has src extension then do_rmsd_rgyr_inf.sh sources the 
+  lines in the src file that should contain variable declarations for 
+  the various options indicated below.
+
+  This script must be called from the main directory where the MD/GAMD 
+  directories are located.  
+  See $GEUO/DOC/directory_tree.txt for details.
+
+  OPTIONS: (selected by environment variables) 
+
+    MOL='alias'        # System alias. Several aliases can be grouped
+                       # into a single variable MD_TRAJ='MOL1 MOl2 ...'
+    MD_TYPE='MD'       # Either MD or GAMD
+    SOLUTE_TYPE='PEP'  # selecting both the reference solute atoms for computing 
+                       # the RMSD values and the type of contacts for INF 
+                       # if SOLUTE_TYPE='PEP'  (i.e., peptide) then 
+                       # MASK='C,O,CA,N'  
+                       # if SOLUTE_TYPE='APT'  (i.e., aptamer) then 
+                       # MASK"=P,OP1,OP2,O5',C5',C4',C3',C2',C1',O4',O3'"
+                       # In principle, the script can detect APT or PEP
+                       # automatically. For long 
+    MASK='2:14@C'      # Specific mask used for RMSD calculations.
+    DIST='4.0'
+    ANGLE='120.0'      # X···Y DIST/ X-H···Y ANGLE thresholds for H-bond 
+                       # Def values are 4.0 and 120.0 
+    REFPDB='solute.pdb'# By default, the reference PDB structure is taken
+                       # from the initial structure in 1.EDITION/. However,
+                       # it can be more convenient to adopt other references
+                       # (for example, a cluster representative). Include
+                       # in REFPDB the full path to the PDB file!
+    SIEVE=1            # Clustering is done with sieve=#SIEVE of frames
+                       # Def  1
+    NPROCS=6           # Number of cores to be used. Def all available.
+
+    MD_PROD='5.PRODUCTION'
+    PREFIX_MDCRD='md_'
+    SUFFIX_MDCRD='_solutewat.mdcrd'
+
+    The list of mdcrd files to be processed is buitl by the command:
+    ls ${MD_PROD}/${PREFIX_MDCRD}*{SUFFIX_MDCRD}
+    The default values are suitable for trajectories generated with do_runmd.sh
+
+###############################################################################

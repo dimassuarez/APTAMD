@@ -1,0 +1,51 @@
+###############################################################################
+        GEUO SUITE: Scripts for Automating Molecular Modelling Tasks
+###############################################################################
+  
+  SCRIPT's NAME:  do_system_edition.sh
+
+  GOAL: 
+  Starting from a pdb file, this script performs tLEaP edition
+  adding counterions to satisfy the required ionic force. The pdb file
+  is expected to correspond to a peptide or protein molecule. 
+  
+  The script can select either the ff19SB(protein)/OPC(water) or 
+  the ff14SB/TIP3P force field models. To use other FFs, make a copy of the 
+  script and adapt it to your particular choices.
+
+  USAGE : do_system_edition.sh  MOL_initial.pdb 
+
+  where "MOL_initial.pdb" is the initial PDB file. Note that MOL is the alias 
+  of the project associated to this system. For example, a valid filename can 
+  be pepX_initial.pdb, but not pepX.pdb   
+ 
+          do_system_edition.sh  input.src       
+ 
+  If the input filename has src extension then do_system_edition.sh sources 
+  it. The src file should contain variable declarations for the options 
+  indicated below.
+
+  This script must be called from the edition directory.
+  See $GEUO/DOC/directory_tree.txt for details.
+
+  OPTIONS: (selected by environment variables) 
+
+    INITIAL="MOL_initial.pdb"  # PDB input filename
+    IONIC=0.150                # NaCl(aq) Ionic strength. Def is 0.150 M.
+    BUFFER_SOLV=16.0           # Solvent buffer used to build the 
+                               # octahedral periodic box. Def 16.0 Angstrom
+    FF=19                      # FF=14 selects the ff14SB/TIP3P FF while
+                               # FF=19 selects ff19SB/OPC. Def is FF=19.
+    BELLYMASK="NONE"           # If an AMBER mask is provided, the selected
+                               # atoms are relaxed prior to solvent box
+                               # edition 
+
+   Additional parameterization data can be provided in the following files:
+
+   MOL.frcmod       # additional force constant data
+   MOL.off          # Parameter library of the solute molecule. This library
+                    # is loaded after parameter libraries (overriding them)
+   MOL_extra.src    # Additional tLEaP commands (e.g., for creating/deleting
+                    # bonds) 
+
+###############################################################################

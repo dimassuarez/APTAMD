@@ -1,0 +1,73 @@
+###############################################################################
+        GEUO SUITE: Scripts for Automating Molecular Modelling Tasks
+###############################################################################
+  
+  SCRIPT's NAME:  do_rw_gamd.sh   
+
+  GOAL: 
+
+  To reweight the probability distribution function (PDF) derived from a GAMD
+  simulation of a peptide or aptamer molecule to recover the equilibrium
+  (canonical) PDF and estimate 2D free energy maps in terms of the RMSD/INF 
+  and/or RGYR/RMSD coordinates as calculated by the do_struct.sh script.
+  The scripts also picks up a selection of GAMD snapshots belonging to the
+  most likely structures. 
+
+  See $GEUO/DOC/reweight.txt for details.
+ 
+  USAGE : do_rw_gamd.sh   "MOL1 MOL2 ..."   
+
+  where MOL1, MOL2 (enclosed in quotation marks) are the project alias of
+  the GAMD trajectories of interest. 
+ 
+          do_rw_gamd.sh  input.src       
+ 
+  If the input filename has src extension then do_rw_gamd.sh sources the 
+  lines in the src file that should contain variable declarations for 
+  the various options indicated below.
+
+  First call to this script must be done at the main directory where the GAMD 
+  directories are located. Subsequent calls can be done from the RW_DIR 
+  subdirectory containing intermediate data (this saves CPU time).
+  See also $GEUO/DOC/directory_tree.txt for further details.
+
+  OPTIONS: (selected by environment variables) 
+
+    MOL='alias'        # System alias. Several aliases can be grouped
+                       # into a single variable MD_TRAJ='MOL1 MOl2 ...'
+    ENE='6.0'          # Upper threshold energy limit in the 2D map 
+                       # Def = 6.0 kcal/mol 
+    FINEGRID='NO'      # Whether to use finer or coarser grid in
+                       # binning of the 2D map. Usually better results
+                       # are obtained with a regular (coarser) grid.
+                       # Def NO
+    NGRID_FINE='25'    # Number of bin intervals along each dimension
+                       # in a fine grid. Def 25. 
+    NGRID_REG='15'     # Bin intervals in a regular grid. Def 15.
+    RW_DIR='RW_GAMD_ENE'  # Directory in which to save the output files
+    DO_INF_RMSD='YES'  # Build a 2D free energy map in terms of the 
+                       # INF and RMSD coordinates. This is the default
+                       # and recommended. 
+    DO_RGYR_RMSD='NO'  # Build a 2D free energy map in terms of the
+                       # RMSD and RGYR coordinates. Usually not 
+                       # recommended. Def. NO. 
+    DATA_DIR='STRUCT'  # Directory containing the RMSD, RGYR 
+                       # and INF data as calculated by 
+                       # do_struct.sh
+    SIEVE=1           # If a SIEVE > 1 was used when running 
+                      # do_rmsd_rgyr_inf.sh,  it must be used here too.
+
+    Since the script also selects some representative GAMD frames that 
+    could be used for visualization and subsequent MD simulations, 
+    the usual options specifiyng the location of the GAMD trajectory
+    files can be passed to do_rw_gamd.sh.
+
+    MD_PROD='5.PRODUCTION'
+    PREFIX_MDCRD='md_'
+    SUFFIX_MDCRD='_solute.mdcrd'
+
+    The list of mdcrd files to be processed is buitl by the command:
+    ls ${MD_PROD}/${PREFIX_MDCRD}*{SUFFIX_MDCRD}
+    The default values are suitable for trajectories generated with do_runmd.sh
+
+###############################################################################

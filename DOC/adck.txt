@@ -1,0 +1,35 @@
+###############################################################################
+        GEUO SUITE: Scripts for Automating Molecular Modelling Tasks
+###############################################################################
+
+Docking Protocol
+================
+
+To explore different binding modes between aptamers and targets, we performe
+rigid docking calculations. To describe all protein, sugar, and DNA units 
+on an equal basis, we use Autodock 4.2, a standalone program initially developed 
+to dock small and flexible ligands to proteins, DNA, RNA, and other macromolecules. 
+Compared to the other docking programs, Autodock is computationally more demanding
+because it uses a physics-based scoring function that includes specific terms to 
+model van der Waals, electrostatic, and H-bond interactions as well as a desolvation
+contribution to the binding free energy. 
+
+Starting from the coordinate files of the receptor and the igand, the Python scripts 
+included in MGLTools are used to assign atom types and Gasteiger charges, and to merge 
+non-polar hydrogens. To explore multiple binding options, Autodock requires precalculated 
+grid maps for the receptor, in which information on electrostatics, H-bond and steric 
+constraints are stored for each atom type in the ligand. Grid maps are centered on the
+COM of the receptor and the grid big enough to allow the ligands to rotate/translate around 
+the receptor and produce different binding poses. 
+
+To sample the receptor/ligand conformational space, we use the genetic search algorithm 
+to generate 500 conformations that are clustered with an RMSD tolerance of 2.0 Å. 
+To remove band contacts, the docking poses fully relaxed,  introducing thus some 
+flexibility in the docking protocol. Using SANDER, we run 5000 steps of conjugate gradient 
+minimization on each structure and using the Hawkins, Cramer, Truhlar pairwise 
+generalized Born implicit solvent model46. After the geometry optimization, the 
+minimized structures are finally ranked using the Autodock scoring function. 
+
+FALTA COMENTAR EL ARBOL DE DIRECTORIOS Y LA NECESIDAD DE LIMPIEZA....
+
+###############################################################################

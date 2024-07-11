@@ -1,0 +1,74 @@
+###############################################################################
+        GEUO SUITE: Scripts for Automating Molecular Modelling Tasks
+###############################################################################
+  
+  SCRIPT's NAME:  do_sconform.sh        
+
+  GOAL:  To carry out all tasks and calculations required to obtain the 
+         conformational entropy of solute molecules from MD trajectories
+         using the entropy methods implemented in CENCALC 
+
+  USAGE : do_sconform "MOL1 MOL2"  MD_TYPE  IFRAG  DO_CC_MLA
+
+  where MOL1, MOL2 (enclosed in quotation marks) are the project alias of
+  the MD trajectories of interest. MD_TYPE can be either "MD" or "GAMD". 
+  IFRAG=0, 1, 2 , ... selects the solute molecule (0=all solute atoms) 
+  DO_CC_MLA=0 or 1  selects ether first-order entropy (0) or CC-MLA
+  entropies (1)
+
+          do_sconform.sh  input.src       
+ 
+  If the input filename has src extension then do_sconform.sh sources 
+  it. The src file should contain variable declarations for the various options 
+  indicated below.
+
+  This script must be called from the main directory where the MD/GAMD 
+  directories are located. See $GEUO/DOC/directory_tree.txt for details.
+
+  OPTIONS: (selected by environment variables) 
+
+    MOL='alias'        # Project alias. Several aliases can be grouped
+                       # into a single variable MD_TRAJ='MOL1 MOl2 ...'
+    MD_TYPE='MD'       # Either MD or GAMD
+
+    NPROCS=6           # Number of cores to be used. Def all available.
+
+    IFRAG=0            # Selects the solute molecule. Def IFRAG=0 
+                       # selects all solute atoms 
+    SCONFORM_DIR='SCONFORM'   # Name of the subdirectory in which
+                              # the entropy calcs are saved. Def SCONFORM
+
+    DO_CC_MLA=0        # Only first-order entropy calcs are performed (Def)
+    DO_CC_MLA=1        # After first-order calcs, CC-MLA method is performed
+    DO_CC_MLA=2        # Assumes a previous run of do_soncorm and discretization
+                       # tasks (time consuming) are skipped
+    COMPOSITE=NO       # If YES then the composite version of CC-MLA is used.
+                       # so that torsions are classified into different groups
+                       # attending to their pair correlations.
+    CUTOFF=-1          # No distance-based cutoff is used in the calculation of
+                       # CC-MLA entropies  (Default)
+
+    CUTOFF="6 8 10 ..." # A list of cutoff distances to be considered by the 
+                        # CC-MLA method. The optimal cutoff is determined
+                        # by fitting the Sconform against cutoff distances
+
+    GETTOR_OPT="-noMet -puck"  # Options passed to the gettor.py script included
+                               # in the CENCALC suite. These options filter
+                               # torsion angles. Default is to excluded torsions
+                               # of methyl groups and use puckering angles for
+                               # Pro/Hyp rings
+
+    PERCEN=0           # Percentage of MD trajectory data to be considered
+                       # by the entropy calcs (0=full trajectory). If PERCEN="-50"
+                       # then the last half is used. If PERCEN="50" the first half
+                       # is used. 
+
+    MD_PROD='5.PRODUCTION'
+    PREFIX_MDCRD='md_'
+    SUFFIX_MDCRD='_solute.mdcrd'
+
+    The list of mdcrd files to be processed is built by the command:
+
+    ls ${MD_PROD}/${PREFIX_MDCRD}???{SUFFIX_MDCRD}
+
+###############################################################################

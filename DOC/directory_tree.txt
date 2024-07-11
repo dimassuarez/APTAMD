@@ -1,0 +1,53 @@
+###############################################################################
+        GEUO SUITE: Scripts for Automating Molecular Modelling Tasks
+###############################################################################
+  
+  About the directory tree   
+  ========================
+  
+  The GEUO scripts have been desgined to work with a particular directory 
+  tree structure for each MD or GAMD trajectory considered in a given project. 
+
+  We recommend to label each project with an informative alias name, for example,
+  MOL="apt_A_20_X" that may refer to a 20-residue aptamer designed to bind X.  
+ 
+  In what follows, MOL is the alias. The main directory must be named as
+  MOL_GAMD or MOL_MD, depending on whether a Gaussian-accelerated MD or
+  conventional MD run is performed. 
+
+  Users must create the major directory and then a subdirectory 1.EDITION.
+  Place the initial PDB file required for the edition tasks in 1.EDITION
+  
+  Call the corresponding edition script from 1.EDITION. Then the various
+  edition files will be produced.
+
+  Once that the edition task is performed, the MD and analysis scripts 
+  will create other subdirection. For example, the resulting directory 
+  tree may look like:
+   
+  MOL_GAMD
+  ├── 1.EDITION
+  ├── 2.RELAX_SOLVENT
+  ├── 3.THERMALIZATION
+  ├── 4.PRESSURIZATION
+  ├── 5.PRODUCTION
+  ├── 6.ANALYSIS
+      ├── SNAPSHOTS
+      ├── CLUSTER
+      ├── RMSD_RGYR_INF
+      ├── RW_ENERGY_GAMD
+
+  Multiple MD or GAMD jobs can be processed. In this case, there should be
+  multiple production directories:  
+
+  ...
+  ├── 5.PRODUCTION_01
+  ├── 5.PRODUCTION_02
+  ├── 5.PRODUCTION_03
+  ...
+
+  The do_runmd.sh script can handle the preparation of the multiple
+  production runs while the analysis scripts (do_snapshots.sh, ...)
+  can process all the production directories.
+
+###############################################################################

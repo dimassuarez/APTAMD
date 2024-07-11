@@ -1,0 +1,52 @@
+###############################################################################
+        GEUO SUITE: Scripts for Automating Molecular Modelling Tasks
+###############################################################################
+  
+  To characterize the shape and conformation of the peptide/apatmer molecule
+  along the MD simulations, different structural indexes can be computed. 
+
+  RMSD
+  ====
+  The root-mean-squared-deviation (RMSD) of selected heavy atoms 
+  with respect to a reference structure. For peptide molecules,
+  only the heavy atoms of the backbone chain are considered. 
+  For aptamers, all the P,C,N,O atoms are considered. 
+  For long molecules (NRES>10), the first and last pair or residues
+  are not taken into account.
+
+  Radius of gyration
+  ==================
+  All heavy atoms are taken into account in the calculation of the
+  radius of gyration
+
+  INF: interaction network fidelity (RNA, 2009, 15, 1875)
+  =========================================================
+  The so-called interaction network fidelity index (INF) is built
+  from the sets of characteristic intramolecular interactions in a reference 
+  structure (Sr) and in a given snapshot (Sm). 
+   Hence, the INF value is computed from: 
+
+  (i) the set of common interactions between the two structures, 
+      which are counted as true positives.  Tp= Sr /\ Sm 
+
+  (ii) the set of the interactions in the reference structure that are 
+   not present in the MD snapshot, which are false positives. Fp= Sm \ Sr 
+
+  (iii) the number of interactions absent in the MD snapshot, but present
+   in the reference structure, which are termed false negatives. Fn= Sr \ Sm
+
+  The INF index is defined  as a Mathews correlation coefficient considering 
+  true and false positives and negatives: 
+
+  INF = sqrt (  ( |Tp| / ( |Tp| + |Fp|  ) ) * ( |Tp| / ( |Tp| + |Fn| ) )  ) 
+  				
+  If the snapshot reproduces all the interactions of the reference structure, 
+  then |FP|=|FN|=0, and INF= 1. When the snapshot does not reproduce any of 
+  the interactions of the reference structure, then INF=0, since |TP|= 0. 
+
+  To determine interactions in the aptamer molecules, we employ the DSSR software
+  to identify both base pair interactions and non-pair interactions (i.e., 
+  base stacking or base contacts). For peptide molecules, we employ cpptraj to
+  identify and categorizae intramolecular H-bond contacts. 
+ 
+###############################################################################

@@ -1,0 +1,61 @@
+###############################################################################
+        GEUO SUITE: Scripts for Automating Molecular Modelling Tasks
+###############################################################################
+  
+  SCRIPT's NAME:  do_cluster.sh             
+
+  GOAL: 
+
+  To perfom a hierarchical RMSD clustering as implemented in cpptraj
+  of MD trajectories. Only the summary.dat file (with fractional populations)
+  and the PDBs of the cluster representatives are produced. Modify 
+  the cpptraj input file in do_cluster.sh if further info is needed.
+ 
+  USAGE : do_cluster.sh  "MOL1 MOL2 ..."   MD_TYPE
+
+  where MOL1, MOL2 (enclosed in quotation marks) are the project alias of
+  the MD trajectories of interest. MD_TYPE can be either "MD" or "GAMD". 
+ 
+          do_cluster.sh  input.src       
+ 
+  If the input filename has src extension then do_snapshots.sh sources its 
+  the line in the src file that should contain variable declarations for 
+  the various options indicated below.
+
+  This script must be called from the main directory where the MD/GAMD 
+  directories are located.  
+  See $GEUO/DOC/directory_tree.txt for details.
+
+  OPTIONS: (selected by environment variables) 
+    MOL='alias'        # Project alias. Several aliases can be grouped
+                       # into a single varaible MD_TRAJ='MOL1 MOl2 ...'
+    MD_TYPE='MD'       # Either MD or GAMD
+
+    SOLUTE_TYPE='PEP'  # selecting the solute atoms for computing 
+                       # the RMSD values.
+                       # if SOLUTE_TYPE='PEP'  (i.e., peptide) then 
+                       # MASK='C,O,CA,N'  
+                       # if SOLUTE_TYPE='APT'  (i.e., aptamer) then 
+                       # MASK"=P,OP1,OP2,O5',C5',C4',C3',C2',C1',O4',O3'"
+                       # In principle, the script can detect APT or PEP
+                       # automatically
+    EPS=2.0            # RMSD threshold for clustering. Def 2.0 Angs.
+    MASK='2:14@C'      # Specific mask used for RMSD clustering
+    SIEVE=50           # Clustering is done with sieve=#SIEVE of frames
+                       # Def 50 
+    CLUST_ALL='NO'     # If CLUST_ALL='NO' and SIEVE > 1 the sieved
+                       # frames are ignored, but if CLUST_ALL='YES' 
+                       # they are assigned to the resulting cluster sets.             
+                       # Def NO
+    NPROCS=6           # Number of cores to be used. Def all available.
+
+    CLUSTER_DIR='CLUSTER'  # Directory name for the clustering calculations
+    MD_PROD='5.PRODUCTION'
+    PREFIX_MDCRD='md_'
+    SUFFIX_MDCRD='_solutewat.mdcrd'
+
+    The list of mdcrd files to be processed is built by the command:
+    ls ${MD_PROD}/${PREFIX_MDCRD}*{SUFFIX_MDCRD}
+    Def values are suitable for trajectories generated with do_runmd.sh
+
+###############################################################################

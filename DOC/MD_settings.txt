@@ -1,0 +1,62 @@
+###############################################################################
+        GEUO SUITE: Scripts for Automating Molecular Modelling Tasks
+###############################################################################
+  
+  Some common MD settings                                 
+  =======================
+  Langevin dynamics is employed to control the temperature (300 K) 
+  with a collision frequency of 2 ps-1. 
+  The SHAKE algorithm is applied to constraint all R-H bonds, 
+  Periodic boundary conditions are activated to simulate a continuous system 
+  at constant pressure (NTP). 
+  A non-bonded cutoff of 9.0 Å is used and the Particle-Mesh-Ewald method 
+  is employed to include the contributions of long-range interactions
+  
+  Initial relaxation
+  ==================
+  The solvent molecules and counterions are initially relaxed by means of 
+  energy minimizations and 100 ps of molecular dynamics (MD) using SANDER.  
+  After solvent MD, the full system is minimized by 2500 conjugate-gradient
+  steps. 
+
+  Thermalization
+  ==============
+  The full system is heated gradually ( T= 100, 150, 200, 250, 300 K ) along
+  60 ps of constant volume (NVT) MD with a 1 fs time step and using the PMEMD 
+  program (MPI version).
+
+  Pressurization
+  ==============
+  The density is adjusted by means of 2.0 ns of constant pressure (NPT) MD 
+  with a 2 fs time step and using the Monte Carlo barostat as implemented 
+  in PMEMD,
+
+  Production Runs
+  ===============
+  Conventional MD production runs at NPT conditions are carried out using 
+  PMEMD (CUDA) and the same ettings of the pressurization stage. 
+  The production phase consists of a series of MD jobs (50 ns each) that is 
+  usually extended to the µs timescale. Coordinates are saved for analysis
+  every 2.5 ps. After each MD job, coordinates are usually postprocessed
+  to produce two sets of trajectory files: i) only solute atoms ; 
+  ii) solute and counterions + a water shell. The later set is saved only
+  every 50 ps. 
+
+  Specific GAMD settings
+  ======================
+  GaMD performs an enhanced and unconstrained sampling of the systems using 
+  harmonic boost potentials to smooth out the potential energy surface
+  Two boost potentials are applied: one to the torsion energetic term and 
+  another to the total potential energetic term including waters and ions. 
+  The upper limits of both boost potentials are set to 6.0 kcal/mol. 
+  The threshold energy E and harmonic constant k are estimated from the average 
+  and standard deviation of potential energies. Following the recommended 
+  prescriptions in the AMBER manual, the specific GaMD keywords are adjusted
+  to the total number of atoms (NAT) in the system. 
+
+  NTAVE=4xNAT steps used to update potential energy statistics . 
+  NTCMD=14*NTAVE MD steps done to obtain an initial guess for E and k. 
+  NTBEPREP=NTCMD GaMD steps for equilibration
+  NTBE=10*NTCMD GaMD steos for refining E and k 
+
+###############################################################################

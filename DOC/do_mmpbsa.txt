@@ -1,0 +1,166 @@
+###############################################################################
+        GEUO SUITE: Scripts for Automating Molecular Modelling Tasks
+###############################################################################
+  
+  SCRIPT's NAME:  do_mmpbsa.sh             
+
+  GOAL: 
+
+  To perfom MMPBSA-like calculations on the set of MD snapshots (PDB files) 
+  previously extracted with do_snapshots.sh.  
+
+  The possible MMPBSA-like calculations are:
+
+  Conventional MMPBSA / MMGBSA  (Default!)
+               MMRISM 
+               MMPB+vdW_int    (Default)
+               QMMPBSA
+               QMMPB+vdW_int
+               AutoDock4.2     
+
+  For complexes, the script detects the composing molecular fragments
+  and the MMPBSA-like calcs are performed for each fragment so that interaction
+  energies are reported as well. 
+
+  vdW_int refers to a non-polar solvation model in which an explicit
+  layer of water molecules around the solute is preserved. Then vdW
+  interactions between solute and solvent atoms are evaluated. Cavitation
+  energy is estimated using Pierotti's model (typically used in PCM calcs).
+
+  QM/MM calculations can be carried out using the QM models and interfaces
+  implemented in sander. By default, one can use the SCC-DFTB3 Hamiltonian
+  or the ORCA program, but the scripts could be adapted to use other
+  settings. Similarly, only-closed shell QM systems are currently handled,
+  but it would be easy to adapt the scripts for open-shell calcs.
+
+  It is possible to score the MD snapshots in terms of the AutoDock4.2 scoring
+  function provided that PDBQT files are provided for each molecular fragment
+  and, of course,  the AutoDock program is available.
+
+  The GEUO scripts implement also the possiblity of incorporating a set
+  of Na+ ions into the solute molecules. Each Na+ ion is surrounded by 6 waters.
+  This option is useful to analyze MD trajectories of DNA (aptamer) systems. 
+  The details of this approach will be reported soon. 
+
+  Finally, note that there is a small collection of scripts to perform
+  the MMPBSA calcs. In this way do_mmpbsa.sh is basically the driver script.
+
+  For further details of the MMPBSA-like calcs, see $GEUO/DOC/energy_analysis.txt
+
+  USAGE : do_mmpbsa.sh  "MOL1 MOL2 ..."   MD_TYPE  
+
+  where MOL1, MOL2 (enclosed in quotation marks) are the project alias of
+  the MD trajectories of interest. MD_TYPE can be either "MD" or "GAMD". 
+ 
+          do_mmpbsa.sh  input.src       
+ 
+  If the input filename has src extension then do_snapshots.sh sources it 
+  The lines in the src file should contain variable declarations for 
+  the various options indicated below.
+
+  This script must be called from the main directory where the MD/GAMD 
+  directories are located. See $GEUO/DOC/directory_tree.txt for details.
+
+  OPTIONS: (selected by environment variables) 
+
+    MOL='alias'        # Project alias. Several aliases can be grouped
+                       # into a single variable MD_TRAJ='MOL1 MOl2 ...'
+    MD_TYPE='MD'       # Either MD or GAMD
+
+    NPROCS=6           # Number of cores to be used. Def all available.
+
+    NSODIUM_LIMIT=0    # Number of Na+ to be included in the calcs. 
+                       The Na+ are selected on the basis of their
+                       proximity to the solute atoms. Default = 0.
+                       If your system has various fragments (e.g.,
+                       receptor and fragments), you have to specify 
+                       a given number of Na+ per fragment. For example,
+                       NSODIUM_LIMIT=' 6 0 ' means that there are 2 
+                       fragments and 6 ions are assigned to the first one.
+
+    SODIUM_FRAG='NO'  # Unless SODIUM_FRAG='YES', the Na+ ions are 
+                        assigned to the molecular fragments.
+
+
+    SNAPSHOTS_DIR='SNAPSHOTS'  # Directory containing the PDB files 
+                                 and located in 6.ANALYSIS
+
+    MMPBSA_DIR='MMPBSA'        # Output directory. If QMMM calcs are 
+                                 performed, then the default directory
+                                 name is QMMPBSA.
+
+    NUMPDB_INCR=0   # If a MD trajectory is extended and the number of PDB
+                         files is agumented then a previous execution of do_mmpbsa
+                         on the shorther trajectory can be augmented by indicating
+                         the additional number of PDB files to be processed. For 
+                         example, if NUMPDB_INCR=500 then only the newest 500 PDB 
+                         files are to be processed. 
+
+    SIEVE=1    #  MMPBSA calcs are done with a sieve=#SIEVE of PDB frames
+
+    PDIE_LIST="1"      # Internal dielectric constant for PB/GB calcs.
+                         Default = 1. Several PDIE values can be requested.
+                         For example, PDIE_LIST='1 4 10' Of course, this
+                         augments the computational cost!
+
+    ISTRNG=150     # Ionic strength in mM units. Default=150
+
+    PEEL=12        # Thickness of solvent layer for dispersion calcs (Def 12)
+   
+    XVVFILE='TIP3P.xvv'  # File name of the solvent XVV RISM file. 
+                         If this file is provided, then the RISM option
+                         is activated. Note that this is computationally
+                         rather expensive. Other MMPBSa calcs are NOT perfomed.
+
+    QMMMPBSA settings 
+    ================
+
+    QM_CMPLX_MASK=':3-5'   # AMBER mask selecting the QM atoms in the solute atoms. 
+       or                  # CMPLX refers to the case total system  in case of 
+    QM_MASK=':3-5'         # a molecular complex.
+
+    QM_CMPLX_CHARGE=0      # Charge of the QM region 
+        or
+    QM_CHARGE=0
+
+    QM_FRAG_MASK=' 1:2   3:5  ' # QM atom's mask for each fragment. Note that atomic/
+                                # residue numberings are those in the separate fragments.
+    QM_FRAG_CHARGE=' 1 -1'      # Charge of the QM regions in the fragments. 
+
+    QM_ORCA='NO'        # If YES then QMMM calcs are performed using the ORCA interface
+                          If NO then SCC-DFTB3 Hamiltonian implemented in sander is used.
+
+    D3H4='NO'      # If YES then dispersion and H-bond corrections are added to the
+                   # SCC-DFTB energies. This correction is evaluated using the CUBY4/DFTB+
+                   # programs and applies only to the single-point calculations after
+                   # QM/MM geometry relaxation.
+
+    NPROCS_QM='1'  # This option selects the number of PROCs to be used by each QM calc.
+                   # Then NPROCS/NPROCS_QM  calcs will be done simultaneously
+                   # If QM_ORCA=NO sander will likely use NPROCS_QM OMP threads for diagonalization.
+                   # but the default value of 1 is recommended 
+                   # If QM_ORCA=YES each orca job will employ NPROCS_QM OMP threads.
+
+    QM_ORCA_LEVEL='hf d3bj cc-pvtz'   # Levels of theory for QMMM energy calcs.
+
+    QM_ORCA_RELAX='NO'  # If YES then 50 steps of LBFGS minimization of the QM region are
+                          performed using ORCA. If NO then SCC_DFTB3 relaxation is done.
+
+    QM_ORCA_RELAX_LEVEL='hf cc-pvdz'   # Different levels of theory can be used for the 
+                        relaxation and the subsequent energy evaluation.
+
+    AUTODOCK options
+    ================
+
+    ADCK='NO'     # If YES then AutoDock calculations are carried out. The first fragement
+                  # corresponds to the receptor and the other fragmment(s) the ligands(s)
+
+    ADCK_ONLY='NO' # If YES then do only AutoDock calculations
+
+    PDBQT_SRCFILE='input_pdbqt.src'  # A small source file is required to read the 
+       # PDBQT filenames for the receptor/ligand fragments  as follows, 
+       #       PDBQT_FRAG[1]='Receptor.pdbqt'
+       #       PDBQT_FRAG[2]='Ligand.pdbqt' 
+               ...
+
+###############################################################################

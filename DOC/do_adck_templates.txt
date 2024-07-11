@@ -1,0 +1,63 @@
+###############################################################################
+        GEUO SUITE: Scripts for Automating Molecular Modelling Tasks
+###############################################################################
+  
+  SCRIPT's NAME:  do_adck_templates.sh
+
+  GOAL:  To prepare the required pdbqt files and Autogrid/AutoDock 4.0 input
+         files to run docking calculations  
+
+  USAGE : do_adck_templates.sh  RECEPTOR_PDB_LIST LIGAND_PDB_LIST
+          
+          where RECEPTOR_PDB_LIST and LIGAND_PDB_LIST are the filenames
+          of two separate files containing in turn a list of PDB filenames
+          Each PDB file (selected for example from cluster representatives
+          obtained in previous MD simulations) will be used in the subsequent
+          docking calculations. do_adck_templates.sh will just read the first
+          PDB file in RECEPTOR_PDB_LIST and LIGAND_PDB_LIST.
+ 
+          do_adck_templates.sh  input.src       
+ 
+  If the input filename has src extension then do_aptamer_edition.sh sources 
+  it. The src file should contain variable declarations for the various options 
+  indicated below.
+
+  This script must be called from the docking directory created/selected
+  previously by users. 
+
+  OPTIONS: (selected by environment variables) 
+
+    RECEPTOR_PDB_LIST="R.txt"  # Input file containing the list of PDB
+                               # files with coordinates of the receptor
+                               # No default value
+    LIGAND_PDB_LIST="L.txt"    # Idem for Ligand
+
+    NPROCS=6           # Number of cores to be used. Def all available.
+
+    GRID="0.333"       # Grid size of the Autogrid maps . Def =0.333 Ang
+
+    GA_RUN="50"        # Number of GA runs to request in the ADCK calcs.
+                       # NOTE: A total of NREC x NLIG x GA poses will be
+                       # produced. Def = 50 
+
+   Other than GRID and GA, the rest of ADCK settings have typical 
+   recommended values.
+
+    RELAX="YES"        # Prior to ADCK atom typing, relax the geometries
+                       # of the receptor/ligand reference geometries. 
+                       # YES is recommended
+
+
+    TOPOLOGY_REC="rec.top"     # Optional Amber topology file for receptor
+    TOPOLOGY_LIG="rec.top"     # Optional Amber topology file for ligand
+    TOPOLOGY_CMPLX="cmplx.top" # Optional Amber topology file for complex
+
+    If the topology files are not given, the script will try to generate
+    them using AMBER tLEaP. For standard peptides/aptamers, the topologies
+    can be built without much trouble. But maybe for ther systems they 
+    have to be provided 
+
+    FF=19                      # FF=14 selects the ff14SB/TIP3P FF while
+                               # FF=19 selects ff19SB/OPC. Def is FF=19.
+
+###############################################################################

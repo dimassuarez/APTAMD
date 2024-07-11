@@ -1,0 +1,29 @@
+###############################################################################
+        GEUO SUITE: Scripts for Automating Molecular Modelling Tasks
+###############################################################################
+  
+  SCRIPT's NAME:  do_entro_nmode.sh
+
+  GOAL: To carry out entropy calculations using the RRHO approximation.
+        This script drives both the preliminary energy minimizations and
+        the normal mode calculations setting the choices and parameters
+        summarized in $GEUO/DOC/entropy_nmode.txt 
+
+  USAGE : do_aptamer_edition.sh  MOL_initial.pdb 
+
+ 
+          do_aptamer_edition.sh  input.src       
+ 
+  If the input filename has src extension then do_aptamer_edition.sh sources 
+  it. The src file should contain variable declarations for the various options 
+  indicated below.
+
+  This script must be called from the edition directory ! 
+  See $GEUO/DOC/directory_tree.txt for details.
+
+  OPTIONS: (selected by environment variables) 
+
+    MAXCYC=500                 # Maximum opt cycles for sugar and backbone
+                               relaxation
+
+###############################################################################
