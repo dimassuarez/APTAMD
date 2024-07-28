@@ -63,6 +63,8 @@ The recommended starting configuration for a workstation or a computer server de
 ### Initial model: `do_aptamer_edition` 
 For a given aptamer sequence, its secondary (2D) structure can be predicted using the [mdfold](http://www.unafold.org/DNA_form.php) algorithm. From the 2D mfold structure, initial 3D coordinates in PDB format can be botained using the [RNA Composer webserver](https://rnacomposer.cs.put.poznan.pl/). The preliminary 3D model(sare processed automatically using `do_aptamer_edition.sh` that executes and monitors other scripts and programs of the [AMBER suite](https://ambermd.org/). `do_aptamer_edition.sh` transforms the atom and residue names of RNA to those of DNA, removes all 2’-hydroxyl groups on the ribose sugars, adds the missing methylene in thymines and all the H atoms, and assigns the required Molecular Mechanics (MM) parameters from the [parmbsc1 force field](https://mmb.irbbarcelona.org/www/ParmBSC1),  relaxes the internal geometry of the nucleobases and adds an octahedral box  water molecules inlcuding and Na+/Cl- counterions. 
 
+---
+
 *EXAMPLE**
 In this example, we build a *denovo* model for the unbound form of the 22-mer aptamer CGACCAACGTGTCGCCTGGTCG. The [1DB6](https://www.rcsb.org/structure/1db6) structure in the PDB contains several NMR models of the complexed form. We 
 
@@ -81,11 +83,11 @@ Assuming that `$APTAMD/bin`is in your PATH, the MM parameter files are obtained 
 
 what generates multiple files:
 
----
+```
 1DB6_model_initial.pdb  1DB6_model_solute.pdb   edit_leap_solute.src     sander_relax_solute. 
 1DB6_model.pdb          1DB6_model_solute.top  edit_leap.log         edit_leap.src
 1DB6_model.crd  1DB6_model_solute.crd   1DB6_model.top , ....
----
+```
 
 For example, `1DB6_model.top` and `1DB6_model.crd` are the topology (parameter) and intial coordinate files of the solvated aptamer ready to be used in the subsequent GaMD simulation.
 
