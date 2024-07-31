@@ -173,7 +173,7 @@ To obtain the RMSD plot , the RGYR plot (radius of gyration) and the INF plots o
 
 Some  options for `do_struct`are specified in [input_struct.src](EXAMPLE_INPUT_FILES/input_struct.src) and the output is written in a new folder 6.ANALYSIS/STRUCT. The evolution of the RMSD/RGYR/INF descriptors is plotted along the GaMD trajectory (see the .png files). 
 
-<img src="./Images/struct.png" width="600" height="300">
+<img src="./Images/struct.png" width="600" height="200">
 
 ---
 
