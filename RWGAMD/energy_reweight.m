@@ -119,12 +119,7 @@ colormap(flipud(A));
 %figure settings   LATTICE PLOT
 clf();
 h=figure(1);
-FN = findall(h,'-property','FontName');
-set(FN,'FontName','/usr/share/fonts/dejavu/DejaVuSerifCondensed.ttf');
-FS = findall(h,'-property','FontSize');
-set(FS,'FontSize',12);
-set (FS,'defaultaxesfontsize', 14) 
-W = 5; H = 3.75;
+W = 9; H = 6;
 set(h,'PaperUnits','inches')
 set(h,'PaperOrientation','portrait');
 set(h,'PaperSize',[H,W])
@@ -132,12 +127,15 @@ set(h,'PaperPosition',[0,0,W,H])
 
 imagesc(XT,YT,DP',[Pmin Psup])
 
-colorbar();
+axc=colorbar();
 
 if RC1 == 'INF' 
   set(gca,'xtick',round(linspace(0,xmax,5)*100)/100)
 end
 %set(gca,'ytick',[]);
+set(gca, 'FontName', 'Arial')
+set(gca, 'FontSize', 16)
+set(axc, 'FontSize', 16)
 xlabel(RC1)
 ylabel(RC2)
 
@@ -146,8 +144,9 @@ ylabel(RC2)
 %for i = [1:1:M]; line([i-0.5,i-0.5], [1-0.5, M-0.5] , 'linestyle','-','color','g', 'linewidth',0.5); end;
 %for i = [1:1:M]; line( [1-0.5, M-0.5], [i-0.5,i-0.5] , 'linestyle','-','color','g', 'linewidth',0.5); end;
 
-print(1,'CE2_pop.png','-dpng')
+title('log_{10} (P*) Biased population 2D map','fontsize',18)
 
+print(1,'CE2_pop.png','-dpng')
 
 % Plotting 2D Energy Map
 disp('Plotting Free Energy 2D map');
@@ -187,12 +186,7 @@ colormap(A);
 %figure settings   LATTICE PLOT
 clf();
 h=figure(1);
-FN = findall(h,'-property','FontName');
-set(FN,'FontName','/usr/share/fonts/dejavu/DejaVuSerifCondensed.ttf');
-FS = findall(h,'-property','FontSize');
-set(FS,'FontSize',12);
-set (FS,'defaultaxesfontsize', 14) 
-W = 5; H = 3.75;
+W = 9; H = 6;
 set(h,'PaperUnits','inches')
 set(h,'PaperOrientation','portrait');
 set(h,'PaperSize',[H,W])
@@ -200,13 +194,16 @@ set(h,'PaperPosition',[0,0,W,H])
 
 imagesc(XT,YT,D',[0 Esup])
 
-colorbar();
+axc=colorbar();
 
 
 if RC1 == 'INF'
    set(gca,'xtick',round(linspace(xmin,xmax,5)*100)/100)
 end
 %set(gca,'ytick',[]);
+set(gca, 'FontName', 'Arial')
+set(gca, 'FontSize', 16)
+set(axc, 'FontSize', 16)
 xlabel(RC1)
 ylabel(RC2)
 
@@ -214,6 +211,8 @@ ylabel(RC2)
 %axis([1-0.5 M-0.5 1-0.5 M-0.5]);
 %for i = [1:1:M]; line([i-0.5,i-0.5], [1-0.5, M-0.5] , 'linestyle','-','color','g', 'linewidth',0.5); end;
 %for i = [1:1:M]; line( [1-0.5, M-0.5], [i-0.5,i-0.5] , 'linestyle','-','color','g', 'linewidth',0.5); end;
+
+title('Free energy (kcal/mol) 2D map','fontsize',18)
 
 print(1,'CE2.png','-dpng')
 

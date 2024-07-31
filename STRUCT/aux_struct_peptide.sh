@@ -17,8 +17,6 @@ TMPDIR=${SCRATCH}/TMPDIR_${TT}
 mkdir $TMPDIR
 cd $TMPDIR
 
-cp ${WORKDIR}/${MOL}_ref.dat .
-
 NSNAP=$(ncdump -h $WORKDIR/${MDCRD}  |grep frame | grep UNLI | awk '{print $6}' | sed 's/(//')
 echo "trajin $WORKDIR/${MDCRD} 1 ${NSNAP} ${SIEVE} " > temp.in
 echo "reference ${REFPDB}" >> temp.in

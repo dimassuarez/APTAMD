@@ -1,5 +1,5 @@
 ###############################################################################
-        GEUO SUITE: Scripts for Automating Molecular Modelling Tasks
+        APTAMD SUITE: Scripts for Automating Molecular Modelling Tasks
 ###############################################################################
   
   SCRIPT's NAME:  do_system_edition.sh
@@ -26,7 +26,7 @@
   indicated below.
 
   This script must be called from the edition directory.
-  See $GEUO/DOC/directory_tree.txt for details.
+  See $APTAMD/DOC/directory_tree.txt for details.
 
   OPTIONS: (selected by environment variables) 
 

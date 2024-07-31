@@ -1,0 +1,9 @@
+MOL='1DB6_model'
+MD_TYPE='MD'       # Type of MD simulations, either "MD" or "GAMD"
+NPROCS=12          # Number of processors 
+MAX_NA_GLOBAL=10   # Maximum number of the closest Na+ ions to be 
+                   # considered. Def All Na+ ions.
+PEEL=14            # Thickness of the solvent layer around the
+                   # solute atoms. Def 14
+SIEVE=50           # PDB files are extracted every #SIEVE of frames
+                   # Def 50 

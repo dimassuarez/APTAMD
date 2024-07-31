@@ -1,0 +1,9 @@
+MOL='1DB6_model'
+MD_TYPE='MD'  # Type of MD simulations, either "MD" or "GAMD"
+NPROCS=12       # Number of processors 
+DO_SURF="NO"    # By default, Mol. Surface is not calculated.
+                # Select DO_SURF="YES" if required.
+DO_INF="NO"    # INF calculations are time consuming. If not
+                # needed, turn this option into "NO"
+
+REFPDB="/home/dimas/SCRIPTS/TUTORIAL_1DB6/1DB6_GAMD/1.EDITION/1DB6_solute.pdb"

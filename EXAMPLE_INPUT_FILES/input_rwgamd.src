@@ -1,0 +1,27 @@
+MOL='1DB6'
+MD_TYPE='GAMD'  # Type of MD simulations, either "MD" or "GAMD"
+NPROCS=12       # Number of processors 
+                # into a single variable MD_TRAJ='MOL1 MOl2 ...'
+ENE='8.0'       # Upper threshold energy limit in the 2D map 
+                # Def = 8.0 kcal/mol 
+FINEGRID='YES'  # Whether to use finer or coarser grid in
+                # binning of the 2D map. Usually better results
+                # are obtained with a regular (coarser) grid.
+                # Def NO
+NGRID_FINE='20'    # Number of bin intervals along each dimension
+                   # in a fine grid. Def 25. 
+NGRID_REG='10'     # Bin intervals in a regular grid. Def 15.
+
+RW_DIR='RW_GAMD_ENE'   # Directory in which to save the output files
+DO_INF_RMSD='YES'      # Build a 2D free energy map in terms of the 
+                       # INF and RMSD coordinates. This is the default
+                       # and recommended. 
+DO_RGYR_RMSD='NO'  # Build a 2D free energy map in terms of the
+                   # RMSD and RGYR coordinates. Usually not 
+                   # recommended. Def. NO. 
+DATA_DIR='STRUCT'  # Subdirectory containing the RMSD, RGYR 
+                   # and INF data as calculated by do_struct.sh
+SIEVE=1            # If a SIEVE > 1 was used when running 
+                   # do_struct.sh,  it must be used here too!
+
+

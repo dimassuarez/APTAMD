@@ -1,0 +1,8 @@
+MOL='1DB6'
+MD_TYPE='GAMD'  # Type of MD simulations, either "MD" or "GAMD"
+NPROCS=12       # Number of processors 
+DO_SURF="NO"    # By default, Mol. Surface is not calculated.
+                # Select DO_SURF="YES" if required.
+DO_INF="YES"    # INF calculations are time consuming. If not
+                # needed, turn this option into "NO"
+

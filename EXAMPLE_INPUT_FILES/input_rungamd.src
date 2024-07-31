@@ -1,0 +1,23 @@
+MOL='1DB6'
+MD_TYPE='GAMD'  # Type of MD simulations, either "MD" or "GAMD"
+MULTI_MD=1      # If MULTI_MD > 1 do_runmd.sh creates MULTI_MD
+                # directories for submitting multi-MD production tasks
+                # MULTI_MD > 1 implies DO_PROD="NO"
+USE_GPU='YES'   # PMEMD.CUDA runs. Def YES
+NPROCS=12       # Number of processors for SANDER.MPI/PMEMD.MPI/CPPTRAJ.OMP 
+DO_PROD='YES'   # Production phase. Def YES. If DO_PROD="NO" do_runmd.sh
+                # stops after pressurization
+NJOBS=25        # Number of MD production runs (50 ns each). Def 20
+SIEVE=20        # If SIEVE > 1 postprocess MD trajectory files to generate
+                # separate solute and solute+waters trajectories. 
+                # Solute+water coords are saved every SIEVEx2.5 ps
+                # Def SIEVE=20
+PEEL=14         # If PEEL > 0 postprocess MD trajectory files to generate
+                # a solute+watershell trajs. The PEEL
+                # value defines the thickness of the solvent shell. 
+                # Solute+watershell coords are saved every SIEVEx2.5 ps
+                # Note that solute+watershell includes also counterions.
+                # Def PEEL=14 
+PEELONLY="YES"  # If PEELONLY="YES" then full MD trajectory files are
+                # are deleted after peeling 
+

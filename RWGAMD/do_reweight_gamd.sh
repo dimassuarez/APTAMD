@@ -4,8 +4,8 @@ if [ -z "$APTAMD" ]; then echo "APTAMD variable is not defined!" ; exit; fi
 if [ "$#" -eq 0 ]; then more $APTAMD/DOC/do_reweight_gamd.txt ; exit; fi
 
 source $APTAMD/ENV/aptamd_env.sh
-PYTHON=/opt/apps/SL7/anaconda3/bin/python3
 if [ -z "$PYTHON" ]; then echo 'PYTHON is not available, but needed'; exit; fi
+PYTHON_EXE="${PYTHON}/python"
 
 # Checking options
 extension="${1##*.}"
@@ -371,8 +371,8 @@ EOF
   fi
 
 # Reweighting using cumulant expansion 
-  PY2=$($PYTHON -V | grep -c ' 2.')
-  PY3=$($PYTHON -V | grep -c ' 3.')
+  PY2=$($PYTHON_EXE -V | grep -c ' 2.')
+  PY3=$($PYTHON_EXE -V | grep -c ' 3.')
   echo $PY2  $PY3
   PY3=1
   if [  $PY2 -ge 1 ]
@@ -382,12 +382,12 @@ EOF
   then
      sed "s/DUMMY_EMAX/${EMAX}/" $APTAMD/RWGAMD/PyReweighting-2D.py > PyReweighting-2D.py
   else
-     echo "$PYTHON -V is not recognized!"
-     $PYTHON -V
+     echo "$PYTHON_EXE -V is not recognized!"
+     $PYTHON_EXE -V
      exit
   fi
-  echo "$PYTHON PyReweighting-2D.py -cutoff 10 -input ${COORD}.dat -Xdim $Xmin $Xmax  -discX $Xinc -Ydim $Ymin $Ymax -discY $Yinc -Emax $EMAX -job amdweight_CE -weight weights.dat | tee -a reweight_variable.log "  > PyReweighting-2D.log 
-  $PYTHON PyReweighting-2D.py -cutoff 10 -input ${COORD}.dat -Xdim $Xmin $Xmax  -discX $Xinc -Ydim $Ymin $Ymax -discY $Yinc -Emax $EMAX -job amdweight_CE -weight weights.dat | tee -a reweight_variable.log  >> PyReweighting-2D.log 
+  echo "$PYTHON_EXE PyReweighting-2D.py -cutoff 10 -input ${COORD}.dat -Xdim $Xmin $Xmax  -discX $Xinc -Ydim $Ymin $Ymax -discY $Yinc -Emax $EMAX -job amdweight_CE -weight weights.dat | tee -a reweight_variable.log "  > PyReweighting-2D.log 
+  $PYTHON_EXE PyReweighting-2D.py -cutoff 10 -input ${COORD}.dat -Xdim $Xmin $Xmax  -discX $Xinc -Ydim $Ymin $Ymax -discY $Yinc -Emax $EMAX -job amdweight_CE -weight weights.dat | tee -a reweight_variable.log  >> PyReweighting-2D.log 
 
   mv -v pmf-c1-${COORD}.dat.xvg pmf-2D-${COORD}-reweight-CE1.xvg
   mv -v pmf-c2-${COORD}.dat.xvg pmf-2D-${COORD}-reweight-CE2.xvg

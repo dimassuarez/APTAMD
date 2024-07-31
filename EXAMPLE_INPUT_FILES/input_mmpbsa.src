@@ -1,0 +1,5 @@
+MOL='1DB6_model'   # Project alias. Several aliases can be grouped
+MD_TYPE='MD'       # Either MD or GAMD
+NPROCS=24          # Number of cores to be used. Def all available.
+NSODIUM_LIMIT=0    # Number of Na+ to be included in the calcs. 
+PDIE=" 2 4 "

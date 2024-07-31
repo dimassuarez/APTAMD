@@ -3,12 +3,8 @@
 if [ -z "$APTAMD" ]; then echo "APTAMD variable is not defined!" ; exit; fi
 source $APTAMD/ENV/aptamd_env.sh
 
-# parmed requires AMBER PYTHON environment
-export PYTHON=$AMBERHOME/miniconda/bin
-export PYTHONPATH=$AMBERHOME/lib/python3.9/site-packages/
-
 # Topology file 
-TOP=$1
+TOPOLOGY=$1
 # INPUT Coord set: it can be either a coord filename or list filename
 COORD=$2
 # Thickness of the water shell
@@ -18,7 +14,7 @@ SIEVE=$4
 # NWAT_INP (not required, but optional )
 NWAT_INP=$5
 
-if [ -z "$TOP" ] ||  [ -z "$COORD" ] ||  [ -z "$RPEEL" ] ||  [ -z "$SIEVE" ]
+if [ -z "$TOPOLOGY" ] ||  [ -z "$COORD" ] ||  [ -z "$RPEEL" ] ||  [ -z "$SIEVE" ]
 then
    echo " "
    echo "Usage: peel_mdcrd_cpptraj.sh topology_file coord_file rpeel sieve [nwat] "
@@ -27,6 +23,15 @@ then
    echo " "
    echo " Warning: nwat can be selected automatically basing on the rpeel value."
    echo " If nwat is given then rpeel is ignored. Be careful then."
+   echo " "
+   echo "         If nwat = 0 then only solute atoms are preserved" 
+   echo "         and sieve is ignored"
+   echo " "
+   echo "         If nwat = N then only counterions and N waters are preserved" 
+   echo "         and sieve is take into account"
+   echo " "
+   echo "         If nwat = '0 N' then two files are generated without and with " 
+   echo "         N-waters/counterions"
    echo " "
    echo "Examples: "
    echo " " 
@@ -42,15 +47,50 @@ then
    exit
 fi
 
-if [ -z "$NWAT_INP" ]
+SOLUTE=0       # Do not extract 
+SOLUTE_ONLY=0
+if [ -z "${NWAT_INP}" ]
 then
-   NWAT_INP=0
+   NWAT=-1
+   echo "Selecting waters to be extracted using peel=$RPEEL"
 else
-   echo "Selecting $NWAT_INP water molecules around the solute molecule"
+  icheck=0
+  for IWAT in ${NWAT_INP}
+  do
+       let "icheck=$icheck+1"
+       if [ ${IWAT} -eq 0 ]; then SOLUTE=1; fi 
+       if [ ${SOLUTE} -eq 0 ] ; then NWAT=$IWAT; fi
+       if [ ${SOLUTE} -eq 1 ] && [ $icheck -eq 2 ] ; then NWAT=$IWAT; fi
+  done
+  if [ $icheck -gt 2 ]
+  then
+     echo "Option= ${NWAT_INP} cannot be processed!" 
+     exit
+  fi
+  if [ $icheck -eq 2 ] && [ $SOLUTE -eq 0 ] 
+  then
+     echo "Option= ${NWAT_INP} cannot be processed!"
+     exit
+  fi
+  if [ $icheck -eq  1 ] && [ $SOLUTE -eq 1 ]
+  then 
+     echo "Only solute atoms are preserved "
+     SOLUTE_ONLY=1
+  elif [ $icheck -eq  1 ] && [ $SOLUTE -eq 0 ]
+  then 
+     echo "Selecting $NWAT water molecules around the solute molecule"
+  elif [ $icheck -eq  2 ] && [ $SOLUTE -eq 1 ]
+  then 
+     echo "Selecting solute atoms and selecting $NWAT water molecules"
+     echo "around the solute molecule in separate files"
+  else
+     echo "No idea what to do"
+     exit
+  fi
 fi
 
-IDMOL=$(basename $TOP)
-IDMOL=${IDMOL%%.*}_solutewat
+IDMOL=$(basename $TOPOLOGY)
+IDMOL=${IDMOL%%.*}
 
 if [ -z "$NPROCS" ]
 then
@@ -106,7 +146,7 @@ cd $TMPDIR
 
 NSET=$(cat LISTA_COORD | wc -l)
 
-if [ $NWAT_INP -eq 0 ]
+if [ $NWAT -lt 0 ] && [ $SOLUTE_ONLY -eq 0 ]
 then
 
 I=0
@@ -116,8 +156,7 @@ for ((ISET=1;ISET<=$NSET;ISET++))
 do
   COORD=$(sed -n "${ISET},${ISET}p" LISTA_COORD)
   FILE=$(echo $COORD | awk '{print $1}')
-  NSNAP=$(ncdump -h $WORKDIR/${FILE} |grep frame | grep UNLI | awk '{print $6}' | sed 's/(//')
-  echo  "trajin $WORKDIR/$FILE 1 $NSNAP $SIEVE " >> input.cpptraj
+  echo  "trajin $WORKDIR/$FILE 1 last $SIEVE " >> input.cpptraj
 done
 
 cat <<EOF >> input.cpptraj
@@ -125,7 +164,7 @@ trajout tmp ncrestart
 watershell $MASK lower $RPEEL upper $RPEEL out tmp_WS.dat
 go
 EOF
-$AMBERHOME/bin/cpptraj.OMP $WORKDIR/$TOP < input.cpptraj > output.cpptraj 
+$AMBERHOME/bin/cpptraj.OMP $WORKDIR/$TOPOLOGY < input.cpptraj > output.cpptraj 
 
 sed -i '1,1d' tmp_WS.dat
 ncoord=$(cat tmp_WS.dat | wc -l)
@@ -160,14 +199,17 @@ echo "NWAT to be extracted = $NWAT"
 
 else
 
-NWAT=$NWAT_INP
+echo "NWAT to be extracted (defined in input) =$NWAT"
 
 fi
+
+if [ $SOLUTE_ONLY -eq 0 ]
+then 
 
 # Preparing TOPOLOGY FILE 
 REFCRD=$(head -1 LISTA_COORD | awk '{print $1}')
 REFPDB=temp.pdb 
-$AMBERHOME/bin/cpptraj $WORKDIR/$TOP <<EOF
+$AMBERHOME/bin/cpptraj $WORKDIR/$TOPOLOGY <<EOF
 trajin  ${WORKDIR}/${REFCRD} 1 1 1
 trajout ${REFPDB} pdb 
 autoimage origin 
@@ -181,7 +223,7 @@ NTOPWAT=$(grep -c 'O   WAT' $REFPDB)
 let " ARES = $ISOLV - 1  + $NWAT + 1 "
 let " BRES = $ISOLV - 1  + $NTOPWAT "
 
-$AMBERHOME/bin/parmed -n  $WORKDIR/$TOP <<EOF
+$AMBERHOME/bin/parmed -n  $WORKDIR/$TOPOLOGY <<EOF
 strip :${ARES}-${BRES}
 parmout solutewat.top
 go
@@ -191,22 +233,23 @@ parmbox nobox
 parmwrite out solutewat_nobox.top
 go
 EOF
-mv solutewat_nobox.top $WORKDIR/${IDMOL}.top 
+mv solutewat_nobox.top $WORKDIR/${IDMOL}_solutewat.top 
 rm -f solutewat.top
 
-echo "# IPROT ISOLV  NWAT  RPEEL " > PEEL.dat
-echo " $IPROT $ISOLV $NWAT $RPEEL" >> PEEL.dat
-mv PEEL.dat $WORKDIR/${IDMOL}.info
+echo "# IPROT ISOLV  NWAT  RPEEL " > PEEL.info
+echo " $IPROT $ISOLV $NWAT $RPEEL" >> PEEL.info
+mv PEEL.info $WORKDIR/${IDMOL}.info
 
 # Loop over COORD sets
 rm -f TASK.sh
+
 I=0
 for ((ISET=1;ISET<=$NSET;ISET++))
 do
   COORD=$(sed -n "${ISET},${ISET}p" LISTA_COORD)
   FILE=$(echo $COORD | awk '{print $1}')
   FILE=${FILE%%.*} 
-  echo  "trajin $WORKDIR/$COORD " > input.cpptraj
+  echo  "trajin $WORKDIR/$COORD 1 last ${SIEVE} " > input.cpptraj
 
   let "I=$I+1"
 
@@ -220,12 +263,56 @@ go
 EOF
   mv input.cpptraj input.${I}
 
-  echo "$AMBERHOME/bin/cpptraj $WORKDIR/$TOP < input.${I} > output.${I}; rm -f tmp.${I}" >> TASK.sh
+  echo "$AMBERHOME/bin/cpptraj $WORKDIR/$TOPOLOGY < input.${I} > output.${I}; rm -f tmp.${I}" >> TASK.sh
 
 done
 
-echo "Processing all files in parallel" 
+echo "Processing all MDCRD files in parallel" 
 cat TASK.sh | $PARHOME/bin/parallel --silent --no-notice  -t -j$NPROCS   >/dev/null 2>&1
+
+fi # ENDIF of SOLUTE_ONLY condition
+
+
+if [ $SOLUTE -eq  1 ]
+then 
+
+rm -f TASK.sh
+
+$AMBERHOME/bin/parmed -n  $WORKDIR/$TOPOLOGY <<EOF
+strip :WAT,Na+,Cl-
+parmout solute.top
+go
+EOF
+mv solute.top ${IDMOL}_solute.top 
+cp ${IDMOL}_solute.top $WORKDIR/$OUTDIR/
+
+I=0
+for ((ISET=1;ISET<=$NSET;ISET++))
+do
+  COORD=$(sed -n "${ISET},${ISET}p" LISTA_COORD)
+  FILE=$(echo $COORD | awk '{print $1}')
+  FILE=${FILE%%.*} 
+  echo  "trajin $WORKDIR/$COORD " > input.cpptraj
+
+  let "I=$I+1"
+
+# Note that the closest command selects water around solute
+# atoms only, but preserves the Na+/Cl- counterions
+cat <<EOF >> input.cpptraj
+trajout $WORKDIR/${FILE}_solute.mdcrd netcdf 
+strip :WAT,Na+,Cl-
+go
+EOF
+  mv input.cpptraj input.${I}
+
+  echo "$AMBERHOME/bin/cpptraj $WORKDIR/$TOPOLOGY < input.${I} > output.${I}; rm -f tmp.${I}" >> TASK.sh
+
+done
+
+echo "Processing all MDCRD files in parallel" 
+cat TASK.sh | $PARHOME/bin/parallel --silent --no-notice  -t -j$NPROCS   >/dev/null 2>&1
+
+fi  # ENDIF of SOLUTE condition 
 
 cd $WORKDIR
 

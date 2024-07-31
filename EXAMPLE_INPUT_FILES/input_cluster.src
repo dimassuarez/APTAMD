@@ -1,0 +1,16 @@
+MOL='1DB6_model'
+MD_TYPE='MD'  # Type of MD simulations, either "MD" or "GAMD"
+NPROCS=12     # Number of processors 
+
+EPS="1.0 1.5 2.0"   # RMSD threshold for clustering. Def 2.0 Angs.
+          # It is possible to select a list of RMSD values.
+          # For example, RMSD="3.0 4.0 5.0" requests three
+          # separate clustering calculations. 
+SIEVE=50   # Clustering is done with sieve=#SIEVE of frames
+           # Def 50 
+
+PERCEN=-50    # It is possible to use a percentage of the MD trajec-
+              # tory files. If PERCEN=0 or 100 all trajectory files 
+              # are sued. If PERCEN=-33 then only the last one third
+              # of files is used. If PERCEN=50 then the first half of
+              # the trajectory files is considered, .... Def PERCEN=0
