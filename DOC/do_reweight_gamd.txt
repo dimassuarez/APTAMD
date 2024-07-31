@@ -58,7 +58,7 @@
 
     Since the script also selects some representative GAMD frames that 
     could be used for visualization and subsequent MD simulations, 
-    the usual options specifiyng the location of the GAMD trajectory
+    the usual options specifying the location of the GAMD trajectory
     files can be passed to do_reweight_gamd.sh.
 
     MD_PROD='5.PRODUCTION'

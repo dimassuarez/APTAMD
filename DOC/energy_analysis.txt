@@ -15,9 +15,9 @@ to the following kind of equations:
 
 G = 3*R*T + E_MM + DG_solv 
  		
-where E_MM is the gas-phase energy, 3RT is due to six translational 
+where E_MM is the gas-phase energy, 3RT is due to six traslational 
 and rotational degrees of freedom and DG_solv is the solvation energy, which 
-is decomposed into polar and nonpolar contributions. Many specific methods and 
+is decomposed into polar and non-polar contributions. Many specific methods and 
 approximations have been used to calculate E_MM and DG_solv. Most commonly, 
 the gas-phase energy is obtained using MM force fields, but quantum mechanical 
 (QM) and hybrid QM/MM methods can be also employed. The electrostatic solvation 
@@ -29,15 +29,15 @@ potential through the numerical solution of the Poisson equation, GB is
 based on a modified Coulombic expression that is computationally faster. 
 
 The electrostatic PB(GB) solvation energies must be complemented with 
-the corresponding nonpolar part due to cavity formation and van der Waals 
+the corresponding non-polar part due to cavity formation and van der Waals 
 interactions between the solute and the solvent molecules. 
-Effective nonpolar solvent models that treat separately the cavity 
+Effective non-polar solvent models that treat separately the cavity 
 (repulsive) and dispersion (attractive) energies are preferred. 
 The post-processing of explicit solvent MD simulations also allows 
 the evaluation of the dispersion part by computing the average 
 van der Waals interaction energy between solute and the water molecules 
 within a shell of 12-15 Å thickness. Alternatively, the PB(GB) and 
-nonpolar solvation energies can be replaced by those calculated with 
+non-polar solvation energies can be replaced by those calculated with 
 the three-dimensional reference interaction site model (3D-RISM). 
 This method, which is based on a first-principles statistical mechanics theory, 
 yields the 3D distribution functions of the solvent atoms around each solute site

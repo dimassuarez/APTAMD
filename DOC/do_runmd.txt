@@ -8,7 +8,7 @@
 
   This script is an MD driver, which, in turn, relies on a set of small scripts
   and SANDER/PMEMD input files. It performs several tasks: i) initial relaxation
-  of solvent and solute coordinates; ii) thermalization; iii) presurization; 
+  of solvent and solute coordinates; ii) thermalization; iii) pressurization; 
   iv) MD production. 
 
   See $APTAMD/DOC/MD_settings.txt for further details about stages i-iv.

@@ -34,7 +34,7 @@
   Production Runs
   ===============
   Conventional MD production runs at NPT conditions are carried out using 
-  PMEMD (CUDA) and the same ettings of the pressurization stage. 
+  PMEMD (CUDA) and the same settings of the pressurization stage. 
   The production phase consists of a series of MD jobs (50 ns each) that is 
   usually extended to the µs timescale. Coordinates are saved for analysis
   every 2.5 ps. After each MD job, coordinates are usually postprocessed

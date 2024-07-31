@@ -17,8 +17,8 @@
         and proteins on the MD frames considered for clustering. 
         To this end, the latest version of the mkdssp software is required.
 
-     b) To perform clustering with the t-Distributed stochastc neighbor embedding
-        (TSNE) metthod as described in https://doi.org/10.1021/acs.jctc.3c00224.
+     b) To perform clustering with the t-Distributed stochastic neighbor embedding
+        (TSNE) method as described in https://doi.org/10.1021/acs.jctc.3c00224.
         This is a sophisticated method that requires a careful choice of 
         options. See the TSNE reference for further details.
  
@@ -39,7 +39,7 @@
 
   OPTIONS: (selected by environment variables) 
     MOL='alias'        # Project alias. Several aliases can be grouped
-                       # into a single varaible MD_TRAJ='MOL1 MOl2 ...'
+                       # into a single variable MD_TRAJ='MOL1 MOl2 ...'
     MD_TYPE='MD'       # Either MD or GAMD
 
     SOLUTE_TYPE='PEP'  # selecting the solute atoms for computing 

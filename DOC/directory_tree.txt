@@ -5,7 +5,7 @@
   About the directory tree   
   ========================
   
-  The APTAMD scripts have been desgined to work with a particular directory 
+  The APTAMD scripts have been designed to work with a particular directory 
   tree structure for each MD or GAMD trajectory considered in a given project. 
 
   We recommend to label each project with an informative alias name, for example,
@@ -22,7 +22,7 @@
   call to the edition script. Then the various edition files will be produced.
 
   Once that the edition task is performed, the MD and analysis scripts 
-  will create other subdirection. For example, the resulting directory 
+  will create other subdirectories. For example, the resulting directory 
   tree may look like:
    
   MOL_GAMD

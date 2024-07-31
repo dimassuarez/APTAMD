@@ -2,7 +2,7 @@
         APTAMD SUITE: Scripts for Automating Molecular Modelling Tasks
 ###############################################################################
   
-  To characterize the shape and conformation of the peptide/apatmer molecule
+  To characterize the shape and conformation of the peptide/aptamer molecule
   along the MD simulations, different structural indexes can be computed. 
 
   RMSD
@@ -47,6 +47,6 @@
   To determine interactions in the aptamer molecules, we employ the DSSR software
   to identify both base pair interactions and non-pair interactions (i.e., 
   base stacking or base contacts). For peptide molecules, we employ cpptraj to
-  identify and categorizae intramolecular H-bond contacts. 
+  identify and categorize intramolecular H-bond contacts. 
  
 ###############################################################################

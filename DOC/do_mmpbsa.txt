@@ -6,7 +6,7 @@
 
   GOAL: 
 
-  To perfom MMPBSA-like calculations on the set of MD snapshots (PDB files) 
+  To perform MMPBSA-like calculations on the set of MD snapshots (PDB files) 
   previously extracted with do_snapshots.sh.  
 
   The possible MMPBSA-like calculations are:
@@ -25,7 +25,7 @@
   vdW_int refers to a non-polar solvation model in which an explicit
   layer of water molecules around the solute is preserved. Then vdW
   interactions between solute and solvent atoms are evaluated. Cavitation
-  energy is estimated using a surface-area dependant approximation (probably
+  energy is estimated using a surface-area dependent approximation (probably
   the most reliable for large and flexible molecules ) or Pierotti's model as 
   typically used in QM PCM calcs.
 
@@ -39,7 +39,7 @@
   function provided that PDBQT files are provided for each molecular fragment
   and, of course,  the AutoDock program is available.
 
-  The APTAMD scripts implement also the possiblity of incorporating a set
+  The APTAMD scripts implement also the possibility of incorporating a set
   of Na+ ions into the solute molecules. Each Na+ ion is surrounded by 6 waters.
   This option is useful to analyze MD trajectories of DNA (aptamer) systems. 
   The details of this approach will be reported soon. 
@@ -93,8 +93,8 @@
                                  name is QMMPBSA.
 
     NUMPDB_INCR=0   # If a MD trajectory is extended and the number of PDB
-                         files is agumented then a previous execution of do_mmpbsa
-                         on the shorther trajectory can be augmented by indicating
+                         files is augmented then a previous execution of do_mmpbsa
+                         on the shorter trajectory can be augmented by indicating
                          the additional number of PDB files to be processed. For 
                          example, if NUMPDB_INCR=500 then only the newest 500 PDB 
                          files are to be processed. 
@@ -113,7 +113,7 @@
     XVVFILE='TIP3P.xvv'  # File name of the solvent XVV RISM file. 
                          If this file is provided, then the RISM option
                          is activated. Note that this is computationally
-                         rather expensive. Other MMPBSa calcs are NOT perfomed.
+                         rather expensive. Other MMPBSa calcs are NOT performed.
 
     QMMMPBSA settings 
     ================
