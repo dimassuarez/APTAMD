@@ -173,7 +173,7 @@ To obtain the RMSD plot , the RGYR plot (radius of gyration) and the INF plots o
 
 Some  options for `do_struct`are specified in [input_struct.src](EXAMPLE_INPUT_FILES/input_struct.src) and the output is written in a new folder 6.ANALYSIS/STRUCT. The evolution of the RMSD/RGYR/INF descriptors is plotted along the GaMD trajectory (see the .png files). 
 
-<img src="./Images/struct.png" width="400" height="250">
+<img src="./Images/struct.png" width="600" height="300">
 
 ---
 
@@ -199,7 +199,7 @@ Picking up snapshots bin= 5 for  E= 0.946000 POP= 0.035  X=  0.79  Y=  3.54
    ... 
 ```
 
-<img src="./Images/rwgamd.png" width="400" height="250">
+<img src="./Images/rwgamd.png" width="600" height="300">
 
 In the example, snapshot # 412857 assigned to bin #5 (located on the free energy minimum) corresponds to snapshot #12857 in the MD trajectory segment #21. It has a low value of GaMD boost potential and could be selected for subsequent cMD jobs. The coordinates are saved in a separate PDB file named as snap_5_12857.pdb. 
 
@@ -258,7 +258,7 @@ The RMSD and RGYR values are calculated, but we skip now the INF ones (see for e
 
 Note that the resulting plot suggests a small structural transition during the cMD.
 
-<img src="./Images/struct_md.png" width="400" height="225">
+<img src="./Images/struct_md.png" width="600" height="300">
 
 Before carrying out the MM-PBSA calculations, MD snapshots are to be extracted from the trajectory files using the `do_snapshots`script and saved in PDB format. 
 
@@ -287,7 +287,7 @@ SANDER/PBSA output files (packed into a `OUTPUT.tar` file) and many other files 
 ```
 The corresponding `.png` files display the time evolution of the various energy components.  For example,   
 
-<img src="./Images/G_MMPBSA.png" width="400" height="225">
+<img src="./Images/G_MMPBSA.png" width="600" height="300">
 
 --- 
 
