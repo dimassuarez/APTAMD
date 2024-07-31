@@ -26,7 +26,8 @@ alias iconv='iconv -s'
 # G_ANALYZE implements the Hess' method of error estimation based on non-linear fitting
 # (JCP 2002  Vol 116 pag 209)
 #
-G_ANALYZE="mpirun -np 1 /opt/gromacs/2023/bin/gmx_mpi analyze -ee -f "
+# G_ANALYZE="mpirun -np 1 /opt/gromacs/2023/bin/gmx_mpi analyze -ee -f "
+G_ANALYZE=""
 
 # MEDIA_BSE the limiting value of the error estimate by  block averaging 
 # (See Grossfield & Zuckerman, Annual Reports in Computational Chemistry, 2009, vol5, 23) 
