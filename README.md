@@ -173,7 +173,7 @@ To obtain the RMSD plot , the RGYR plot (radius of gyration) and the INF plots o
 
 Some  options for `do_struct`are specified in [input_struct.src](EXAMPLE_INPUT_FILES/input_struct.src) and the output is written in a new folder 6.ANALYSIS/STRUCT. The evolution of the RMSD/RGYR/INF descriptors is plotted along the GaMD trajectory (see the .png files). 
 
-<img src="./Images/struct.png" width="800" height="450">
+<img src="./Images/struct.png" width="400" height="250">
 
 ---
 
@@ -199,7 +199,7 @@ Picking up snapshots bin= 5 for  E= 0.946000 POP= 0.035  X=  0.79  Y=  3.54
    ... 
 ```
 
-<img src="./Images/rwgamd.png" width="800" height="450">
+<img src="./Images/rwgamd.png" width="400" height="250">
 
 In the example, snapshot # 412857 assigned to bin #5 (located on the free energy minimum) corresponds to snapshot #12857 in the MD trajectory segment #21. It has a low value of GaMD boost potential and could be selected for subsequent cMD jobs. The coordinates are saved in a separate PDB file named as snap_5_12857.pdb. 
 
@@ -318,6 +318,7 @@ Clustering analysis of the cMD trajectory can yield critical information to opti
 
 The variable EPS in [input_cluster.src](EXAMPLE_INPUT_FILES/input_cluster.src) is declared as an array (EPS="1.0 1.5 2.0") so that three different thresholds are considered. Note also that only the last 50% of the cMD frames is considered for clustering. The aptamer model turns out to be quite rigid (very rigid indeed) and a low value of EPS=1.5 is appropriate to yield a few populated clusters (see the summary.dat file). The cluster representatives in PDB format can be readily visualized using molecular graphics software such as Pymol or Chimera.  
 
+<img src="./Images/aptamd.png" width="600" height="300">
 
 ### Other script tools in APTAMD
 
