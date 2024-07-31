@@ -258,7 +258,7 @@ The RMSD and RGYR values are calculated, but we skip now the INF ones (see for e
 
 Note that the resulting plot suggests a small structural transition during the cMD.
 
-<img src="./Images/struct_md.png" width="600" height="200">
+<img src="./Images/struct_md.png" width="600" height="400">
 
 Before carrying out the MM-PBSA calculations, MD snapshots are to be extracted from the trajectory files using the `do_snapshots`script and saved in PDB format. 
 
@@ -287,7 +287,7 @@ SANDER/PBSA output files (packed into a `OUTPUT.tar` file) and many other files 
 ```
 The corresponding `.png` files display the time evolution of the various energy components.  For example,   
 
-<img src="./Images/G_MMPBSA.png" width="600" height="200">
+<img src="./Images/G_MMPBSA.png" width="600" height="400">
 
 --- 
 
