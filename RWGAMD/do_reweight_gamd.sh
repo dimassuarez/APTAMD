@@ -371,10 +371,8 @@ EOF
   fi
 
 # Reweighting using cumulant expansion 
-  PY2=$($PYTHON_EXE -V | grep -c ' 2.')
-  PY3=$($PYTHON_EXE -V | grep -c ' 3.')
-  echo $PY2  $PY3
-  PY3=1
+  PY2=$($PYTHON_EXE -V |& grep -c ' 2.')
+  PY3=$($PYTHON_EXE -V |& grep -c ' 3.')
   if [  $PY2 -ge 1 ]
   then
      sed "s/DUMMY_EMAX/${EMAX}/" $APTAMD/RWGAMD/PyReweighting-2D_python2.py > PyReweighting-2D.py
