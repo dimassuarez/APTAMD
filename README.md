@@ -29,6 +29,10 @@ Compile the auxiliary Fortran codes:
 
 `cd $APTAMD/AUXTOOLS; ./comp.sh all`
 
+Make links to the script files: 
+
+`cd $APTAMD/bin; ./make_links.sh `
+
 Edit the `$ATPAMD/ENV/aptamd_env.sh` file and adjust the BASH variables pointing to the software tools used by APTAMD (Of course AMBER and other software have to be installed on your system). 
 
 Add `$ATPAMD/bin` to your `$PATH` environment variable:
