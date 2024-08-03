@@ -2,7 +2,7 @@ MOL='1DB6'
 MD_TYPE='GAMD'  # Type of MD simulations, either "MD" or "GAMD"
 NPROCS=12       # Number of processors 
                 # into a single variable MD_TRAJ='MOL1 MOl2 ...'
-ENE='8.0'       # Upper threshold energy limit in the 2D map 
+EMAX='8.0'      # Upper threshold energy limit in the 2D map 
                 # Def = 8.0 kcal/mol 
 FINEGRID='YES'  # Whether to use finer or coarser grid in
                 # binning of the 2D map. Usually better results
