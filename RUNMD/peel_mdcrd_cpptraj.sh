@@ -238,7 +238,7 @@ rm -f solutewat.top
 
 echo "# IPROT ISOLV  NWAT  RPEEL " > PEEL.info
 echo " $IPROT $ISOLV $NWAT $RPEEL" >> PEEL.info
-mv PEEL.info $WORKDIR/${IDMOL}.info
+mv PEEL.info $WORKDIR/${IDMOL}_solutewat.info
 
 # Loop over COORD sets
 rm -f TASK.sh
