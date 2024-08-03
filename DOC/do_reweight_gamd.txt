@@ -35,7 +35,7 @@
 
     MOL='alias'        # System alias. Several aliases can be grouped
                        # into a single variable MD_TRAJ='MOL1 MOl2 ...'
-    ENE='6.0'          # Upper threshold energy limit in the 2D map 
+    EMAX='6.0'         # Upper threshold energy limit in the 2D map 
                        # Def = 8.0 kcal/mol 
     FINEGRID='NO'      # Whether to use finer or coarser grid in
                        # binning of the 2D map. Usually better results
