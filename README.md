@@ -238,7 +238,7 @@ In the example, snapshot # 33922 assigned to bin #10 (located on the free energy
 
 *Selected GAMD model*
 
-<img src="./Images/2l5k_gamd_model.png" width="300" height="100" style="display: block; margin: 0 auto">
+<img src="./Images/2l5k_gamd_model.png" width="33%" height="33%" style="display: block; margin: 0 auto">
 
 </div>
 
@@ -299,7 +299,7 @@ The RMSD and RGYR values are calculated, but we skip now the INF ones (see for e
 
 Note that the resulting plot suggests a structural transition during the cMD.
 
-<img src="./Images/struct_md.png" width="400" height="225" style="display: block; margin: 0 auto">
+<img src="./Images/struct_md.png" width="50%" height="50%" style="display: block; margin: 0 auto">
 
 Before carrying out the MM-PBSA calculations, MD snapshots are to be extracted from the trajectory files using the `do_snapshots`script and saved in PDB format. 
 
@@ -328,7 +328,7 @@ SANDER/PBSA output files (packed into a `OUTPUT.tar` file) and many other files 
 
 The corresponding `.png` files display the time evolution of the various energy components.  For example,   
 
-<img src="./Images/G_MMPBSA.png" width="400" height="225" style="display: block; margin: 0 auto">
+<img src="./Images/G_MMPBSA.png" width="75%" height="75%" style="display: block; margin: 0 auto">
 </div>
 --- 
 
@@ -359,7 +359,7 @@ Clustering analysis of the cMD trajectory can yield critical information to opti
 
 The variable EPS in [input_cluster.src](EXAMPLE_INPUT_FILES/input_cluster.src) is declared as an array (EPS="3.0 4.0 5.0") so that three different thresholds are tested using only the last half of the cMD trajectory. The aptamer model has a significant flexibility and the EPS=5.0 threshold is appropriate to yield a few populated clusters (see the summary.dat file). The cluster representatives in PDB format can be readily visualized using molecular graphics software such as Pymol or Chimera.  For example, the superposition of the top 3 clusters that account for 82% of the MD frames shows that the 3'-terminal residues adopt different conformations. When superposing the APTAMD cluster representativees, the RNAComposer model and the NMR  experimental model, we also see that the APTAMD refined model shows better agreement with the NMR conformation of the central segment than the initial RNAComposer structure.     
 
-<img src="./Images/aptamd_label.png" width="50%" height="50%" style="display: block; margin: 0 auto">
+<img src="./Images/aptamd_label.png" width="33%" height="33%" style="display: block; margin: 0 auto">
 </div>
 
 
