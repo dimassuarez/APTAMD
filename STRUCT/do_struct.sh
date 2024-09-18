@@ -33,6 +33,7 @@ if [ -z "$PREFIX_MDCRD" ]; then echo 'Considering PREFIX_MDCRD=md_';  PREFIX_MDC
 if [ -z "$DO_INF" ]; then DO_INF="YES"; else echo "Considering DO_INF=$DO_INF"; fi
 if [ -z "$DO_SURF" ]; then DO_SURF="NO"; else echo "Considering DO_SURF=$DO_SURF"; fi
 if [ -z "$STRUCT_DIR" ]; then echo 'Considering STRUCT_DIR=STRUCT';  STRUCT_DIR="STRUCT"; else echo "Using STRUCT_DIR=$STRUCT_DIR"; fi
+if [ -z "$COMPLETE" ]; then  COMPLETE="NO"; else echo "Considering COMPLETE=$COMPLETE"; fi
 if [ -z "$MASK" ]; then MASK='NONE'; MASK_READ="NO"; echo "Guessing MASK for RMSD";  else echo "Using MASK=$MASK"; MASK_READ="YES";   fi
 
 if [ -n "$PBS_ENVIRONMENT" ] ; then
@@ -313,12 +314,17 @@ EOF
     else 
       txt=${I}
     fi
-    if [ ${SOLUTE_TYPE} == "PEP" ]
+    if [ ${COMPLETE} == "YES" ] && [ -e md_${txt}.inf ]
     then
-       echo "cd $WORKDIR; $APTAMD/STRUCT/aux_struct_peptide.sh $file md_${txt}  > $SCRATCH/tmp_${txt}.log; rm -f  $SCRATCH/tmp_${txt}.log" >> TASK.sh
-    elif [ ${SOLUTE_TYPE} == "APT" ]
-    then
-       echo "cd $WORKDIR; $APTAMD/STRUCT/aux_struct_aptamers.sh $file md_${txt}  > $SCRATCH/tmp_${txt}.log; rm -f  $SCRATCH/tmp_${txt}.log" >> TASK.sh
+        echo "Skipping md_${txt}"
+    else
+        if [ ${SOLUTE_TYPE} == "PEP" ]
+        then
+           echo "cd $WORKDIR; $APTAMD/STRUCT/aux_struct_peptide.sh $file md_${txt}  > $SCRATCH/tmp_${txt}.log; rm -f  $SCRATCH/tmp_${txt}.log" >> TASK.sh
+        elif [ ${SOLUTE_TYPE} == "APT" ]
+        then
+           echo "cd $WORKDIR; $APTAMD/STRUCT/aux_struct_aptamers.sh $file md_${txt}  > $SCRATCH/tmp_${txt}.log; rm -f  $SCRATCH/tmp_${txt}.log" >> TASK.sh
+        fi
     fi
   done
   echo ${SOLUTE_TYPE}

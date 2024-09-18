@@ -322,5 +322,36 @@ if [ ! -z "${GNUPLOT}" ]
 then 
     $GNUPLOT < input.gp
 fi
+
+$OCTAVE -q <<EOF > color_from_dssp.dat
+A=load('info_for_gnuplot.dat');
+A(:,1)=[];
+[n,m]=size(A);
+nres=m/2;
+kolor=cell(5,1);
+kolor{1,1}='green';
+kolor{2,1}='darkgray';
+kolor{3,1}='red';
+kolor{4,1}='blue';
+kolor{5,1}='magenta';
+ires=A(1,1:2:m-1);
+for i=[1:n]
+    printf('#################\n')
+    dssp=A(i,2:2:m);
+    for ic=[0:4]
+        itxt=find( dssp==ic );
+        ilen=length(itxt);
+        if  ( ilen> 0 ) 
+           txt=num2str( itxt(1) );
+           for j=[2:ilen]
+               txt=[txt,',',num2str(itxt(j))];
+           end
+           printf(' color %s #%i:%s \n',kolor{ic+1,1},i,txt)
+       end
+     end
+end
+EOF
+    
+
 rm -f -r ${TMPDIR}
 
