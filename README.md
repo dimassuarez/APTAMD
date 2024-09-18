@@ -80,7 +80,7 @@ For a given aptamer sequence, its secondary (2D) structure can be predicted usin
 
 **EXAMPLE**
 
-In this example, we build a *denovo* model for the unbound form of a truncated sequence corresponding to the [anti-MUC1 DNA aptamer](https://doi.org/10.1111/j.1742-4658.2011.08440.x).  In particular, we adopt the following 26-mer sequence: `3'-GCAGTTGATCCTTTGGATACCCTGGT-5'`. The [2L5K](https://www.rcsb.org/structure/2l5k) structure in the PDB contains several NMR models of a closely-related sequence. Both input and output files generated with the APTAMD tools for this example can be accssed at the Mendeley data repository doi: 10.17632/hg98523cbs.1
+In this example, we build a *denovo* model for the unbound form of a truncated sequence corresponding to the [anti-MUC1 DNA aptamer](https://doi.org/10.1111/j.1742-4658.2011.08440.x).  In particular, we adopt the following 26-mer sequence: `3'-GCAGTTGATCCTTTGGATACCCTGGT-5'`. The [2L5K](https://www.rcsb.org/structure/2l5k) structure in the PDB contains several NMR models of a closely-related sequence. **The input and output files generated with the APTAMD tools for this example can be accessed at the Mendeley data repository** [DOI:10.17632/hg98523cbs.1](https://data.mendeley.com/datasets/hg98523cbs/1) , excepting most of the trajectory files that occupy several GB of disk space. 
 
 The first step is to enter the 26-mer sequence in the [mfold server](http://www.unafold.org/mfold/applications/dna-folding-form.php) selecting T=25 oC and 0.150 M NaCl ionic strength. Leave other settings at their defaults.  The following 2D structure should be obtained.
 
@@ -204,7 +204,7 @@ To obtain the RMSD plot , the RGYR plot (radius of gyration) and the INF plots o
 
 Some  options for `do_struct`are specified in [input_struct.src](EXAMPLE_INPUT_FILES/input_struct.src) and the output is written in a new folder 6.ANALYSIS/STRUCT. The evolution of the RMSD/RGYR/INF descriptors is plotted along the GaMD trajectory (see the .png files). 
 
-<img src="./Images/struct.png" width="400" height="200"  style="display: block; margin: 0 auto">
+<img src="./Images/struct.png" width="400" height="225"  style="display: block; margin: 0 auto">
 
 </div>
 
@@ -232,13 +232,13 @@ The output from `do_reweight_gamd` is saved into 6.ANALYSIS/RW_GAMD_ENE. It is n
    ... <br />
 </section>
 
-<img src="./Images/rwgamd.png" width="400" height="200" style="display: block; margin: 0 auto">
+<img src="./Images/rwgamd.png" width="400" height="225" style="display: block; margin: 0 auto">
 
 In the example, snapshot # 33922 assigned to bin #10 (located on the free energy minimum; bins with marginal populations on the biased distribution are ignored) corresponds to snapshot #13922 in the MD trajectory segment #2. It has a low value of GaMD boost potential and could be selected for subsequent cMD jobs. The coordinates are saved in a separate PDB file named as `snap_10_13922.pdb`. Note that 
 
 *Selected GAMD model*
 
-<img src="./Images/2l5k_gamd_model.png" width="300" height="150" style="display: block; margin: 0 auto">
+<img src="./Images/2l5k_gamd_model.png" width="300" height="100" style="display: block; margin: 0 auto">
 
 </div>
 
@@ -269,9 +269,9 @@ The conventional MD can be launched with:
 
 `cp $APTAMD/EXAMPLE_INPUT_FILES/input_runmd.src  2L5K_model_MD/`
 
-`do_runmd  2L5K_model_MD/input_md.src`
+`do_runmd  2L5K_model_MD/input_runmd.src`
 
-The variable TYPE in [input_md.src](EXAMPLE_INPUT_FILES/input_md.src) is now declared as TYPE=MD.  
+The variable TYPE in [input_runmd.src](EXAMPLE_INPUT_FILES/input_runmd.src) is now declared as TYPE=MD.  
 
 *WARNING* 3-4 days of GPU usage and multicore CPU are required to run the MD simulation.  
 
@@ -359,7 +359,7 @@ Clustering analysis of the cMD trajectory can yield critical information to opti
 
 The variable EPS in [input_cluster.src](EXAMPLE_INPUT_FILES/input_cluster.src) is declared as an array (EPS="3.0 4.0 5.0") so that three different thresholds are tested using only the last half of the cMD trajectory. The aptamer model has a significant flexibility and the EPS=5.0 threshold is appropriate to yield a few populated clusters (see the summary.dat file). The cluster representatives in PDB format can be readily visualized using molecular graphics software such as Pymol or Chimera.  For example, the superposition of the top 3 clusters that account for 82% of the MD frames shows that the 3'-terminal residues adopt different conformations. When superposing the APTAMD cluster representativees, the RNAComposer model and the NMR  experimental model, we also see that the APTAMD refined model shows better agreement with the NMR conformation of the central segment than the initial RNAComposer structure.     
 
-<img src="./Images/aptamd_label.png" width="400" height="200" style="display: block; margin: 0 auto">
+<img src="./Images/aptamd_label.png" width="450" height="250" style="display: block; margin: 0 auto">
 </div>
 
 
