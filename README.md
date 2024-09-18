@@ -232,7 +232,7 @@ The output from `do_reweight_gamd` is saved into 6.ANALYSIS/RW_GAMD_ENE. It is n
    ... <br />
 </section>
 
-<img src="./Images/rwgamd.png" width="800" height="450" style="display: block; margin: 0 auto">
+<img src="./Images/rwgamd.png" width="400" height="200" style="display: block; margin: 0 auto">
 
 In the example, snapshot # 33922 assigned to bin #10 (located on the free energy minimum; bins with marginal populations on the biased distribution are ignored) corresponds to snapshot #13922 in the MD trajectory segment #2. It has a low value of GaMD boost potential and could be selected for subsequent cMD jobs. The coordinates are saved in a separate PDB file named as `snap_10_13922.pdb`. Note that 
 
@@ -359,7 +359,7 @@ Clustering analysis of the cMD trajectory can yield critical information to opti
 
 The variable EPS in [input_cluster.src](EXAMPLE_INPUT_FILES/input_cluster.src) is declared as an array (EPS="3.0 4.0 5.0") so that three different thresholds are tested using only the last half of the cMD trajectory. The aptamer model has a significant flexibility and the EPS=5.0 threshold is appropriate to yield a few populated clusters (see the summary.dat file). The cluster representatives in PDB format can be readily visualized using molecular graphics software such as Pymol or Chimera.  For example, the superposition of the top 3 clusters that account for 82% of the MD frames shows that the 3'-terminal residues adopt different conformations. When superposing the APTAMD cluster representativees, the RNAComposer model and the NMR  experimental model, we also see that the APTAMD refined model shows better agreement with the NMR conformation of the central segment than the initial RNAComposer structure.     
 
-<img src="./Images/aptamd_label.png" width="450" height="225" style="display: block; margin: 0 auto">
+<img src="./Images/aptamd_label.png" width="400" height="200" style="display: block; margin: 0 auto">
 </div>
 
 
