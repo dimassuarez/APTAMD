@@ -9,13 +9,13 @@ The computational protocol implemented in APTAMD is described in detail in the f
 
 * A. Díaz-Fernández, R. Miranda-Castro, N. Díaz, D. Suárez, N. de-los-Santos-Álvarez and M.J. Lobo-Castañón. (2020). Aptamers targeting protein-specific glycosylation in tumor biomarkers: general selection, characterization and structural modeling. Chemical Science 11, 9402-9413. [DOI](https://doi.org/10.1039/D0SC00209G )
 
-* A. Díaz-Fernández, C. S. Ciudad, N. Díaz, D. Suárez, N. de-los-Santos-Álvarez and M.J. Lobo-Castañón. (2024). Refinement and Truncation of DNA Aptamers based on Molecular Dynamics Simulations: Computational Protocol and Experimental Validation. *Submitted*
+* A. Díaz-Fernández, C. S. Ciudad, N. Díaz, D. Suárez, N. de-los-Santos-Álvarez and M.J. Lobo-Castañón. (2024). Refinement and Truncation of DNA Aptamers based on Molecular Dynamics Simulations: Computational Protocol and Experimental Validation.  J. Chem. Inf. Model. 2025, 65, 8, 4128–4136. [DOI](https://doi.org/10.1021/acs.jcim.5c00243)
  
 All questions regarding the usage of APTAMD or bug reports should be addressed to Dimas Suárez (dimas@uniovi.es).
 
 ### **Installation**
 
-The suite is distributed as collection of scripts for Linux systems. Most of the scripts are written in [BASH](https://www.gnu.org/software/bash/) altough some numerical and plotting tasks are performed using Octave or Python scripts. There are also a few Fortran codes that carry out auxiliary tasks. In a few months, we will replace all the Fortran and Octave codes by Python scripts, but the BASH backbone will be maintained.    
+The suite is distributed as a collection of scripts for Linux systems. Most of the scripts are written in [BASH](https://www.gnu.org/software/bash/) although some numerical and plotting tasks are performed using Octave or Python scripts. There are also a few Fortran codes that carry out auxiliary tasks. In a few months, we will replace all the Fortran and Octave codes by Python scripts, but the BASH backbone will be maintained.    
 
 To install APTAMD, download the suite with the commands:
 
@@ -70,7 +70,7 @@ The recommended starting configuration for a workstation or a computer server de
 ## **User Guide**
 
 ### Initial model: `do_aptamer_edition` 
-For a given aptamer sequence, its secondary (2D) structure can be predicted using the [mfold](http://www.unafold.org/DNA_form.php) algorithm. From the 2D mfold structure, initial 3D coordinates in PDB format can be obtained using the [RNA Composer webserver](https://rnacomposer.cs.put.poznan.pl/). The preliminary 3D models are processed automatically using `do_aptamer_edition.sh` that executes and monitors other scripts and programs of the [AMBER suite](https://ambermd.org/). `do_aptamer_edition.sh` transforms the atom and residue names of RNA to those of DNA, removes all 2’-hydroxyl groups on the ribose sugars, adds the missing methylene in thymines and all the H atoms, and assigns the required Molecular Mechanics (MM) parameters from the [parmbsc1 force field](https://mmb.irbbarcelona.org/www/ParmBSC1),  relaxes the internal geometry of the nucleobases and adds an octahedral box  water molecules including and Na+/Cl- counterions. 
+For a given aptamer sequence, its secondary (2D) structure can be predicted using the [mfold](http://www.unafold.org/DNA_form.php) algorithm. From the 2D mfold structure, initial 3D coordinates in PDB format can be obtained using the [RNA Composer webserver](https://rnacomposer.cs.put.poznan.pl/). The preliminary 3D models are processed automatically using `do_aptamer_edition.sh` that executes and monitors other scripts and programs of the [AMBER suite](https://ambermd.org/). `do_aptamer_edition.sh` transforms the atom and residue names of RNA to those of DNA, removes all 2’-hydroxyl groups on the ribose sugars, adds the missing methylene in thymines and all the H atoms, and assigns the required Molecular Mechanics (MM) parameters from the [parmbsc1 force field](https://mmb.irbbarcelona.org/www/ParmBSC1),  relaxes the internal geometry of the nucleobases and adds an octahedral box  of water molecules including and Na+/Cl- counterions. 
 
 
 
@@ -128,7 +128,7 @@ For example, `2L5K_model.top` and `2L5K_model.crd` are the topology (parameter) 
 
 
 ### Gaussian Accelerated MD simulation : `do_runmd` 
-The conformational space of the solvated aptamer is explored by means of a Gaussian Accelerated Molecular Dynamics (GaMD) simulation or by conventional MD simulations. GaMD uses harmonic boost potentials to smooth out the potential energy surface, accelerating thus transitions between low-energy configurations. `do_runmd.sh` controls various preparatory stages (solvent relaxation, thermalization, pressurization and GaMD equilibration) and finally launches the production phase of the GaMD/MD simulations. The settings of the GaMD and MD calculations driven by do_runmd.sh are normally employed in many biomolecular simulations. See [here](SUITE_APTAMD/DOC/MD_settings.txt) for further details.  
+The conformational space of the solvated aptamer is first explored by means of a Gaussian Accelerated Molecular Dynamics (GaMD) simulation. GaMD uses harmonic boost potentials to smooth out the potential energy surface, accelerating thus transitions between low-energy configurations. `do_runmd.sh` controls various preparatory stages (solvent relaxation, thermalization, pressurization and GaMD equilibration) and finally launches the production phase of the GaMD/MD simulations. The settings of the GaMD and MD calculations driven by do_runmd.sh are normally employed in many biomolecular simulations. See [here](SUITE_APTAMD/DOC/MD_settings.txt) for further details.  
 
 ---
 <div style="background-color: rgb(220,220,220);">
@@ -174,7 +174,7 @@ md_002_solutewat.mdcrd<br />
 
 The folders 2.RELAX_SOLVENT, 3.THERMALIZATION and 4.PRESSURIZATION contain the intermediate files produced during the preparatory stages of the GaMD simulation.  
 
-*Hint:* If necessary the GaMD simulation can be resumed by changing & executing the `job_GaMD.sh` script in 5.PRODUCTION.
+*Hint:* If necessary the GaMD simulation can be resumed by modifying some variables & executing the `job_GaMD.sh` script in 5.PRODUCTION.
 
 *Warning:* Due to the stochastic control of temperature (Langevin's method) exerted during the GaMD/MD simulations, two MD simulations started from identical coordinates will be different. Of course average properties should be comparable.   
 </div>
@@ -234,7 +234,7 @@ The output from `do_reweight_gamd` is saved into 6.ANALYSIS/RW_GAMD_ENE. It is n
 
 <img src="./Images/rwgamd.png" width="50%" height="50%" style="display: block; margin: 0 auto">
 
-In the example, snapshot # 33922 assigned to bin #10 (located on the free energy minimum; bins with marginal populations on the biased distribution are ignored) corresponds to snapshot #13922 in the MD trajectory segment #2. It has a low value of GaMD boost potential and could be selected for subsequent cMD jobs. The coordinates are saved in a separate PDB file named as `snap_10_13922.pdb`. Note that 
+In the example, snapshot # 33922 assigned to bin #10 (located on the free energy minimum; bins with marginal populations on the biased distribution are ignored) corresponds to snapshot #13922 in the MD trajectory segment #2. It has a low value of GaMD boost potential and could be selected for subsequent MD jobs. The coordinates are saved in a separate PDB file named as `snap_10_13922.pdb`. 
 
 *Selected GAMD model*
 
@@ -245,7 +245,7 @@ In the example, snapshot # 33922 assigned to bin #10 (located on the free energy
 
 ###  Equilibrium properties of aptamer models from conventional MD: `do_cluster` and `do_mmpbsa` 
 
-Conventional MD simulation (cMD) provide (valuable) equilibrium conformational sampling of aptamer models. After the most likely conformer(s) generated by  GaMD  is processed by `do_aptamer_edition.sh`. use again `do_runmd.sh`to drive a cMD simulation that usually extends up to several  µs   to ensure that the aptamer molecule relaxes and explores its equilibrium conformations in aqueous solution. 
+Conventional MD simulations (cMD) provide equilibrium conformational sampling of aptamer models. After the most likely conformer(s) generated by  GaMD  is processed by `do_aptamer_edition.sh`, use again `do_runmd.sh` to drive a cMD simulation that usually extends up to several  µs   to ensure that the aptamer molecule relaxes and explores its equilibrium conformations in aqueous solution. 
 
 ---
 
@@ -278,7 +278,7 @@ The variable TYPE in [input_runmd.src](EXAMPLE_INPUT_FILES/input_runmd.src) is n
 </div>
 ---
 
-Using `do_struct.sh` and `do_mmpbsa.sh` the evolution of structural and/or energetic properties are monitored along the cMD simulation. Eventually, these descriptors may exhibit pronounced drifts at the beginning of the cMD  and, therefore,  equilibrium properties and clustering analysis would be better evaluated using only the  “fully-relaxed” part of the trajectory.
+Using `do_struct.sh` and `do_mmpbsa.sh` the evolution of structural and/or energetic properties are monitored along the cMD simulation. Eventually, these descriptors may exhibit pronounced drifts at the beginning of the cMD  and, therefore,  equilibrium properties and clustering analysis should be evaluated using only the  “fully-relaxed” part of the trajectory.
 
 ---
 <div style="background-color: rgb(220,220,220);">
