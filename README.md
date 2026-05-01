@@ -156,7 +156,7 @@ cd  my_work_dir
 ```
 
 ```bash
-cp $APTAMD/EXAMPLE_INPUT_FILES/input_rungamd.src  2L5K_model_GAMD/`
+cp $APTAMD/EXAMPLE_INPUT_FILES/input_rungamd.src  2L5K_model_GAMD/
 ```
 
 The basic options for this GaMD job are described in the [input_rungamd.src file](EXAMPLE_INPUT_FILES/input_rungamd.src). Then we run the job: 
@@ -239,7 +239,7 @@ The GaMD simulation is energetically reweighed in terms of the RMSD/INF coordina
 ---
 
 **EXAMPLE**
-<div style="background-color: rgb(220,220,220);">
+
 Processing of the GaMD trajectory can be done in just one step:
 
 ```bash
@@ -281,6 +281,7 @@ Conventional MD simulations (cMD) provide equilibrium conformational sampling of
 <div style="background-color: rgb(220,220,220);">
 
 **EXAMPLE**
+
 To start a cMD from a proper GaMD structure, it is necessary to make a new "main directory" and repeat the preparatory steps like:
 
 ```bash
@@ -314,7 +315,9 @@ Using `do_struct.sh` and `do_mmpbsa.sh` the evolution of structural and/or energ
 
 ---
 <div style="background-color: rgb(220,220,220);">
+ 
 **EXAMPLE**
+
 Once that the cMD is completed, you can use (and adapt) the following script input files for analysis :  
 
 ```bash
@@ -375,7 +378,7 @@ Many variants of the [MM-PBSA](https://pubs.acs.org/doi/abs/10.1021/acs.jcim.8b0
 
 $$ G = E_{MM} + \Delta G_{solv}^{PB} +  \Delta G_{solv} ^{np} $$
 
-where  $ E_{MM} $ is the molecular mechanics energy including the 3RT contribution due to six translational and rotational degrees of freedom, $ \Delta G_{solv}^{PB} $  is the electrostatic solvation energy obtained from Poisson-Boltzmann calculations,and $ \Delta G_{solv}^{np} $  is the non-polar part of solvation energy due to cavity formation and dispersion interactions between the solute and the solvent molecules.
+where  $$E_{MM}$$ is the molecular mechanics energy including the 3RT contribution due to six translational and rotational degrees of freedom, $$\Delta G_{solv}^{PB}$$  is the electrostatic solvation energy obtained from Poisson-Boltzmann calculations,and $$\Delta G_{solv}^{np}$$  is the non-polar part of solvation energy due to cavity formation and dispersion interactions between the solute and the solvent molecules.
 
 ---
 
