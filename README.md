@@ -109,7 +109,10 @@ The 2D structure is transformed into a 3D RNA model. Copy and paste it in the la
 
 Select or make a working directory that will contain the main directory of the simulation to be done. Use then the following commands:
 
-`cd` *Working Directory*
+```bash
+cd my_work_dir
+```
+where `my_work_dir` should be replaced by the pathway of your working directory. 
 
 ```bash
 mkdir 2L5K_model_GAMD; cd 2L5K_model_GAMD; mkdir 1.EDITION; cd 1.EDITION
@@ -149,7 +152,7 @@ The conformational space of the solvated aptamer is first explored by means of a
 To launch the GaMD simulation of the 2L5K model
 
 ```bash
-cd *Working directory*
+cd  my_work_dir
 ```
 
 ```bash
@@ -210,7 +213,7 @@ A single script `do_struct.sh`  processes all the GaMD trajectory files, evaluat
 To obtain the RMSD plot , the RGYR plot (radius of gyration) and the INF plots of the aptamer during the GaMD simulation:
 
 ```bash
-cd *Working directory*    
+cd  my_work_dir
 ```
 
 ```bash
@@ -240,7 +243,7 @@ The GaMD simulation is energetically reweighed in terms of the RMSD/INF coordina
 Processing of the GaMD trajectory can be done in just one step:
 
 ```bash
-cd *Working directory*    
+cd  my_work_dir
 ```
 
 ```bash
@@ -281,7 +284,7 @@ Conventional MD simulations (cMD) provide equilibrium conformational sampling of
 To start a cMD from a proper GaMD structure, it is necessary to make a new "main directory" and repeat the preparatory steps like:
 
 ```bash
-cd *Working Directory*
+cd  my_work_dir
 mkdir 2L5K_model_MD; cd 2L5K_model_MD; mkdir 1.EDITION; cd 1.EDITION
 cp $APTAMD/EXAMPLE_INPUT_FILES/selected_file.pdb 2L5K_model_initial.pdb
 ```
@@ -295,7 +298,7 @@ do_aptamer_edition  2L5K_model_initial.pdb
 The conventional MD can be launched with:
 
 ```bash
-cd *Working directory*    
+cd  my_work_dir   
 cp $APTAMD/EXAMPLE_INPUT_FILES/input_runmd.src  2L5K_model_MD/
 do_runmd  2L5K_model_MD/input_runmd.src
 ```
@@ -315,7 +318,7 @@ Using `do_struct.sh` and `do_mmpbsa.sh` the evolution of structural and/or energ
 Once that the cMD is completed, you can use (and adapt) the following script input files for analysis :  
 
 ```bash
-cd *Working directory*    
+cd  my_work_dir
 cp $APTAMD/EXAMPLE_INPUT_FILES/input_struct_md.src  2L5K_model_MD/
 cp $APTAMD/EXAMPLE_INPUT_FILES/input_snap.src       2L5K_model_MD/
 cp $APTAMD/EXAMPLE_INPUT_FILES/input_mmpbsa.src     2L5K_model_MD/
@@ -372,7 +375,7 @@ Many variants of the [MM-PBSA](https://pubs.acs.org/doi/abs/10.1021/acs.jcim.8b0
 
 $$ G = E_{MM} + \Delta G_{solv}^{PB} +  \Delta G_{solv} ^{np} $$
 
-where  $E_{MM}$ is the molecular mechanics energy including the 3RT contribution due to six translational and rotational degrees of freedom, $ \Delta G_{solv}^{PB} $  is the electrostatic solvation energy obtained from Poisson-Boltzmann calculations,and $\Delta G_{solv} ^{np}$  is the non-polar part of solvation energy due to cavity formation and dispersion interactions between the solute and the solvent molecules.
+where  $ E_{MM} $ is the molecular mechanics energy including the 3RT contribution due to six translational and rotational degrees of freedom, $ \Delta G_{solv}^{PB} $  is the electrostatic solvation energy obtained from Poisson-Boltzmann calculations,and $ \Delta G_{solv}^{np} $  is the non-polar part of solvation energy due to cavity formation and dispersion interactions between the solute and the solvent molecules.
 
 ---
 
@@ -389,6 +392,7 @@ Clustering analysis of the cMD trajectory can yield critical information to opti
 cd *Working directory*    
 cp $APTAMD/EXAMPLE_INPUT_FILES/input_cluster.src  2L5K_model_MD/
 do_cluster  2L5K_model_MD/input_cluster.src
+```
 
 The variable `EPS` in [input_cluster.src](EXAMPLE_INPUT_FILES/input_cluster.src) lists several threshold values (`EPS="3.0 4.0 5.0"`) so that three different thresholds are tested using only the last half of the cMD trajectory. The aptamer model has a significant flexibility and the EPS=5.0 threshold is appropriate to yield a few populated clusters (see the `summary.dat` file). The cluster representatives in PDB format can be readily visualized using molecular graphics software such as [ChimeraX](https://www.cgl.ucsf.edu/chimerax/).  For example, the superposition of the top 3 clusters that account for 82% of the MD frames shows that the 3'-terminal residues adopt different conformations. When superposing the APTAMD cluster representativees, the RNAComposer model and the NMR  experimental model, we also see that the APTAMD refined model shows better agreement with the NMR conformation of the central segment than the initial RNAComposer structure.     
 
