@@ -148,19 +148,25 @@ The conformational space of the solvated aptamer is first explored by means of a
 
 To launch the GaMD simulation of the 2L5K model
 
-`cd` *Working directory*    
+```bash
+cd *Working directory*
+```
 
-`cp $APTAMD/EXAMPLE_INPUT_FILES/input_rungamd.src  2L5K_model_GAMD/`
+```bash
+cp $APTAMD/EXAMPLE_INPUT_FILES/input_rungamd.src  2L5K_model_GAMD/`
+```
 
 The basic options for this GaMD job are described in the [input_rungamd.src file](EXAMPLE_INPUT_FILES/input_rungamd.src). Then we run the job: 
 
-`do_runmd  2L5K_model_GAMD/input_rungamd.src`
+```bash
+do_runmd  2L5K_model_GAMD/input_rungamd.src`
+```
 
 *WARNING* 1-2 days of GPU usage and multicore CPU are required to run the GAMD simulation.  
 
 `do_runmd` makes new subdirectories into the project directory (i.e. 2L5K_model_GAMD) and writes many input and output files. Most importantly, the `5.PRODUCTION` folder contains the trajectory files named as md_001.* , md_002.* etc. For example, 
 
-<section style="font-family:'Courier New'">
+```
 gamd_eq.mdcrd    ---> GaMD equilibration coordinates <br />
 gamd_eq.out      ---> GaMD equilibiration output<br />
 gamd.log<br />
@@ -179,11 +185,9 @@ md_002.rst<br />
 md_002_solute.mdcrd<br />
 md_002_solutewat.mdcrd<br />
 ...
-</section>
+```
 
-
-
-The folders 2.RELAX_SOLVENT, 3.THERMALIZATION and 4.PRESSURIZATION contain the intermediate files produced during the preparatory stages of the GaMD simulation.  
+The folders `2.RELAX_SOLVENT`, `3.THERMALIZATION` and `4.PRESSURIZATION` contain the intermediate files produced during the preparatory stages of the GaMD simulation.  
 
 *Hint:* If necessary the GaMD simulation can be resumed by modifying some variables & executing the `job_GaMD.sh` script in 5.PRODUCTION.
 
@@ -195,9 +199,9 @@ The folders 2.RELAX_SOLVENT, 3.THERMALIZATION and 4.PRESSURIZATION contain the i
 The GaMD conformations can be characterized by two structural indexes: 
 
 * the root-mean-squared-deviation (RMSD) of the heavy atoms (P, C, N, O) with respect to the initial structure.
-* the interaction network fidelity index (INF), which is built from the sets of characteristic intramolecular interactions in a reference structure ($S_r$) and in a given snapshot ($S_m$) (See [Parisien et. al.](https://doi.org/10.1261%2Frna.1700409)). The values of $S_r$ and $S_m$, are determined by the [DSSR](https://x3dna.org/) software, which identifies both base pair interactions and non-pair interactions (i.e., base stacking or base contacts).
+* the interaction network fidelity index (INF), which is built from the sets of characteristic intramolecular interactions in a reference structure ($S_r$) and in a given snapshot ($S_m$) (See [Parisien et. al.](https://doi.org/10.1261%2Frna.1700409)). The values of $S_r$ and $S_m$, are determined by the [DSSR](https://x3dna.org/) software, which identifies both base pair interactions and non-pair interactions (i.e., base stacking or base pairing).
 
-A single script `do_struct.sh`  processes all the GaMD trajectory files, evaluates these and other structural descriptors using  the cpptraj and DSSR programs, calculates the statistical average and standard deviations of the RMSD/INF data and shows graphically their evolution along the GaMD trajectory.
+A single script `do_struct.sh`  processes all the GaMD trajectory files, evaluates these and other structural descriptors using  the `cpptraj` and DSSR programs, calculates the statistical average and standard deviations of the RMSD/INF data and shows graphically their evolution along the GaMD trajectory.
 
 ---
 <div style="background-color: rgb(220,220,220);">
@@ -205,15 +209,21 @@ A single script `do_struct.sh`  processes all the GaMD trajectory files, evaluat
 **EXAMPLE**
 To obtain the RMSD plot , the RGYR plot (radius of gyration) and the INF plots of the aptamer during the GaMD simulation:
 
-`cd` *Working directory*    
+```bash
+cd *Working directory*    
+```
 
-`cp $APTAMD/EXAMPLE_INPUT_FILES/input_struct.src  2L5K_model_GAMD/`
+```bash
+cp $APTAMD/EXAMPLE_INPUT_FILES/input_struct.src  2L5K_model_GAMD/
+```
 
-`do_struct  2L5K_model_GAMD/input_struct.src`
+```bash
+do_struct  2L5K_model_GAMD/input_struct.src`
+```
 
 **WARNING** The DSSR program, which is needed to calculate the DNA structural descriptors, demands much CPU time. 
 
-Some  options for `do_struct`are specified in [input_struct.src](EXAMPLE_INPUT_FILES/input_struct.src) and the output is written in a new folder 6.ANALYSIS/STRUCT. The evolution of the RMSD/RGYR/INF descriptors is plotted along the GaMD trajectory (see the .png files). 
+Some  options for `do_struct`are specified in [input_struct.src](EXAMPLE_INPUT_FILES/input_struct.src) and the output is written in a new folder `6.ANALYSIS/STRUCT`. The evolution of the RMSD/RGYR/INF descriptors is plotted along the GaMD trajectory (see the .png files). 
 
 <img src="./Images/struct.png" width="50%" height="50%"  style="display: block; margin: 0 auto">
 
@@ -221,7 +231,7 @@ Some  options for `do_struct`are specified in [input_struct.src](EXAMPLE_INPUT_F
 
 ---
 
-The GaMD simulation is energetically reweighed in terms of the RMSD/INF coordinates to produce a 2D free energy map of the conformational space. The `do_reweight_gamd.sh`script  assembles all the necessary data files, selects a proper number of bins along the RMSD/INF coordinates and plots the free energy ($G$) and the logarithm of the unweighted population ($\log_{10}(P^*)$) distributions over the 2D bins.  `do_reweight_gamd.sh` also selects a set of representative structures from the GaMD trajectory files and saves them in PDB format . 
+The GaMD simulation is energetically reweighed in terms of the RMSD/INF coordinates to produce a 2D free energy map of the conformational space. The `do_reweight_gamd.sh` script  assembles all the necessary data files, selects a proper number of bins along the RMSD/INF coordinates and plots the free energy ($G$) and the logarithm of the unweighted population ($\log_{10}(P^*)$) distributions over the 2D bins.  `do_reweight_gamd.sh` also selects a set of representative structures from the GaMD trajectory files and saves them in PDB format . 
 
 ---
 
@@ -229,20 +239,25 @@ The GaMD simulation is energetically reweighed in terms of the RMSD/INF coordina
 <div style="background-color: rgb(220,220,220);">
 Processing of the GaMD trajectory can be done in just one step:
 
-`cd` *Working directory*    
+```bash
+cd *Working directory*    
+```
 
-`cp $APTAMD/EXAMPLE_INPUT_FILES/input_rwgamd.src  2L5K_model_GAMD/`
+```bash
+cp $APTAMD/EXAMPLE_INPUT_FILES/input_rwgamd.src  2L5K_model_GAMD/
+```
 
-`do_reweight_gamd  2L5K_model_GAMD/input_rwgamd.src`
+```bash
+do_reweight_gamd  2L5K_model_GAMD/input_rwgamd.src
+```
 
-The output from `do_reweight_gamd` is saved into 6.ANALYSIS/RW_GAMD_ENE. It is normal to try different settings for reweighing (e.g., bin size or descriptors) so that `do_reweight_gamd` creates specific directories (see also an example of [input_rwgamd.src](EXAMPLE_INPUT_FILES/input_rwgamd.src)). Again many output files are produced, but 2D_RW.dat deserves particular attention because it identifies the most-likely GaMD structures using a syntax as:  
-<section style="font-family:'Courier New'">
- Picking up snapshots bin= 10 for  E= 1.525000 POP= 0.030  X=  0.52  Y=  7.54 <br />
-   Snapshot 1   isnap= 33922   ID=33922  RC1= 0.522976 RC2= 7.681600 Boost= 2.736762<br /> 
-   bin= 10  isnap_in_crd= 13922  CRD_FILE= 2 <br />
-   ... <br />
-</section>
-
+The output from `do_reweight_gamd` is saved into `6.ANALYSIS/RW_GAMD_ENE`. It is normal to try different settings for reweighing (e.g., bin size or descriptors) so that `do_reweight_gamd` creates specific directories (see also an example of [input_rwgamd.src](EXAMPLE_INPUT_FILES/input_rwgamd.src)). Again many output files are produced, but 2D_RW.dat deserves particular attention because it identifies the most-likely GaMD structures using a syntax as:  
+```
+ Picking up snapshots bin= 10 for  E= 1.525000 POP= 0.030  X=  0.52  Y=  7.54 
+   Snapshot 1   isnap= 33922   ID=33922  RC1= 0.522976 RC2= 7.681600 Boost= 2.736762
+   bin= 10  isnap_in_crd= 13922  CRD_FILE= 2 
+   ... 
+````
 <img src="./Images/rwgamd.png" width="50%" height="50%" style="display: block; margin: 0 auto">
 
 In the example, snapshot # 33922 assigned to bin #10 (located on the free energy minimum; bins with marginal populations on the biased distribution are ignored) corresponds to snapshot #13922 in the MD trajectory segment #2. It has a low value of GaMD boost potential and could be selected for subsequent MD jobs. The coordinates are saved in a separate PDB file named as `snap_10_13922.pdb`. 
@@ -265,22 +280,25 @@ Conventional MD simulations (cMD) provide equilibrium conformational sampling of
 **EXAMPLE**
 To start a cMD from a proper GaMD structure, it is necessary to make a new "main directory" and repeat the preparatory steps like:
 
-cd` *Working Directory*
-
-`mkdir 2L5K_model_MD; cd 2L5K_model_MD; mkdir 1.EDITION; cd 1.EDITION`
-`cp $APTAMD/EXAMPLE_INPUT_FILES/selected_file.pdb 2L5K_model_initial.pdb `
+```bash
+cd *Working Directory*
+mkdir 2L5K_model_MD; cd 2L5K_model_MD; mkdir 1.EDITION; cd 1.EDITION
+cp $APTAMD/EXAMPLE_INPUT_FILES/selected_file.pdb 2L5K_model_initial.pdb
+```
 
 where `selected file.pdb` is the selected GaMD structure (only solute atoms).  A new edition step is then executed to build the topology files and the corresponding solvent box:
 
-`do_aptamer_edition  2L5K_model_initial.pdb`
+```bash
+do_aptamer_edition  2L5K_model_initial.pdb
+```
 
 The conventional MD can be launched with:
 
-`cd` *Working directory*    
-
-`cp $APTAMD/EXAMPLE_INPUT_FILES/input_runmd.src  2L5K_model_MD/`
-
-`do_runmd  2L5K_model_MD/input_runmd.src`
+```bash
+cd *Working directory*    
+cp $APTAMD/EXAMPLE_INPUT_FILES/input_runmd.src  2L5K_model_MD/
+do_runmd  2L5K_model_MD/input_runmd.src
+```
 
 The variable TYPE in [input_runmd.src](EXAMPLE_INPUT_FILES/input_runmd.src) is now declared as TYPE=MD.  
 
@@ -296,17 +314,18 @@ Using `do_struct.sh` and `do_mmpbsa.sh` the evolution of structural and/or energ
 **EXAMPLE**
 Once that the cMD is completed, you can use (and adapt) the following script input files for analysis :  
 
-`cd` *Working directory*    
-
-`cp $APTAMD/EXAMPLE_INPUT_FILES/input_struct_md.src  2L5K_model_MD/`
-
-`cp $APTAMD/EXAMPLE_INPUT_FILES/input_snap.src       2L5K_model_MD/`
-
-`cp $APTAMD/EXAMPLE_INPUT_FILES/input_mmpbsa.src     2L5K_model_MD/`
+```bash
+cd *Working directory*    
+cp $APTAMD/EXAMPLE_INPUT_FILES/input_struct_md.src  2L5K_model_MD/
+cp $APTAMD/EXAMPLE_INPUT_FILES/input_snap.src       2L5K_model_MD/
+cp $APTAMD/EXAMPLE_INPUT_FILES/input_mmpbsa.src     2L5K_model_MD/
+```
 
 The RMSD and RGYR values are calculated, but we skip now the INF ones (see for example [input_struct_md.src](EXAMPLE_INPUT_FILES/input_struct_md.src) ). 
 
-`do_struct 2L5K_model_MD/input_struct_md.src`
+```bash
+do_struct 2L5K_model_MD/input_struct_md.src
+```
 
 Note that the resulting plot suggests a structural transition during the cMD.
 
@@ -314,28 +333,32 @@ Note that the resulting plot suggests a structural transition during the cMD.
 
 Before carrying out the MM-PBSA calculations, MD snapshots are to be extracted from the trajectory files using the `do_snapshots`script and saved in PDB format. 
 
-`do_snapshots 2L5K_model_MD/input_snap.src`vi 
+```bash
+do_snapshots 2L5K_model_MD/input_snap.src
+``` 
 
 The PDB files for the snapshots are saved in `6.ANALYSIS/SNAPSHOTS`. In the same directory, other files contain data characterizing the Na+···APT contacts that can be of particular interest for aptamer simulations.  
 
 Next `do_mmpbsa.sh` takes coordinates from the snapshot PDBs to calculate MM-PBSA like energies (many options can be selected, see [do_mmpbsa.txt](DOC/do_mmpbsa.txt). 
 
-`do_mmpbsa 2L5K_model_MD/input_mmpbsa.src`
+```bash
+do_mmpbsa 2L5K_model_MD/input_mmpbsa.src
+```
 
 SANDER/PBSA output files (packed into a `OUTPUT.tar` file) and many other files with parsed data are saved in the 6.ANALYSIS/MMPBSA directory. Since different inner dielectric constants can be used (default is PDIE=1), the MMPBSA files are actually written in subdirectories named as PDIE_1, PDIE_4, etc.  The '.dat' files contain the data calculated for each MD snapshot while those files with the `.med` extension contain the mean values and statistical uncertainties (see the example below).  Statistics can be redone for a particular segment of trajectory using the `$APTAMD/MMPBSA/stat_plot.sh` script. See the following G_MMPBSA.med example:
 
-<section style="font-family:'Courier New'">
- PREFIX G_MMPBSA(CMPLX) USING ALL DATA NDAT= 400<br />
- Mean       -4614.189  <br />
- Max        -4541.095  <br />
- Min        -4719.315  <br />
- SE             1.409 <br />
- BE             0.000  <br />
- LBE            2.403  <br />
-#SE: standard error <br />
-#BE: block error estimate (non-linear fitting) <br />
-#LBE: limiting block error estimate <br />
-</section>
+```
+ PREFIX G_MMPBSA(CMPLX) USING ALL DATA NDAT= 400
+ Mean       -4614.189  
+ Max        -4541.095  
+ Min        -4719.315  
+ SE             1.409 
+ BE             0.000  
+ LBE            2.403 
+#SE: standard error 
+#BE: block error estimate (non-linear fitting) 
+#LBE: limiting block error estimate 
+```
 
 The corresponding `.png` files display the time evolution of the various energy components.  For example,   
 
@@ -362,13 +385,12 @@ Clustering analysis of the cMD trajectory can yield critical information to opti
 **EXAMPLE**
 <div style="background-color: rgb(220,220,220);">
 
-`cd` *Working directory*    
+```bash
+cd *Working directory*    
+cp $APTAMD/EXAMPLE_INPUT_FILES/input_cluster.src  2L5K_model_MD/
+do_cluster  2L5K_model_MD/input_cluster.src
 
-`cp $APTAMD/EXAMPLE_INPUT_FILES/input_cluster.src  2L5K_model_MD/`
-
-`do_cluster  2L5K_model_MD/input_cluster.src`
-
-The variable EPS in [input_cluster.src](EXAMPLE_INPUT_FILES/input_cluster.src) is declared as an array (EPS="3.0 4.0 5.0") so that three different thresholds are tested using only the last half of the cMD trajectory. The aptamer model has a significant flexibility and the EPS=5.0 threshold is appropriate to yield a few populated clusters (see the summary.dat file). The cluster representatives in PDB format can be readily visualized using molecular graphics software such as Pymol or Chimera.  For example, the superposition of the top 3 clusters that account for 82% of the MD frames shows that the 3'-terminal residues adopt different conformations. When superposing the APTAMD cluster representativees, the RNAComposer model and the NMR  experimental model, we also see that the APTAMD refined model shows better agreement with the NMR conformation of the central segment than the initial RNAComposer structure.     
+The variable `EPS` in [input_cluster.src](EXAMPLE_INPUT_FILES/input_cluster.src) lists several threshold values (`EPS="3.0 4.0 5.0"`) so that three different thresholds are tested using only the last half of the cMD trajectory. The aptamer model has a significant flexibility and the EPS=5.0 threshold is appropriate to yield a few populated clusters (see the `summary.dat` file). The cluster representatives in PDB format can be readily visualized using molecular graphics software such as [ChimeraX](https://www.cgl.ucsf.edu/chimerax/).  For example, the superposition of the top 3 clusters that account for 82% of the MD frames shows that the 3'-terminal residues adopt different conformations. When superposing the APTAMD cluster representativees, the RNAComposer model and the NMR  experimental model, we also see that the APTAMD refined model shows better agreement with the NMR conformation of the central segment than the initial RNAComposer structure.     
 
 <img src="./Images/aptamd_label.png" width="33%" height="33%" style="display: block; margin: 0 auto">
 </div>
@@ -378,7 +400,3 @@ The variable EPS in [input_cluster.src](EXAMPLE_INPUT_FILES/input_cluster.src) i
 
 The APTAMD suite includes scripts for MM parameterization,  system preparation and edition, entropy calculations, Autodock calculations on multiple MD frames of receptors and ligands, etc. These and other scripts will be uploaded to GitHub (and documented) in the near future. 
 
-
-```python
-
-```
