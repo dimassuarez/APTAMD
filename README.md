@@ -29,7 +29,7 @@ Define the `APTAMD` environmental variable pointing to the directory containing 
 export APTAMD=/mydir/APTAMD 
 ```
 
-Compile the auxiliary Fortran codes: 
+Compile the auxiliary Fortran codes including the [CENCALC](https://github.com/dimassuarez/cencalc_quicksort) software: 
 
 ```bash
 cd $APTAMD/AUXTOOLS; bash ./comp.sh all
