@@ -143,7 +143,7 @@ For example, `2L5K_model.top` and `2L5K_model.crd` are the topology (parameter) 
 
 
 ### Gaussian Accelerated MD simulation : `do_runmd` 
-The conformational space of the solvated aptamer is first explored by means of a Gaussian Accelerated Molecular Dynamics (GaMD) simulation. GaMD uses harmonic boost potentials to smooth out the potential energy surface, accelerating thus transitions between low-energy configurations. `do_runmd.sh` controls various preparatory stages (solvent relaxation, thermalization, pressurization and GaMD equilibration) and finally launches the production phase of the GaMD/MD simulations. The settings of the GaMD and MD calculations driven by do_runmd.sh are normally employed in many biomolecular simulations. See [here](SUITE_APTAMD/DOC/MD_settings.txt) for further details.  
+The conformational space of the solvated aptamer is first explored by means of a Gaussian Accelerated Molecular Dynamics (GaMD) simulation. GaMD uses harmonic boost potentials to smooth out the potential energy surface, accelerating thus transitions between low-energy configurations. `do_runmd.sh` controls various preparatory stages (solvent relaxation, thermalization, pressurization and GaMD equilibration) and finally launches the production phase of the GaMD/MD simulations. The settings of the GaMD and MD calculations driven by do_runmd.sh are normally employed in many biomolecular simulations. See [here](DOC/MD_settings.txt) for further details.  
 
 ---
 <div style="background-color: rgb(220,220,220);">
