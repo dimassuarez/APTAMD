@@ -16,6 +16,8 @@ TOOLS="$APTAMD/AUXTOOLS"
 # x3dna is now a commercial program.
 # https://x3dna.org/
 X3DNAHOME="/opt/apps/AL9/x3dna-v2.6/"
+# pathway to cencalc entropy software  
+CENCALC_PATH=$APTAMD/AUXTOOLS/cencalc_quicksort
 # DSSP  https://github.com/PDB-REDO/dssp: not needed
 # DSSPHOME="/opt/dssp"
 # OpenMPI (needed for parallel execution of AMBER programs)
