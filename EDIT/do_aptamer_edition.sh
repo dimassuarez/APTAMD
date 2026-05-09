@@ -135,24 +135,38 @@ disp([ 'Na= ',num2str(num_Na)])
 disp([ 'Cl= ',num2str(num_Cl)])
 EOF
 
-cat mlog 
-
 NUM_NA=$(head -1 mlog  | awk '{print $2}')
 NUM_CL=$(tail -1 mlog  | awk '{print $2}')
 
-echo '# Force Field data' >edit_leap.src 
+if [ $NUM_CL -lt 0 ]
+then
+        echo "$NUM_NA Na+ ions for  NaCl conc=$IONIC "
+        echo "Solute has $Q charge"
+        echo "Solvent box with BUFFER_SOLV=${BUFFER_SOLV} is too small!!"
+        echo "Increase BUFFER_SOLV and run again do_aptamer_edition"
+        rm -f *.top *.crd
+        exit
+fi
+
+echo '# Force Field data' >edit_leap.src
 echo 'source leaprc.DNA.bsc1'  >>edit_leap.src
 echo 'source leaprc.water.tip3p'  >>edit_leap.src
-echo 'loadamberparams frcmod.ionsjc_tip3p' >>edit_leap.src 
+echo 'loadamberparams frcmod.ionsjc_tip3p' >>edit_leap.src
 echo 'source leaprc.RNA.OL3'  >>edit_leap.src
-echo '# Build Aptamer' >>edit_leap.src 
-echo 'apt=loadpdb' $PDB_SOLUTE >>edit_leap.src 
+echo '# Build Aptamer' >>edit_leap.src
+echo 'apt=loadpdb' $PDB_SOLUTE >>edit_leap.src
 echo 'alignaxes apt' >>edit_leap.src
 echo 'solvateOct apt TIP3PBOX ' $BUFFER_SOLV >>edit_leap.src
-echo "addionsrand apt  Na+ $NUM_NA  Cl- $NUM_CL " >>edit_leap.src
-echo 'saveamberparm apt ' $TOP  $CRD >>edit_leap.src 
-echo 'savepdb apt ' $PDB >>edit_leap.src 
-echo 'quit' >>edit_leap.src 
+if [ $NUM_CL -eq 0 ]
+then
+   echo "addionsrand apt  Na+ $NUM_NA  Cl- $NUM_CL " >>edit_leap.src
+else
+   echo "addionsrand apt  Na+ $NUM_NA  " >>edit_leap.src
+fi
+echo 'saveamberparm apt ' $TOP  $CRD >>edit_leap.src
+echo 'savepdb apt ' $PDB >>edit_leap.src
+echo 'quit' >>edit_leap.src
+
 
 echo "Adding again solvent box, but with $NUM_NA sodiums and $NUM_CL chlorides" 
 rm -f leap.log
