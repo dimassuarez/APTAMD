@@ -171,23 +171,23 @@ do_runmd  2L5K_model_GAMD/input_rungamd.src`
 `do_runmd` makes new subdirectories into the project directory (i.e. 2L5K_model_GAMD) and writes many input and output files. Most importantly, the `5.PRODUCTION` folder contains the trajectory files named as md_001.* , md_002.* etc. For example, 
 
 ```
-gamd_eq.mdcrd    ---> GaMD equilibration coordinates <br />
-gamd_eq.out      ---> GaMD equilibiration output<br />
-gamd.log<br />
-gamd-restart.dat<br />
-gamd.rst<br />
-job_GAMD.sh<br />
-md_000.rst      ---> Starting point of the production phase = gamd.rst <br />
-md_001.gamd_log ---> Log file with GaMD boost potential data<br />
-md_001.out      ---> PMEMD output files <br />
-md_001.rst      ---> PMEMD restart file<br />
-md_001_solute.mdcrd     ---> Coordinates of the solute atoms along the simulation  <br />
-md_001_solutewat.mdcrd  ---> Coordinates of solute, counterions and a shell of waters <br />
-md_002.gamd_log<br />
-md_002.out<br />
-md_002.rst<br />
-md_002_solute.mdcrd<br />
-md_002_solutewat.mdcrd<br />
+gamd_eq.mdcrd    ---> GaMD equilibration coordinates 
+gamd_eq.out      ---> GaMD equilibiration output
+gamd.log
+gamd-restart.dat
+gamd.rst
+job_GAMD.sh
+md_000.rst      ---> Starting point of the production phase = gamd.rst 
+md_001.gamd_log ---> Log file with GaMD boost potential data
+md_001.out      ---> PMEMD output files 
+md_001.rst      ---> PMEMD restart file
+md_001_solute.mdcrd     ---> Coordinates of the solute atoms along the simulation  
+md_001_solutewat.mdcrd  ---> Coordinates of solute, counterions and a shell of waters 
+md_002.gamd_log
+md_002.out
+md_002.rst
+md_002_solute.mdcrd
+md_002_solutewat.mdcrd
 ...
 ```
 
