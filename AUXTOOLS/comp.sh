@@ -64,3 +64,12 @@ fi
 
 fi
 
+# Installing cencalc entropy programs
+if [ ! -d cencalc_quicksort ];
+then
+        git clone https://github.com/dimassuarez/cencalc_quicksort.git
+        cd cencalc_quicksort
+        make -f Makefile
+        cd ../
+fi
+
