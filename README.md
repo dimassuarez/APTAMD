@@ -32,15 +32,16 @@ export APTAMD=/mydir/APTAMD
 Compile the auxiliary Fortran codes: 
 
 ```bash
-cd $APTAMD/AUXTOOLS; ./comp.sh all
+cd $APTAMD/AUXTOOLS; bash ./comp.sh all
 ```
 
 Edit the `$ATPAMD/ENV/aptamd_env.sh` file and adjust the BASH variables pointing to the software tools used by APTAMD (Of course AMBER and other software have to be installed on your system). 
 
-Add `$ATPAMD/bin` to your `$PATH` environment variable:
+Make links to the script files and add `$ATPAMD/bin` to your `$PATH` environment variable:
 
 ```bash
-export PATH=$APTAMD/bin:$PATH`
+bash $APTAMD/bin/make_links.sh
+export PATH=$APTAMD/bin:$PATH
 ```
 
 Entering at the command line the name(s) of the APTAMD scripts (e.g., `do_aptamer_edition`) should print out a brief description of their functions. 
