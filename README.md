@@ -37,7 +37,7 @@ cd $APTAMD/AUXTOOLS; bash ./comp.sh all
 
 Edit the `$ATPAMD/ENV/aptamd_env.sh` file and adjust the BASH variables pointing to the software tools used by APTAMD (Of course AMBER and other software have to be installed on your system). 
 
-Make links to the script files and add `$ATPAMD/bin` to your `$PATH` environment variable:
+Fix file permissions for bash scripts, make links to the main driver scripts and add `$ATPAMD/bin` to your `$PATH` environment variable:
 
 ```bash
 bash $APTAMD/bin/make_links.sh
