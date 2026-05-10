@@ -95,7 +95,7 @@ echo "$CRD_SOLUTE contains the partially relaxed coordinates"
 echo "$PDB_SOLUTE contains the partially relaxed coordinates"
 mv sander_relax_solute.crd $CRD_SOLUTE
 
-$AMBERHOME/bin/cpptraj $TOP_SOLUTE<<EOF
+$AMBERHOME/bin/cpptraj $TOP_SOLUTE<<EOF > mlog
 trajin $CRD_SOLUTE
 autoimage
 trajout ${PDB_SOLUTE} dumpq include_ep
