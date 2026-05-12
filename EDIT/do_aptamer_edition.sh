@@ -157,7 +157,7 @@ echo '# Build Aptamer' >>edit_leap.src
 echo 'apt=loadpdb' $PDB_SOLUTE >>edit_leap.src
 echo 'alignaxes apt' >>edit_leap.src
 echo 'solvateOct apt TIP3PBOX ' $BUFFER_SOLV >>edit_leap.src
-if [ $NUM_CL -eq 0 ]
+if [ $NUM_CL -gt 0 ]
 then
    echo "addionsrand apt  Na+ $NUM_NA  Cl- $NUM_CL " >>edit_leap.src
 else
