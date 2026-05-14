@@ -2,29 +2,29 @@
 # Location of the APTAMD scripts suite
 APTAMD="/home/studgeuo/APTAMD/"
 # AMBERTOOLS and AMBER packages compiled with MPI, NETCDF, OPENMP, and CUDA options 
-# We are AMBER fans:  https://ambermd.org
-AMBERHOME="/opt/apps/AL8/amber24"
+# We are AMBER fans: https://ambermd.org
+AMBERHOME="/opt/apps/AL9/amber26"
 # Parallel BASH is needed to distribute tasks among available procesors. 
 # https://www.gnu.org/software/parallel/sphinx.html
 PARHOME="/opt/apps/AL9/parallel-bash"
 # Scratch space. Many temporary directories and files are generated
 SCRATCH="/scratch"
 # The TOOLS directory contains several in-house fortran codes that perform auxiliary tasks
-# hopefully they will be replaced by Python scripts soon.
+# hopefully they will be replaced by Python scripts soon./opt/apps/AL8/openmpi/4.1.1-gnu/
 TOOLS="$APTAMD/AUXTOOLS"
 # Some structural analysis of DNA fragments are performed using the X3DNA software
 # x3dna is now a commercial program.
 # https://x3dna.org/
 X3DNAHOME="/opt/apps/AL9/x3dna-v2.6/"
-# pathway to cencalc entropy software  
-CENCALC_PATH=$APTAMD/AUXTOOLS/cencalc_quicksort
 # DSSP  https://github.com/PDB-REDO/dssp: not needed
 # DSSPHOME="/opt/dssp"
 # OpenMPI (needed for parallel execution of AMBER programs)
 # AMBER may also include OpenMPI 
 # For example https://www.open-mpi.org/
-MPI_HOME=/opt/apps/AL8/openmpi/4.1.1-gnu/
+MPI_HOME=/usr/lib64/openmpi
 LD_LIBRARY_PATH=$MPI_HOME/lib:$LD_LIBRARY_PATH
+# pathway to cencalc entropy software  
+CENCALC_PATH=$APTAMD/AUXTOOLS/cencalc_quicksort
 # Most of the data analysis and plotting is performed using octave scripts
 # https://octave.org/
 # At some point all the Octave code in APTAMD will be replaced by python 
