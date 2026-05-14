@@ -11,7 +11,7 @@ The computational protocol implemented in APTAMD is described in detail in the f
 
 * A. Díaz-Fernández, C. S. Ciudad, N. Díaz, D. Suárez, N. de-los-Santos-Álvarez and M.J. Lobo-Castañón. (2024). Refinement and Truncation of DNA Aptamers based on Molecular Dynamics Simulations: Computational Protocol and Experimental Validation.  J. Chem. Inf. Model. 2025, 65, 8, 4128–4136. [DOI](https://doi.org/10.1021/acs.jcim.5c00243)
  
-All questions regarding the usage of APTAMD or bug reports should be addressed to Dimas Suárez (dimas@uniovi.es).
+All questions regarding the usage of APTAMD or bug reports should be addressed to Natalia Díaz (diazfnatalia@uniovi.es) or Dimas Suárez (dimas@uniovi.es).
 
 ### **Installation**
 
