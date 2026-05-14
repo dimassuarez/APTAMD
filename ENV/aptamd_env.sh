@@ -41,7 +41,7 @@ export PYTHONPATH=$AMBERHOME/lib/python3.12/site-packages/
 # For MMPBSA calcs. 
 # MSMS program is used in the non-polar components of MMPBSA calcs 
 # https://ccsb.scripps.edu/msms/
-MSMS=/opt/apps/AL8/msms/msms
+MSMS=/opt/apps/AL9/msms/msms
 # For QMMMPBSA calcs (only). 
 # ORCA (for QM/MM calcs using do_mmpbsa) https://orcaforum.kofo.mpg.de/app.php/portal
 ORCA=/opt/apps/AL8/orca6
