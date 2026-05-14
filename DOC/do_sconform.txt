@@ -1,5 +1,5 @@
 ###############################################################################
-        GEUO SUITE: Scripts for Automating Molecular Modelling Tasks
+        APTAMD SUITE: Scripts for Automating Molecular Modelling Tasks
 ###############################################################################
   
   SCRIPT's NAME:  do_sconform.sh        
@@ -23,7 +23,7 @@
   indicated below.
 
   This script must be called from the main directory where the MD/GAMD 
-  directories are located. See $GEUO/DOC/directory_tree.txt for details.
+  directories are located. See $APTAMD/DOC/directory_tree.txt for details.
 
   OPTIONS: (selected by environment variables) 
 

@@ -52,13 +52,14 @@ done
 if [ $ARG == "all" ] ||  [ $ARG == "nmode" ]
 then 
 
-if [ -e nmode_standalone ]
+# Adapted version of nmode legacy code 
+if [ -d nmode_standalone ]
 then
 
 cd nmode_standalone
 make
 mv nmode ../
-mv ../
+cd ../
 
 fi
 
@@ -67,9 +68,10 @@ fi
 # Installing cencalc entropy programs
 if [ ! -d cencalc_quicksort ];
 then
-        git clone https://github.com/dimassuarez/cencalc_quicksort.git
-        cd cencalc_quicksort
+	git clone https://github.com/dimassuarez/cencalc_quicksort.git
+	cd cencalc_quicksort
         make -f Makefile
-        cd ../
 fi
+
+
 

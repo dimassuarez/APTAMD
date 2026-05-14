@@ -57,7 +57,7 @@
  
           do_mmpbsa.sh  input.src       
  
-  If the input filename has src extension then do_snapshots.sh sources it 
+  If the input filename has src extension then do_mmpbsa.sh sources it 
   The lines in the src file should contain variable declarations for 
   the various options indicated below.
 
