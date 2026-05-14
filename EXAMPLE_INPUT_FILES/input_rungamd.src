@@ -4,7 +4,7 @@ MULTI_MD=1      # If MULTI_MD > 1 do_runmd.sh creates MULTI_MD
                 # directories for submitting multi-MD production tasks
                 # MULTI_MD > 1 implies DO_PROD="NO"
 USE_GPU='YES'    # PMEMD.CUDA runs. Def YES
-NPROCS=24       # Number of processors for SANDER.MPI/PMEMD.MPI/CPPTRAJ.OMP 
+NPROCS=8        # Number of processors for SANDER.MPI/PMEMD.MPI/CPPTRAJ.OMP 
 DO_PROD='YES'   # Production phase. Def YES. If DO_PROD="NO" do_runmd.sh
                        # stops after pressurization
 NJOBS=10        # Number of MD production runs (50 ns each). Def 20
