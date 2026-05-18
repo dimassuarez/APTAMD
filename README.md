@@ -427,6 +427,6 @@ Depending on the size of the sytem, the entropy calculations may require wall ti
 <img src="./Images/entro.png" width="66%" height="66%" style="display: block; margin: 0 auto">
 </div>
 
-The  entropy plot obtained for the 2L5K MD trajectory shows reasonable convergence properties. Other MD simulations on the $\micro$s timescale have shown that *perfect* (i.e., zero slope) $S_conform$ curves are notoriously difficult to obtain for aptamer molecules due to their intrinsic flexibility in both the short and long timescales.    
+The  entropy plot obtained for the 2L5K MD trajectory shows reasonable convergence properties. Other MD simulations on the $\micro \rm{s}$  timescale have shown that *perfect* (i.e., zero slope) $S_{conform}$ curves are notoriously difficult to obtain for aptamer molecules due to their intrinsic flexibility in both the short and long timescales.    
 
 
