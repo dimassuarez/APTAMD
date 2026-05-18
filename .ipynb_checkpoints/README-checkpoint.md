@@ -53,9 +53,8 @@ The APTAMD collection is organized in the following subdirectories:
 * EDITION           : Scripts to prepare coordinate and parameter files 
 * RUNMD             : Scripts and files to perform GaMD and MD simulations 
 * STRUCT            : Scripts to extract MD frames and/or carry out structural analysis and clustering  
-* RWGAMD            : Scripts and files to carry out the energy reweighing of GaMD trajectories
+* RWGAMD            : Scripts and files to carry out the energy reweighing of the GaMD trajectories
 * MMPBSA            : Scripts to perform MMPBSA-like calculations
-* ENTROPY           : Scripts to perform RRHO and conformational entropy calculations
 * AUXTOOLS          : Scripts and auxiliary Fortran codes.
 * ENV               : aptamd_env.sh is located here
 * bin               : Links to the main BASH scripts
@@ -76,10 +75,13 @@ The recommended starting configuration for a workstation or a computer server de
 ---
 
 
+
 ## **User Guide**
 
 ### Initial model: `do_aptamer_edition` 
 For a given aptamer sequence, its secondary (2D) structure can be predicted using the [mfold](http://www.unafold.org/DNA_form.php) algorithm. From the 2D mfold structure, initial 3D coordinates in PDB format can be obtained using the [RNA Composer webserver](https://rnacomposer.cs.put.poznan.pl/). The preliminary 3D models are processed automatically using `do_aptamer_edition.sh` that executes and monitors other scripts and programs of the [AMBER suite](https://ambermd.org/). `do_aptamer_edition.sh` transforms the atom and residue names of RNA to those of DNA, removes all 2’-hydroxyl groups on the ribose sugars, adds the missing methylene in thymines and all the H atoms, and assigns the required Molecular Mechanics (MM) parameters from the [parmbsc1 force field](https://mmb.irbbarcelona.org/www/ParmBSC1),  relaxes the internal geometry of the nucleobases and adds an octahedral box  of water molecules including and Na+/Cl- counterions. 
+
+
 
 ---
 
@@ -401,32 +403,8 @@ The variable `EPS` in [input_cluster.src](EXAMPLE_INPUT_FILES/input_cluster.src)
 <img src="./Images/aptamd_label.png" width="33%" height="33%" style="display: block; margin: 0 auto">
 </div>
 
-#### Conformational entropy
 
-Conformational entropy plots  ($S_{conform}$) for the aptamer molecules can be calculated using the [CENCALC program](https://github.com/dimassuarez/cencalc_quicksort). CENCALC transforms the time series containing the values of the rotatable dihedral angles into an array of integer numbers labelling the accessible conformational states and calculates then the unidimensional probability mass functions $p_i$ of each discretized torsion angle. The first-order entropy, $S_{conform}^{(1)}$ , is obtained as $ \sum_i -p_i \log{p_i} $ . CENCALC incorporates also correlation effects among the dihedral angles using various techniques  and removes entropy bias due to finite sampling  by shuffling the elements of the arrays of integer numbers labelling the conformational states prior to the entropy estimations. 
+### Other script tools in APTAMD
 
-The   `do_sconform.sh` script drives  all the tasks involved in the entropy calculations (e.g., dihedral angle selection and discretization, application of entropy methods, plotting and tabulating $S_{conform}$ values, etc.). In practical terms, it is interesting to calculate $S_{conform}$ because:
-
-* Plotting $S_{conform}$ as a function of the simulation time constitutes a clear-cut graphical assessment of the extent and convergence degree of conformational sampling.   
-* $S_{conform}$ calculations  complement the  MM-PBSA energy scorings  with the limiting value of $-T S_{conform}$.  
-
----
-
-**EXAMPLE**
-<div style="background-color: rgb(220,220,220);">
-
-```bash
-cd *Working directory*    
-cp $APTAMD/EXAMPLE_INPUT_FILES/input_sconform.src  2L5K_model_MD/
-do_sconform  2L5K_model_MD/input_sconform.src
-```
-
-Depending on the size of the sytem, the entropy calculations may require wall times about 30 min - 1 h, the most CPU intensive step being the discretization of the time evolution of dihedral angles.  Output and data files are written in the 6.ANALYSIS/SCONFORM directory, including also scripts, `job_sconform.sh` and  `run_sconform.sh` that can be adpated to run again the entropy calculations with other settings.  The  entropy values are tabulated in the `s1_plot.tab` and `ccmla_plot.tab` files as a function of the number of MD frames considered in the calculations. The `s_ccmla_plot.png` file shows the corresponding entropy curves while `s_ccmla_cutoff.png` represents the limiting entropy values as a function of a cutoff radius used to capture correlation effects among torsional motions. The optimal $S_{conform}$ value  is located a the minimum.
-
-
-<img src="./Images/entro.png" width="66%" height="66%" style="display: block; margin: 0 auto">
-</div>
-
-The  entropy plot obtained for the 2L5K MD trajectory shows reasonable convergence properties. Other MD simulations on the $\micro$s timescale have shown that *perfect* (i.e., zero slope) $S_conform$ curves are notoriously difficult to obtain for aptamer molecules due to their intrinsic flexibility in both the short and long timescales.    
-
+The APTAMD suite includes scripts for MM parameterization,  system preparation and edition, entropy calculations, Autodock calculations on multiple MD frames of receptors and ligands, etc. These and other scripts will be uploaded to GitHub (and documented) in the near future. 
 

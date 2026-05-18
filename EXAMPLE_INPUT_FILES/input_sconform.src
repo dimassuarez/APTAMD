@@ -1,0 +1,21 @@
+MOL='2L5K'      # Project alias. Several aliases can be grouped
+                       # into a single varaible MD_TRAJ='MOL1 MOl2 ...'
+MD_TYPE='MD'       # Either MD or GAMD
+
+NPROCS=8         # Number of cores to be used. Def all available.
+
+IFRAG=0         # Selects the solute molecule. Def IFRAG=0
+
+SCONFORM_DIR='SCONFORM'   # Name of the subdirectory in which
+                          # the entropy calcs are saved. Def SCONFORM
+DO_CC_MLA=1
+COMPOSITE="YES"    # If YES then the composite version of CC-MLA is used.
+                   # so that torsions are classified into different groups
+                   # attending to their pair correlations.
+
+CUTOFF="8 12 14 16 18 20"  # A list of cutoff distances to be considered by the
+                    # CC-MLA method. The optimal cutoff is determined
+                    # by fitting the Sconform against cutoff distances
+
+PERCEN=0           # Percentage of MD trajectory data to be considered
+~                                                                            
