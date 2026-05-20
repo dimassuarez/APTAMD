@@ -441,7 +441,7 @@ EOF
    
       $AMBERHOME/bin/cpptraj ../../../$TOPOLOGY < pdb.in
 
-      echo "REMARK   SNAP= ${ISNAP["$ipdb"]} BIN= ${BIN["$ipdb"]} CRD= md_${ICRD["$ipdb"]}_prot.mdcrd" > tmp.pdb
+      echo "REMARK   SNAP= ${ISNAP["$ipdb"]} BIN= ${BIN["$ipdb"]} CRD= md_${ICRD["$ipdb"]}_solute.mdcrd" > tmp.pdb
       cat snap_${BIN["$ipdb"]}_${ISNAP["$ipdb"]}.pdb >> tmp.pdb
       mv tmp.pdb snap_${BIN["$ipdb"]}_${ISNAP["$ipdb"]}.pdb
 

@@ -484,16 +484,17 @@ EOF
 
   TASK="./run_nmode.sh"
   chmod 755 $TASK
-
+  TT=$(date +%N)
     
   rm -f TASK.sh
   rm -f temp_task_list_*
+
     
   split -l $NSPLIT -d $INPUT_LIST temp_task_list_
     
   for file in $(ls temp_task_list_*)
   do
-    echo " $TASK  $file >  $SCRATCH/${file}.log " >> TASK.sh
+    echo " $TASK  $file >  $SCRATCH/${file}_${TT}.log " >> TASK.sh
   done
     
   if [ "${FINERSIEVE}" == "YES" ]
@@ -506,7 +507,7 @@ EOF
   echo "Running parallel $TASK across  $NPROCS  procs ..."
   cat TASK.sh  | $PARHOME/bin/parallel --no-notice  -t -j$NPROCS
     
-  rm -f temp_task_list_* $SCRATCH/temp_task_list_*log 
+  rm -f temp_task_list_* $SCRATCH/temp_task_list*_${TT}.log 
 
 # Merging results 
   if [ "${INCRLIST}" == "YES" ]

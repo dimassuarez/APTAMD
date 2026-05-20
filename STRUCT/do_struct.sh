@@ -300,6 +300,8 @@ export  DO_SURF="${DO_SURF}"
 EOF
 
   rm -f TASK.sh 
+  TT=$(date +%N)
+  TMPLOG=${SCRATCH}/tmp_${USER}_${TT}
  
   I=0
   for file in $(ls ../../${MD_PROD}/${PREFIX_MDCRD}???${SUFFIX_MDCRD}  )
@@ -320,10 +322,10 @@ EOF
     else
         if [ ${SOLUTE_TYPE} == "PEP" ]
         then
-           echo "cd $WORKDIR; $APTAMD/STRUCT/aux_struct_peptide.sh $file md_${txt}  > $SCRATCH/tmp_${txt}.log; rm -f  $SCRATCH/tmp_${txt}.log" >> TASK.sh
+           echo "cd $WORKDIR; $APTAMD/STRUCT/aux_struct_peptide.sh $file md_${txt}  > ${TMPLOG}_${txt}.log;rm -f ${TMPLOG}_${txt}.log  " >> TASK.sh
         elif [ ${SOLUTE_TYPE} == "APT" ]
         then
-           echo "cd $WORKDIR; $APTAMD/STRUCT/aux_struct_aptamers.sh $file md_${txt}  > $SCRATCH/tmp_${txt}.log; rm -f  $SCRATCH/tmp_${txt}.log" >> TASK.sh
+           echo "cd $WORKDIR; $APTAMD/STRUCT/aux_struct_aptamers.sh $file md_${txt}  > ${TMPLOG}_${txt}.log ;rm -f ${TMPLOG}_${txt}.log " >> TASK.sh
         fi
     fi
   done

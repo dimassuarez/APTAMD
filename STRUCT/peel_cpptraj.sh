@@ -75,9 +75,6 @@ then
 fi
 
 # TEMP Directories
-if [ ! -n "$PBS_ENVIRONMENT" ] ; then
-   SCRATCH=/scratch
-fi
 TT=$(date +%N)
 TMPDIR=${SCRATCH}/TMPDIR_${TT}
 

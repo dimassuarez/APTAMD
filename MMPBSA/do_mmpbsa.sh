@@ -932,6 +932,7 @@ EOF
      TASK="./run_mmpbsa_${PDIE}.sh"
      sed  "s/DUMMY_PDIE/${PDIE}/"  run_mmpbsa.sh > $TASK 
      chmod 755 $TASK
+     TT=$(date +%N)
     
      rm -f TASK.sh
      rm -f temp_task_list_*
@@ -940,7 +941,7 @@ EOF
     
      for file in $(ls temp_task_list_*)
      do
-       echo " $TASK  $file >  $SCRATCH/${file}.log " >> TASK.sh
+       echo " $TASK  $file >  $SCRATCH/${file}_${TT}.log " >> TASK.sh
      done
     
      echo "Running parallel $TASK across  $NPROCS  procs ..."
@@ -950,7 +951,7 @@ EOF
      fi
      cat TASK.sh  | $PARHOME/bin/parallel --silent --no-notice  -t -j$NPROCS
     
-     rm -f temp_task_list_* $SCRATCH/temp_task_list_*log $TASK
+     rm -f temp_task_list_* $SCRATCH/temp_task_list*_${TT}.log $TASK
     
      if [ "${USEOUTPUT}" == "YES" ]  && [ -e PDIE_${PDIE}/OUTPUT.tar ]
      then 

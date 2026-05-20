@@ -35,7 +35,12 @@ Compile the auxiliary Fortran codes including the [CENCALC](https://github.com/d
 cd $APTAMD/AUXTOOLS; bash ./comp.sh all
 ```
 
-Edit the `$ATPAMD/ENV/aptamd_env.sh` file and adjust the BASH variables pointing to the software tools used by APTAMD (Of course AMBER and other software have to be installed on your system). 
+Copy the template enviroment file 
+```
+cd $APTAMD/ENV; cp aptamd_env_TEMPLATE.sh aptamd_env.sh
+```
+
+Edit the `$APTAMD/ENV/aptamd_env.sh` file. Define the `APTAMD` variable and adjust the other BASH variables pointing to the software tools used by APTAMD (Of course AMBER and other software have to be installed on your system). 
 
 Fix file permissions for bash scripts, make links to the main driver scripts and add `$ATPAMD/bin` to your `$PATH` environment variable:
 
@@ -43,8 +48,14 @@ Fix file permissions for bash scripts, make links to the main driver scripts and
 bash $APTAMD/bin/make_links.sh
 export PATH=$APTAMD/bin:$PATH
 ```
-
 Entering at the command line the name(s) of the APTAMD scripts (e.g., `do_aptamer_edition`) should print out a brief description of their functions. 
+
+To make permanent changes in your BASH environment, include the following lines in your `.bashrc` configuration file
+
+```bash
+export APTAMD=/mydir/APTAMD      # Do not forget to update mydir
+export PATH=$APTAMD/bin:$PATH
+```
 
 **CONTENTS**
 
@@ -403,7 +414,11 @@ The variable `EPS` in [input_cluster.src](EXAMPLE_INPUT_FILES/input_cluster.src)
 
 #### Conformational entropy
 
-Conformational entropy plots  ($S_{conform}$) for the aptamer molecules can be calculated using the [CENCALC program](https://github.com/dimassuarez/cencalc_quicksort). CENCALC transforms the time series containing the values of the rotatable dihedral angles into an array of integer numbers labelling the accessible conformational states and calculates then the unidimensional probability mass functions $p_i$ of each discretized torsion angle. The first-order entropy, $S_{conform}^{(1)}$ , is obtained as $ \sum_i -p_i \log{p_i} $ . CENCALC incorporates also correlation effects among the dihedral angles using various techniques  and removes entropy bias due to finite sampling  by shuffling the elements of the arrays of integer numbers labelling the conformational states prior to the entropy estimations. 
+Conformational entropy plots  ($S_{conform}$) for the aptamer molecules can be calculated using the [CENCALC program](https://github.com/dimassuarez/cencalc_quicksort).
+CENCALC transforms the time series containing the values of the rotatable dihedral angles into an array of integer numbers 
+labelling the accessible conformational states and calculates then the unidimensional probability mass functions $p_i$ of each 
+discretized torsion angle. The first-order entropy, $S_{conform}^{(1)}$ , is obtained as $\sum_i -p_i \log{p_i}$. 
+CENCALC incorporates also correlation effects among the dihedral angles using various techniques  and removes entropy bias due to finite sampling  by shuffling the elements of the arrays of integer numbers labelling the conformational states prior to the entropy estimations. 
 
 The   `do_sconform.sh` script drives  all the tasks involved in the entropy calculations (e.g., dihedral angle selection and discretization, application of entropy methods, plotting and tabulating $S_{conform}$ values, etc.). In practical terms, it is interesting to calculate $S_{conform}$ because:
 
@@ -427,6 +442,6 @@ Depending on the size of the sytem, the entropy calculations may require wall ti
 <img src="./Images/entro.png" width="66%" height="66%" style="display: block; margin: 0 auto">
 </div>
 
-The  entropy plot obtained for the 2L5K MD trajectory shows reasonable convergence properties. Other MD simulations on the $\micro \rm{s}$  timescale have shown that *perfect* (i.e., zero slope) $S_{conform}$ curves are notoriously difficult to obtain for aptamer molecules due to their intrinsic flexibility in both the short and long timescales.    
+The  entropy plot obtained for the 2L5K MD trajectory shows reasonable convergence properties. Other MD simulations on the $\micro\rm{s}$  timescale have shown that *perfect* (i.e., zero slope) $S_{conform}$ curves are notoriously difficult to obtain for aptamer molecules due to their intrinsic flexibility in both the short and long timescales.    
 
 

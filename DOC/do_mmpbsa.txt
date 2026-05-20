@@ -18,8 +18,8 @@
                QMMPB+vdW_int
                AutoDock4.2     
 
-  For complexes, the script detects the composing molecular fragments
-  and the MMPBSA-like calcs are performed for each fragment so that interaction
+  For complexes, the script detects molecular fragments and the 
+  MMPBSA-like calcs are performed for each fragment so that interaction
   energies are reported as well. 
 
   vdW_int refers to a non-polar solvation model in which an explicit
@@ -155,8 +155,8 @@
     AUTODOCK options
     ================
 
-    ADCK='NO'     # If YES then AutoDock calculations are carried out. The first fragement
-                  # corresponds to the receptor and the other fragmment(s) the ligands(s)
+    ADCK='NO'     # If YES then AutoDock calculations are carried out. The first fragment
+                  # corresponds to the receptor and the other fragment(s) the ligands(s)
 
     ADCK_ONLY='NO' # If YES then do only AutoDock calculations
 
