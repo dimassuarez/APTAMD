@@ -355,6 +355,7 @@ EOF
      done
      $OCTAVE --no-gui  -q $APTAMD/STRUCT/rmsd_rgyr_surf_plot.m
      $OCTAVE --no-gui  -q $APTAMD/STRUCT/rmsd_inf_plot.m
+     $APTAMD/STRUCT/stat_bp_np.sh 
   else
      cat md_*.rmsd | grep -v '#' | awk '{print $2}' > RMSD.dat
      cat md_*.rgyr | grep -v '#' | awk '{print $2}' > RGYR.dat

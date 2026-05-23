@@ -45,12 +45,12 @@ Edit the `$APTAMD/ENV/aptamd_env.sh` file. Define the `APTAMD` variable and adju
 Fix file permissions for bash scripts, make links to the main driver scripts and add `$ATPAMD/bin` to your `$PATH` environment variable:
 
 ```bash
-bash $APTAMD/bin/make_links.sh
+bash $APTAMD/bin/perm_links.sh
 export PATH=$APTAMD/bin:$PATH
 ```
 Entering at the command line the name(s) of the APTAMD scripts (e.g., `do_aptamer_edition`) should print out a brief description of their functions. 
 
-To make permanent changes in your BASH environment, include the following lines in your `.bashrc` configuration file
+To make permanent changes in your BASH environment, include the following lines in your `.bashrc` configuration file:
 
 ```bash
 export APTAMD=/mydir/APTAMD      # Do not forget to update mydir
@@ -79,7 +79,7 @@ The APTAMD collection is organized in the following subdirectories:
 * X3DNA-DSSR
 * MSMS 
 
-Note: The MMPBSA scripts can handle QM/MM calculations using various QM codes (see comments in [aptamd_env.sh](ENV/aptamd_env.sh) ). 
+Note: The MMPBSA scripts can handle QM/MM calculations using various QM codes (see comments in [aptamd_env.sh](ENV/aptamd_env_TEMPLATE.sh) ). 
 
 ### **Hardware and OS requirements**
 The recommended starting configuration for a workstation or a computer server dedicated to perform molecular simulations of systems with the typical size of aptamers, would include a dual socket motherboard equipped with 2 multicore CPUs, 4 GB of RAM per CPU core and a storage capacity greater than 4 TB constituted by SSD/NVMe drives. The same computer should be equipped with at least two state-of-the-art NVIDIA GPU cards. Assuming that a Linux operating system (e.g. [Almalinux](https://almalinux.org/)) and the AMBER package are installed, such a workstation/server machine would be able to simultaneously carry out production runs on the GPUs with minimum CPU usage and other tasks for the preparation and analysis of the GaMD/MD trajectories using the remaining RAM and CPU cores. Further information pertaining to the recommended hardware can be found on the AMBER website [GPU info](https://ambermd.org/GPUHardware.php). All major HPC hardware vendors offer workstations and clusters suitable for performing MD simulations.
@@ -236,7 +236,7 @@ do_struct  2L5K_model_GAMD/input_struct.src`
 
 **WARNING** The DSSR program, which is needed to calculate the DNA structural descriptors, demands much CPU time. 
 
-Some  options for `do_struct`are specified in [input_struct.src](EXAMPLE_INPUT_FILES/input_struct.src) and the output is written in a new folder `6.ANALYSIS/STRUCT`. The evolution of the RMSD/RGYR/INF descriptors is plotted along the GaMD trajectory (see the .png files). 
+Some  options for `do_struct`are specified in [input_struct.src](EXAMPLE_INPUT_FILES/input_struct.src) and the output files are written in a new folder `6.ANALYSIS/STRUCT`. The evolution of the RMSD/RGYR/INF descriptors is plotted along the GaMD trajectory (see the .png files). A simple statistical analysis of the base pairing/stacking contacts detected by DSSR is printed in a text file named `BP_NP_stat.dat`. 
 
 <img src="./Images/struct.png" width="50%" height="50%"  style="display: block; margin: 0 auto">
 

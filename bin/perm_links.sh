@@ -17,3 +17,4 @@ do
          ln -s $file $lkfile
     fi
 done
+chmod u=rwx,g=rx,o=rx *
