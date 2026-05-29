@@ -1,5 +1,5 @@
 ###############################################################################
-        GEUO SUITE: Scripts for Automating Molecular Modelling Tasks
+        APTAMD SUITE: Scripts for Automating Molecular Modelling Tasks
 ###############################################################################
   
   SCRIPT's NAME:  do_adck_templates.sh
@@ -13,8 +13,7 @@
           of two separate files containing in turn a list of PDB filenames
           Each PDB file (selected for example from cluster representatives
           obtained in previous MD simulations) will be used in the subsequent
-          docking calculations. do_adck_templates.sh will just read the first
-          PDB file in RECEPTOR_PDB_LIST and LIGAND_PDB_LIST.
+          docking calculations. 
  
           do_adck_templates.sh  input.src       
  
@@ -54,7 +53,7 @@
 
     If the topology files are not given, the script will try to generate
     them using AMBER tLEaP. For standard peptides/aptamers, the topologies
-    can be built without much trouble. But maybe for ther systems they 
+    can be built without much trouble. But maybe for other systems they 
     have to be provided 
 
     FF=19                      # FF=14 selects the ff14SB/TIP3P FF while

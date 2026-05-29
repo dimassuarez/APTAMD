@@ -1,5 +1,5 @@
 ###############################################################################
-        GEUO SUITE: Scripts for Automating Molecular Modelling Tasks
+        APTAMD SUITE: Scripts for Automating Molecular Modelling Tasks
 ###############################################################################
 
 Docking Protocol
@@ -14,22 +14,19 @@ because it uses a physics-based scoring function that includes specific terms to
 model van der Waals, electrostatic, and H-bond interactions as well as a desolvation
 contribution to the binding free energy. 
 
-Starting from the coordinate files of the receptor and the igand, the Python scripts 
+Starting from the coordinate files of the receptor and the ligand, the Python scripts 
 included in MGLTools are used to assign atom types and Gasteiger charges, and to merge 
 non-polar hydrogens. To explore multiple binding options, Autodock requires precalculated 
 grid maps for the receptor, in which information on electrostatics, H-bond and steric 
 constraints are stored for each atom type in the ligand. Grid maps are centered on the
-COM of the receptor and the grid big enough to allow the ligands to rotate/translate around 
+COM of the receptor and the grid size is adjusted to allow the ligands to rotate/translate around 
 the receptor and produce different binding poses. 
 
 To sample the receptor/ligand conformational space, we use the genetic search algorithm 
-to generate 500 conformations that are clustered with an RMSD tolerance of 2.0 Å. 
-To remove band contacts, the docking poses fully relaxed,  introducing thus some 
-flexibility in the docking protocol. Using SANDER, we run 5000 steps of conjugate gradient 
+to generate 50 or more conformations that are clustered with an RMSD tolerance of 2.0 Å. 
+To remove band contacts, the docking poses are fully relaxed,  introducing thus some 
+flexibility in the docking protocol. Using SANDER, we run 1000 steps of conjugate gradient 
 minimization on each structure and using the Hawkins, Cramer, Truhlar pairwise 
-generalized Born implicit solvent model46. After the geometry optimization, the 
+generalized Born implicit solvent model. After geometry optimization, the 
 minimized structures are finally ranked using the Autodock scoring function. 
 
-FALTA COMENTAR EL ARBOL DE DIRECTORIOS Y LA NECESIDAD DE LIMPIEZA....
-
-###############################################################################

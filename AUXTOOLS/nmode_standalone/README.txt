@@ -1,3 +1,14 @@
+License status
+================
+AmberTools is “mostly GPL licensed” with some exceptions
+nmode is not listed among the exception components.
+
+=======================================================
+This is a modified version of an old version of the nmode 
+fortran program
+
+==============================
+The following changes were made:
 
 Maximum numer of atoms is now 25000
 

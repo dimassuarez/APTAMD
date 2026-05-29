@@ -910,6 +910,10 @@ else
    fi
 fi
 
+
+if [ "$N_SELECTED_WATERS" -gt "0"  ]
+then 
+
 if [ ${SELECTED_WATER:0:1} == "," ]
 then
   ncar=${#SELECTED_WATER}
@@ -917,9 +921,6 @@ then
 else
   SELECTED_WATER=":"${SELECTED_WATER}
 fi
-
-if [ "$N_SELECTED_WATERS" -gt "0"  ]
-then 
 
 $PARMED  cmplxwat.top <<EOF
 strip "!:WAT | ${SELECTED_WATER}"

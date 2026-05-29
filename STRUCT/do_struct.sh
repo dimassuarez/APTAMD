@@ -359,7 +359,7 @@ EOF
   else
      cat md_*.rmsd | grep -v '#' | awk '{print $2}' > RMSD.dat
      cat md_*.rgyr | grep -v '#' | awk '{print $2}' > RGYR.dat
-     if [ $DO_SURF == "YES" ]; then grep -v '#' ${id}.surf | head -${nl_inf} | awk '{print $2}' >> SURF.dat; fi
+     if [ $DO_SURF == "YES" ]; then cat md_*.surf | grep -v '#' |  awk '{print $2}' >> SURF.dat; fi
      $OCTAVE --no-gui  -q $APTAMD/STRUCT/rmsd_rgyr_surf_plot.m
   fi
 

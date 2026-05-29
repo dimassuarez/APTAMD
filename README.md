@@ -10,12 +10,16 @@ The computational protocol implemented in APTAMD is described in detail in the f
 * A. Díaz-Fernández, R. Miranda-Castro, N. Díaz, D. Suárez, N. de-los-Santos-Álvarez and M.J. Lobo-Castañón. (2020). Aptamers targeting protein-specific glycosylation in tumor biomarkers: general selection, characterization and structural modeling. Chemical Science 11, 9402-9413. [DOI](https://doi.org/10.1039/D0SC00209G )
 
 * A. Díaz-Fernández, C. S. Ciudad, N. Díaz, D. Suárez, N. de-los-Santos-Álvarez and M.J. Lobo-Castañón. (2024). Refinement and Truncation of DNA Aptamers based on Molecular Dynamics Simulations: Computational Protocol and Experimental Validation.  J. Chem. Inf. Model. 2025, 65, 8, 4128–4136. [DOI](https://doi.org/10.1021/acs.jcim.5c00243)
- 
+
+The APTAMD suite includes also scripts to carry out [docking calculations](#docking) using the Autodock software.
+
 All questions regarding the usage of APTAMD or bug reports should be addressed to Natalia Díaz (diazfnatalia@uniovi.es) or Dimas Suárez (dimas@uniovi.es).
+ 
+Other computational protocols that have been specifically tailored for the  molecular modelling of aptamers  are [Aptaloop](https://gitlab.igem.org/2023/software-tools/dtu-denmark) and [E2EDNA2](https://github.com/InfluenceFunctional/E2EDNA2).
 
 ### **Installation**
 
-The suite is distributed as a collection of scripts for Linux systems. Most of the scripts are written in [BASH](https://www.gnu.org/software/bash/) although some numerical and plotting tasks are performed using Octave or Python scripts. There are also a few Fortran codes that carry out auxiliary tasks. Hopefully, in a few months, we will replace all the Fortran and Octave codes by Python scripts, but the BASH backbone will be maintained.    
+The suite is distributed as a collection of scripts for Linux systems. Most of the scripts are written in [BASH](https://www.gnu.org/software/bash/) although some numerical and plotting tasks are performed using Octave or Python scripts. There are also a few Fortran codes that carry out auxiliary tasks. Eventually, we would like to replace all the Fortran and Octave codes by Python scripts, but the BASH backbone will be maintained.    
 
 To install APTAMD, download the suite with the commands:
 
@@ -67,6 +71,7 @@ The APTAMD collection is organized in the following subdirectories:
 * RWGAMD            : Scripts and files to carry out the energy reweighing of GaMD trajectories
 * MMPBSA            : Scripts to perform MMPBSA-like calculations
 * ENTROPY           : Scripts to perform RRHO and conformational entropy calculations
+* DOCKING           : Scripts to perform enseble docking with Autodock4 
 * AUXTOOLS          : Scripts and auxiliary Fortran codes.
 * ENV               : aptamd_env.sh is located here
 * bin               : Links to the main BASH scripts
@@ -77,9 +82,10 @@ The APTAMD collection is organized in the following subdirectories:
 * Compiler and Script Interpreters: Octave (version >= 5) , Python3, GNU Parallel Bash, GNU GFortran
 * AMBER Suite
 * X3DNA-DSSR
-* MSMS 
+* MSMS
+* Autodock4
 
-Note: The MMPBSA scripts can handle QM/MM calculations using various QM codes (see comments in [aptamd_env.sh](ENV/aptamd_env_TEMPLATE.sh) ). 
+Note: The MMPBSA scripts can handle QM/MM calculations (see comments in [aptamd_env.sh](ENV/aptamd_env_TEMPLATE.sh) ). 
 
 ### **Hardware and OS requirements**
 The recommended starting configuration for a workstation or a computer server dedicated to perform molecular simulations of systems with the typical size of aptamers, would include a dual socket motherboard equipped with 2 multicore CPUs, 4 GB of RAM per CPU core and a storage capacity greater than 4 TB constituted by SSD/NVMe drives. The same computer should be equipped with at least two state-of-the-art NVIDIA GPU cards. Assuming that a Linux operating system (e.g. [Almalinux](https://almalinux.org/)) and the AMBER package are installed, such a workstation/server machine would be able to simultaneously carry out production runs on the GPUs with minimum CPU usage and other tasks for the preparation and analysis of the GaMD/MD trajectories using the remaining RAM and CPU cores. Further information pertaining to the recommended hardware can be found on the AMBER website [GPU info](https://ambermd.org/GPUHardware.php). All major HPC hardware vendors offer workstations and clusters suitable for performing MD simulations.
@@ -388,7 +394,7 @@ Many variants of the [MM-PBSA](https://pubs.acs.org/doi/abs/10.1021/acs.jcim.8b0
 
 $$ G = E_{MM} + \Delta G_{solv}^{PB} +  \Delta G_{solv} ^{np} $$
 
-where  $$E_{MM}$$ is the molecular mechanics energy including the 3RT contribution due to six translational and rotational degrees of freedom, $$\Delta G_{solv}^{PB}$$  is the electrostatic solvation energy obtained from Poisson-Boltzmann calculations,and $$\Delta G_{solv}^{np}$$  is the non-polar part of solvation energy due to cavity formation and dispersion interactions between the solute and the solvent molecules.
+where  $E_{MM}$ is the molecular mechanics energy including the 3RT contribution due to six translational and rotational degrees of freedom, $\Delta G_{solv}^{PB}$  is the electrostatic solvation energy obtained from Poisson-Boltzmann calculations,and $\Delta G_{solv}^{np}$  is the non-polar part of solvation energy due to cavity formation and dispersion interactions between the solute and the solvent molecules.
 
 ---
 
@@ -436,7 +442,7 @@ cp $APTAMD/EXAMPLE_INPUT_FILES/input_sconform.src  2L5K_model_MD/
 do_sconform  2L5K_model_MD/input_sconform.src
 ```
 
-Depending on the size of the sytem, the entropy calculations may require wall times about 30 min - 1 h, the most CPU intensive step being the discretization of the time evolution of dihedral angles.  Output and data files are written in the 6.ANALYSIS/SCONFORM directory, including also scripts, `job_sconform.sh` and  `run_sconform.sh` that can be adpated to run again the entropy calculations with other settings.  The  entropy values are tabulated in the `s1_plot.tab` and `ccmla_plot.tab` files as a function of the number of MD frames considered in the calculations. The `s_ccmla_plot.png` file shows the corresponding entropy curves while `s_ccmla_cutoff.png` represents the limiting entropy values as a function of a cutoff radius used to capture correlation effects among torsional motions. The optimal $S_{conform}$ value  is located a the minimum.
+Depending on the size of the sytem, the entropy calculations may require wall times about 30 min - 1 h, the most CPU intensive step being the discretization of the time evolution of dihedral angles.  Output and data files are written in the 6.ANALYSIS/SCONFORM directory, including also scripts, `job_sconform.sh` and  `run_sconform.sh` that can be adapted to run again the entropy calculations with other settings.  The  entropy values are tabulated in the `s1_plot.tab` and `ccmla_plot.tab` files as a function of the number of MD frames considered in the calculations. The `s_ccmla_plot.png` file shows the corresponding entropy curves while `s_ccmla_cutoff.png` represents the limiting entropy values as a function of a cutoff radius used to capture correlation effects among torsional motions. The optimal $S_{conform}$ value  is located at the minimum.
 
 
 <img src="./Images/entro.png" width="66%" height="66%" style="display: block; margin: 0 auto">
@@ -445,3 +451,95 @@ Depending on the size of the sytem, the entropy calculations may require wall ti
 The  entropy plot obtained for the 2L5K MD trajectory shows reasonable convergence properties. Other MD simulations on the $\micro\rm{s}$  timescale have shown that *perfect* (i.e., zero slope) $S_{conform}$ curves are notoriously difficult to obtain for aptamer molecules due to their intrinsic flexibility in both the short and long timescales.    
 
 
+</div>
+
+    
+## **AutoDock4 calculations driven by APTAMD scripts** 
+
+<a name="docking"></a> Since aptamers are quite flexible molecules docking calculations  should consider somehow their conformational variability. In the so-called [ensemble docking](https://blog.litefold.ai/ensemble-docking-vs-static-docking-when-does-protein-flexibility-matter/) approach, a ligand is docked against a collection of different conformations of the same receptor, rather than to a single rigid structure. Although each of the selected geometries for the receptor may remain fixed during the docking calculations, the simultaneous ranking of the docking poses for all the receptor configurations introduces in a effective manner a certain conformational sampling.   
+
+Clearly,  the MD ensembles of aptamer molecules produced by the APTAMD protocol could be used to carry out ensemble docking.  A suitable set of MD frames would include *representatives* of the most-populated clusters,  but also of the scarcely populated ones to introduce a wider conformational diversity. To use the Autodock programs ,  it is necessary to prepare the coordiante and configuration files (`.pdbqt`, `.gpf`, `.dpf`), calculate grid maps, perform docking search and scoring, collect and rank the docking poses,  etc. To help automate these tasks, we have prepared two APTAMD scripts, `do_adck_templates.sh` and `do_adck.sh` that actually define a *docking protocol*.  
+
+### The  APTAMD protocol for ensemble docking             
+
+Starting from a given number $N_{rec}$ of MD frames (`.pdb` files) for the aptamer and $N_{lig}$ pdb files for the ligand molecule, the docking protocol consists of the following steps:
+
+* Automatic preparation of the `PDBQT` and configuration files `gpf` and `.dpf` for grid map and docking calculations, respectively. AMBER topology (`.top`) and coordinates (`.crd`) files are generated too unless they are provided as input. 
+* Distributed processing of the grid map calculations  over the $N_{rec}$ grid aptamer geometries. 
+* Distributed processing of the `autodock4` calculations to yield $N_{pose}$ per MD frame (a total of $N_{rec}\times N_{lig} \times N_{pose}$ complexes).
+* Distributed processing of structural relaxation of all the poses using the `sander` program.
+* Finally, rescoring of the relaxed poses with the `autodock4` program. Only single-point calculations are now carried out on the relaxed geometries.
+
+Sturctural  relaxation is quite convenient because grid-evaluated scoring functions  often fail to completely eliminate unphysical, high-energy contacts. These steric collapses can be fixed by means of an energy minimization followed by a new rescoring of the aptamer-ligand interaction in the minimized complexes. 
+
+The  `do_adck_templates.sh` and `do_adck.sh`  scripts  organize, run and control input/output for all the  subtasks involved in the docking protocol. 
+
+**EXAMPLE**
+<div style="background-color: rgb(220,220,220);">
+
+As a case study, we selected a DNA aptamer that binds AMP (Adenosin MonoPhosphate). The [NMR solution structure](https://doi.org/10.1016/s1074-5521(97)90115-0) of the aptamer···AMP complex (PDB Code: 1AW4) shows two AMP molecules intercalated at adjacent sites within a rectangular widened minor groove. To start with the docking calculations, create a directory named `DOCKING` in your home directory and download the 1AW4 PDB file. It contains seven NMR models for the aptamer···AMP complex.
+
+```bash
+mkdir DOCKING # --> your docking directory
+cd DOCKING
+wget "https://files.rcsb.org/download/1AW4.pdb"
+```
+Copy the pdb and topology files of the aptamer and  the AMP ligand:
+
+```bash 
+cp -r $APTAMD/EXAMPLE_INPUT_FILES/DOCKING/* .
+```
+The files in the PDBs subdirectory correspond to selected cluster representatives derived from previous MD simulations of the unbound  aptamer and AMP. The `input_adck.src` file defines the important settings for the docking calculations. Enter `do_adck_templates` at the command-line to obtain a brief explanation and a list of the main options to run the script. Thus the file `input_adck.src` should include, at least, the definition of the following variables:
+```
+RECEPTOR_PDB_LIST="R.txt"  # Input file containing the list of PDB
+                           # files with coordinates of the receptor
+                           # No default value
+LIGAND_PDB_LIST="L.txt"    # Idem for Ligand
+
+NPROCS=8                  # Number of cores to be used. Def all available.
+
+GRID="0.333"               # Grid spacing of the Autogrid maps . Def =0.333 Ang
+
+GA_RUN="10"                # Number of GA runs to request in the ADCK calcs.
+                           # NOTE: A total of NREC x NLIG x GA poses will be
+                           # produced. Def = 50
+
+RELAX="YES"                # Prior to ADCK atom typing, relax the geometries
+                           # of the receptor/ligand reference geometries.
+                           # YES is recommended
+
+TOPOLOGY_REC="aptamer.top"     # Optional Amber topology file for receptor
+TOPOLOGY_LIG="AMP.top"     # Optional Amber topology file for ligand
+```
+
+Prepare the system  for docking. Run  `do_adck_templates` to generate all the required files for the `AutoGrid` and `AutoDock` calculations.
+ 
+```bash
+do_adck_templates input_adck.src 
+```
+After having checked the `.pdbqt` for receptor and ligand, you can submit the docking calculations 
+
+```bash
+do_adck input_adck.src 
+```
+This  test calculation will take about 10-20 minutes to complete. After completion of the job, the `SCORING.dat` file contains the ranking of the  docking poses in terms of their estimated free energy of binding. 
+```
+# Example of SCORING.dat file
+complex_5_1_5 -5.16    # ---> pose #5 generated for docking of ligand #1 to  receptor #5  Scoring in kcal/mol
+complex_4_1_7 -4.29
+complex_4_1_8 -4.25
+...
+```
+The corresponding PDB files are collected in the `PDB_SCORING` directory. Visualize with ChimeraX the top-5 poses and compare them to the NMR structure of the complex:
+
+```bash
+cd PDB_SCORING
+head ../SCORING.dat
+chimerax <exp pdb> <top 1 pose pdb> <top 2 pose pdb> ... 
+```
+Hide all NMR models excepting the first one for better visualizaion.  Superpose  the docking poses on the experimental model entering the following command at the Chimerax command line:
+
+```bash
+ match #2.1 to #1.1 bring #2.2
+```
+This command superposes (match makes) the aptamer molecule at 2.1 over the aptamer molecule at 1.1, also moving the AMP ligand labeled as 2.2. Repeat this superposition for all the selected poses. 

@@ -1,0 +1,5 @@
+PDBs/aptamer_1.pdb
+PDBs/aptamer_2.pdb
+PDBs/aptamer_3.pdb
+PDBs/aptamer_4.pdb
+PDBs/aptamer_5.pdb

@@ -1,5 +1,5 @@
 ###############################################################################
-        GEUO SUITE: Scripts for Automating Molecular Modelling Tasks
+        APTAMD SUITE: Scripts for Automating Molecular Modelling Tasks
 ###############################################################################
   
   SCRIPT's NAME:  do_rmsd_rgyr_inf.sh
@@ -11,7 +11,7 @@
        b) Radius of Gyration 
        c) INF index of intramolecular interactions ( HBs for
        peptides and interbase/stacking for aptamers ) with respect to a 
-       a reference PDB structure.  See $GEUO/DOC/inf.txt for further details.
+       a reference PDB structure.  See $APTAMD/DOC/inf.txt for further details.
  
   USAGE : do_rmsd_rgyr_inf.sh  "MOL1 MOL2 ..."   MD_TYPE
 
@@ -26,7 +26,7 @@
 
   This script must be called from the main directory where the MD/GAMD 
   directories are located.  
-  See $GEUO/DOC/directory_tree.txt for details.
+  See $APTAMD/DOC/directory_tree.txt for details.
 
   OPTIONS: (selected by environment variables) 
 

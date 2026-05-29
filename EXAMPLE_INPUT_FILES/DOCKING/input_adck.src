@@ -1,0 +1,19 @@
+RECEPTOR_PDB_LIST="R.txt"  # Input file containing the list of PDB
+                           # files with coordinates of the receptor
+                           # No default value
+LIGAND_PDB_LIST="L.txt"    # Idem for Ligand
+
+NPROCS=8                  # Number of cores to be used. Def all available.
+
+GRID="0.333"               # Grid spacing of the Autogrid maps . Def =0.333 Ang
+
+GA_RUN="10"                # Number of GA runs to request in the ADCK calcs.
+                           # NOTE: A total of NREC x NLIG x GA poses will be
+                           # produced. Def = 50
+
+RELAX="YES"                # Prior to ADCK atom typing, relax the geometries
+                           # of the receptor/ligand reference geometries.
+                           # YES is recommended
+
+TOPOLOGY_REC="aptamer.top"     # Optional Amber topology file for receptor
+TOPOLOGY_LIG="AMP.top"     # Optional Amber topology file for ligand
