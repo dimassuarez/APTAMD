@@ -11,11 +11,17 @@ The computational protocol implemented in APTAMD is described in detail in the f
 
 * A. Díaz-Fernández, C. S. Ciudad, N. Díaz, D. Suárez, N. de-los-Santos-Álvarez and M.J. Lobo-Castañón. (2024). Refinement and Truncation of DNA Aptamers based on Molecular Dynamics Simulations: Computational Protocol and Experimental Validation.  J. Chem. Inf. Model. 2025, 65, 8, 4128–4136. [DOI](https://doi.org/10.1021/acs.jcim.5c00243)
 
-The APTAMD suite includes also scripts to carry out [docking calculations](#docking) using the Autodock software.
+The APTAMD suite includes now scripts to carry out [docking calculations](#docking) using the Autodock software.
 
 All questions regarding the usage of APTAMD or bug reports should be addressed to Natalia Díaz (diazfnatalia@uniovi.es) or Dimas Suárez (dimas@uniovi.es).
  
 Other computational protocols that have been specifically tailored for the  molecular modelling of aptamers  are [Aptaloop](https://gitlab.igem.org/2023/software-tools/dtu-denmark) and [E2EDNA2](https://github.com/InfluenceFunctional/E2EDNA2).
+
+### **APTAMD Tutorials**
+
+A separate collection of [hands-on-tutorials](https://github.com/dimassuarez/APTAMD_TUTORIALS) has been prepared to introduce basic concepts in Theoretical and Computational Chemistry 
+that are required to understand the modern molecular simulation methods and their implementation in the form of computer tools.
+Focus is placed on the preparation, running and analysis of molecular dynamics (MD) simulations and docking calculations employing the driving scripts available at this repository.
 
 ### **Installation**
 
@@ -543,3 +549,5 @@ Hide all NMR models excepting the first one for better visualizaion.  Superpose 
  match #2.1 to #1.1 bring #2.2
 ```
 This command superposes (match makes) the aptamer molecule at 2.1 over the aptamer molecule at 1.1, also moving the AMP ligand labeled as 2.2. Repeat this superposition for all the selected poses. 
+
+</div>
