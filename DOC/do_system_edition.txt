@@ -41,7 +41,7 @@
     DNAFF=bsc1                 # DNA FF bsc1 (default) or OL15/OL21/OL24
     BELLYMASK="NONE"           # If an AMBER mask is provided, the selected
                                # atoms are relaxed prior to solvent box edition
-    BOC=OCT                    # Box shape OCT-> Truncated Octahedral Box
+    BOX=OCT                    # Box shape OCT-> Truncated Octahedral Box
                                # CUBOID --> Rectangular. Default is OCT
                                # and recommended!
 

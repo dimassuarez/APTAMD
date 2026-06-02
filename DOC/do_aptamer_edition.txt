@@ -37,11 +37,11 @@
                                # periodic box. Def 16.0 Angstrom
     MAXCYC=500                 # Maximum opt cycles for sugar and backbone
                                # relaxation. Defult is 500.
-    DNAFF=bsc1                 # bsc1 / OL17 / OL21 / OL25 Default is bsc1
+    DNAFF=bsc1                 # bsc1 / OL15 / OL21 / OL24 Default is bsc1
     WATMODEL=tip3p             # tip3p / opc   Default is tip3p      
                                # ion parameters are selected according to
                                # the water model 
-    BOC=OCT                    # Box shape OCT-> Truncated Octahedral Box
+    BOX=OCT                    # Box shape OCT-> Truncated Octahedral Box
                                # CUBOID --> Rectangular. Default is OCT
                                # and recommended!
 
