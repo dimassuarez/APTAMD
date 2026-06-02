@@ -22,7 +22,38 @@ if [ -z "$INITIAL" ]; then more $APTAMD/DOC/do_aptamer_edition.txt ; exit; fi
 if [ -z "$IONIC" ]; then IONIC="0.150"; echo 'Assuming IONIC STRENGTH=0.150 M' ; fi
 if [ -z "$BUFFER_SOLV" ]; then BUFFER_SOLV=16.0; echo 'Assuming BUFFER SOLV= 16.0 A ' ; fi
 if [ -z "$MAXCYC" ]; then MAXCYC=500; echo 'Assuming MAXCYC=500 ' ; fi
+if [ -z "$WATMODEL" ]; then WATMODEL="tip3p"; echo "Assuming WATMODEL=$WATMODEL" ; fi
+if [ -z "$DNAFF" ]; then DNAFF="bsc1"; echo "Assuming DNAFF=$DNAFF" ; fi
 
+# Checking water model 
+if [ $WATMODEL != "tip3p" ] && [  $WATMODEL != "opc" ]
+then
+	echo "WATMODEL=$WATMODEL, but only tip3p or opc can be selected" 
+	exit
+fi
+echo "WATMODEL=${WATMODEL}"
+# Checking DNA FF 
+if [ $DNAFF != "bsc1" ] && [  $DNAFF != "OL24" ]  && [  $DNAFF != "OL21" ]  && [  $DNAFF != "OL15" ]
+then
+	echo "DNA=$DNAFF, but only bsc1 or OL15/OL21/OL24 can be selected" 
+	exit
+fi
+echo "DNAF=${DNAFF}"
+if [ $WATMODEL == "tip3p" ] && [ $DNAFF != "bsc1" ] 
+then
+	echo "$DNAFF / $WATMODEL combination NOT recommended"
+fi
+# Select ion parameters (+1/-1 ions)
+if [ $WATMODEL == "tip3p" ]
+then
+	IONFF="ionsjc_tip3p"
+	echo "Using Joung–Cheatham ion parameters for TIP3P"
+	WATBOX="TIP3PBOX"
+else
+	IONFF="ionslm_126_opc"
+	echo "Using Li-Merz ion parameters for OPC"
+	WATBOX="OPCBOX"
+fi
 # 
 if [ ! -e $INITIAL ]; then echo "$INITIAL does not exist in the current location"; exit; fi
 
@@ -56,8 +87,8 @@ sed -i 's/ C A/DC A/' $INITIAL
 
 # Edition with tleap to build CH3 in Thymine.
 echo '# Force Field data' >edit_leap_solute.src 
-echo 'source leaprc.DNA.bsc1'  >>edit_leap_solute.src
-echo 'loadamberparams frcmod.ionsjc_tip3p' >>edit_leap_solute.src 
+echo "source leaprc.DNA.${DNAFF}"  >>edit_leap_solute.src
+echo "loadamberparams frcmod.${IONFF}" >>edit_leap_solute.src 
 echo 'source leaprc.RNA.OL3'  >>edit_leap_solute.src
 echo '# Build Aptamer' >>edit_leap_solute.src 
 echo 'apt=loadpdb' $INITIAL >>edit_leap_solute.src 
@@ -106,14 +137,14 @@ EOF
 # Edition with tleap to add solvent box 
 # First we edit without adding counter ions
 echo '# Force Field data' >edit_leap.src 
-echo 'source leaprc.DNA.bsc1'  >>edit_leap.src
-echo 'source leaprc.water.tip3p'  >>edit_leap.src
-echo 'loadamberparams frcmod.ionsjc_tip3p' >>edit_leap.src 
-echo 'source leaprc.RNA.OL3'  >>edit_leap.src
+echo "source leaprc.DNA.${DNAFF}"  >>edit_leap.src
+echo "source leaprc.water.${WATMODEL}"  >>edit_leap.src
+echo "loadamberparams frcmod.${IONFF}" >>edit_leap.src 
+if [ $WATMODEL == "opc" ]; then echo 'WAT=OPC' >> edit_leap.src; fi
 echo '# Build Aptamer' >>edit_leap.src 
 echo 'apt=loadpdb' $PDB_SOLUTE >>edit_leap.src 
 echo 'alignaxes apt' >>edit_leap.src
-echo 'solvateOct apt TIP3PBOX ' $BUFFER_SOLV >>edit_leap.src
+echo "solvateOct apt $WATBOX $BUFFER_SOLV" >>edit_leap.src
 echo 'saveamberparm apt ' $TOP  $CRD >>edit_leap.src 
 echo 'savepdb apt ' $PDB >>edit_leap.src 
 echo 'quit' >>edit_leap.src 
@@ -149,14 +180,14 @@ then
 fi
 
 echo '# Force Field data' >edit_leap.src
-echo 'source leaprc.DNA.bsc1'  >>edit_leap.src
-echo 'source leaprc.water.tip3p'  >>edit_leap.src
-echo 'loadamberparams frcmod.ionsjc_tip3p' >>edit_leap.src
-echo 'source leaprc.RNA.OL3'  >>edit_leap.src
+echo "source leaprc.DNA.${DNAFF}"  >>edit_leap.src
+echo "source leaprc.water.${WATMODEL}"  >>edit_leap.src
+echo "loadamberparams frcmod.${IONFF}" >>edit_leap.src
+if [ $WATMODEL == "opc" ]; then echo 'WAT=OPC' >> edit_leap.src; fi
 echo '# Build Aptamer' >>edit_leap.src
 echo 'apt=loadpdb' $PDB_SOLUTE >>edit_leap.src
 echo 'alignaxes apt' >>edit_leap.src
-echo 'solvateOct apt TIP3PBOX ' $BUFFER_SOLV >>edit_leap.src
+echo "solvateOct apt ${WATBOX}  $BUFFER_SOLV " >>edit_leap.src
 if [ $NUM_CL -gt 0 ]
 then
    echo "addionsrand apt  Na+ $NUM_NA  Cl- $NUM_CL " >>edit_leap.src
@@ -189,6 +220,5 @@ NATOM_SOLUTE=$(grep -c 'ATOM  ' $PDB_SOLUTE )
 NATOM=$(grep -c 'ATOM  ' $PDB ) 
 echo "Total solute atoms = $NATOM_SOLUTE" 
 echo "Total number of atoms in final system= $NATOM" 
-
 
 rm -f mlog mdinfo
