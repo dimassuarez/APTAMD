@@ -21,6 +21,8 @@ if [ -z "$INITIAL" ]; then more $APTAMD/DOC/do_system_edition.txt ; exit; fi
 if [ -z "$IONIC" ]; then IONIC="0.150"; echo 'Assuming IONIC STRENGTH=0.150 M' ; fi
 if [ -z "$BUFFER_SOLV" ]; then BUFFER_SOLV=16.0; echo 'Assuming BUFFER SOLV= 16.0 A ' ; fi
 if [ -z "$FF" ]; then FF=19; echo 'Assuming FF19SB / OPC ' ; fi
+if [ -z "$DNAFF" ]; then DNAFF="bsc1"; echo "Assuming DNAFF=$DNAFF" ; fi
+
 # GAFF
 if [ -z $GAFF ]
 then
@@ -31,11 +33,48 @@ then
    echo "GAFF=$GAFF, but it can only be gaff2 or gaff"
    exit
 fi
+if [ -z $BOX ]
+then
+   BOX="OCT"
+fi
+if [ ${BOX} == "OCT" ]
+then
+   SOLVATE="solvateOct"
+   echo "Truncated Octahedral BOX will be used"
+elif [ ${BOX} == "CUBOID" ]
+then
+   SOLVATE="solvateBox"
+   echo "Cuboid BOX will be used"
+else
+   SOLVATE="solvateOct"
+   echo "Truncated Octahedral BOX will be used"
+fi
 
-
-if [ ! -e $INITIAL ]; then echo "$INITIAL does not exist in the current location"; exit; fi
-
+# Checking FF 
 if [ "$FF" -ne 19 ] &&  [ "$FF" -ne 14 ] ; then echo "FF=14 or 19, but FF=$FF"; exit ; fi
+# Checking DNA FF 
+if [ $DNAFF != "bsc1" ] && [  $DNAFF != "OL24" ]  && [  $DNAFF != "OL21" ]  && [  $DNAFF != "OL15" ]
+then
+        echo "DNA=$DNAFF, but only bsc1 or OL15/OL21/OL24 can be selected" 
+        exit
+fi
+# FF selects WATMODEL and IONFF
+if [ $FF -eq 14 ]
+then
+   WATMODEL="tip3p"
+   IONFF="ionsjc_tip3p"
+   WATBOX="TIP3PBOX"
+else
+   WATMODEL="opc"
+   IONFF="ionslm_126_opc"
+   WATBOX="OPCBOX"
+fi
+# ALIGN shuould be deactivated for SLAB systems 
+if [ -z $ALIGN ]
+then
+      ALIGN="YES"
+fi
+if [ ! -e $INITIAL ]; then echo "$INITIAL does not exist in the current location"; exit; fi
 
 # Filenames
 MOL=${INITIAL/_initial.pdb/}
@@ -85,17 +124,16 @@ CRD=${MOL}.crd
 PDB=${MOL}.pdb
 
 # Edition with tleap 
-if [ $FF -eq 19 ]
-then 
 
 echo '# Force Field data' >edit_leap_solute.src 
-echo 'source leaprc.DNA.bsc1'  >>edit_leap_solute.src
-echo 'source leaprc.protein.ff19SB' >> edit_leap_solute.src
+echo "source leaprc.DNA.${DNAFF}"  >>edit_leap_solute.src
+echo "source leaprc.protein.ff${FF}SB" >> edit_leap_solute.src
 echo "source leaprc.${GAFF}" >> edit_leap_solute.src
 if [ $OFFLIB == "YES" ]; then echo "loadoff ${MOL}.off" >> edit_leap_solute.src ; fi
 if [ $FRCMOD == "YES" ]; then echo "loadAmberParams ${MOL}.frcmod" >> edit_leap_solute.src ; fi
-echo 'WAT=OPC' >> edit_leap_solute.src
-echo 'loadamberparams frcmod.ionslm_iod_opc' >>edit_leap_solute.src 
+if [ $WATMODEL == "opc" ]; then echo 'WAT=OPC' >> edit_leap_solute.src ; fi 
+echo "source leaprc.water.${WATMODEL}" >> edit_leap_solute.src
+echo "loadamberparams frcmod.${IONFF}" >>edit_leap_solute.src 
 echo '# Build System' >>edit_leap_solute.src 
 echo 'mol=loadpdb' $INITMOL >>edit_leap_solute.src 
 if [ $EXTRA == "YES" ]; then cat ${MOL}_extra.src  >> edit_leap_solute.src ; fi
@@ -104,31 +142,6 @@ echo 'charge mol ' >>edit_leap_solute.src
 echo 'saveamberparm mol ' $TOP_SOLUTE  $CRD_SOLUTE >>edit_leap_solute.src 
 echo 'savepdb mol ' $PDB_SOLUTE >>edit_leap_solute.src 
 echo 'quit' >>edit_leap_solute.src 
-
-elif [ $FF -eq 14 ]
-then
-
-echo '# Force Field data' >edit_leap_solute.src 
-echo 'source leaprc.DNA.bsc1'  >>edit_leap_solute.src
-echo 'source leaprc.protein.ff14SB' >> edit_leap_solute.src
-echo 'loadamberparams frcmod.ionsjc_tip3p' >>edit_leap_solute.src 
-echo "source leaprc.${GAFF}" >> edit_leap_solute.src
-if [ $OFFLIB == "YES" ]; then echo "loadoff ${MOL}.off" >> edit_leap_solute.src ; fi
-if [ $FRCMOD == "YES" ]; then echo "loadAmberParams ${MOL}.frcmod" >> edit_leap_solute.src ; fi
-echo '# Build System ' >>edit_leap_solute.src 
-echo 'mol=loadpdb' $INITMOL >>edit_leap_solute.src 
-if [ $EXTRA == "YES" ]; then cat ${MOL}_extra.src  >> edit_leap_solute.src ; fi
-echo 'check mol ' >>edit_leap_solute.src 
-echo 'charge mol ' >>edit_leap_solute.src 
-echo 'saveamberparm mol ' $TOP_SOLUTE  $CRD_SOLUTE >>edit_leap_solute.src 
-echo 'savepdb mol ' $PDB_SOLUTE >>edit_leap_solute.src 
-echo 'quit' >>edit_leap_solute.src 
-
-else
-
-echo "FF not defined!"
-
-fi
 
 rm -f leap.log
 echo  Editing solute coordinates
@@ -174,48 +187,24 @@ fi
 # Edition with tleap to add solvent box 
 # First we edit without adding counter ions
 
-if [ "$FF" -eq 14 ]
-then 
-
-echo '# Force Field data' >edit_leap.src 
-echo 'source leaprc.DNA.bsc1'  >>edit_leap.src
-echo 'source leaprc.protein.ff14SB'  >>edit_leap.src
-echo "source leaprc.${GAFF}" >> edit_leap.src
-echo 'source leaprc.water.tip3p'  >>edit_leap.src
-echo 'loadamberparams frcmod.ionsjc_tip3p' >>edit_leap.src 
-if [ $OFFLIB == "YES" ]; then echo "loadoff ${MOL}.off" >> edit_leap.src ; fi
-if [ $FRCMOD == "YES" ]; then echo "loadAmberParams ${MOL}.frcmod" >> edit_leap.src ; fi
-echo '# Build system' >>edit_leap.src 
-echo 'mol=loadpdb' $PDB_SOLUTE >>edit_leap.src 
-if [ $EXTRA == "YES" ]; then cat ${MOL}_extra.src  >> edit_leap.src ; fi
-echo 'alignaxes mol ' >>edit_leap.src
-echo 'solvateOct mol TIP3PBOX ' $BUFFER_SOLV >>edit_leap.src
-echo 'saveamberparm mol ' $TOP  $CRD >>edit_leap.src 
-echo 'savepdb mol ' $PDB >>edit_leap.src 
-echo 'quit' >>edit_leap.src 
-
-elif [ $FF -eq 19 ]
-then
-
 echo '# Force Field data' >edit_leap.src
-echo 'source leaprc.DNA.bsc1'  >>edit_leap.src
-echo 'source leaprc.protein.ff19SB' >> edit_leap.src
+echo "source leaprc.DNA.${DNAFF}"  >>edit_leap.src
+echo "source leaprc.protein.ff${FF}SB" >> edit_leap.src
 echo "source leaprc.${GAFF}" >> edit_leap.src
-echo 'WAT=OPC' >> edit_leap.src
-echo 'source leaprc.water.opc' >> edit_leap.src
-echo 'loadamberparams frcmod.ionslm_iod_opc' >>edit_leap.src 
+if [ $WATMODEL == "opc" ]; then echo 'WAT=OPC' >> edit_leap.src ; fi
+echo "source leaprc.water.${WATMODEL}" >> edit_leap.src
+echo "loadamberparams frcmod.${IONFF}" >>edit_leap.src 
 if [ $OFFLIB == "YES" ]; then echo "loadoff ${MOL}.off" >> edit_leap.src ; fi
 if [ $FRCMOD == "YES" ]; then echo "loadAmberParams ${MOL}.frcmod" >> edit_leap.src ; fi
 echo '# Build system' >>edit_leap.src 
 echo 'mol=loadpdb' $PDB_SOLUTE >>edit_leap.src 
 if [ $EXTRA == "YES" ]; then cat ${MOL}_extra.src  >> edit_leap.src ; fi
-echo 'alignaxes mol ' >>edit_leap.src
-echo "solvateOct mol OPCBOX  $BUFFER_SOLV" >>edit_leap.src
+if [ ${ALIGN} == "YES" ]; then echo 'alignaxes mol ' >>edit_leap.src; fi 
+echo "${SOLVATE} mol $WATBOX $BUFFER_SOLV" >>edit_leap.src
 echo 'saveamberparm mol ' $TOP  $CRD >>edit_leap.src 
 echo 'savepdb mol ' $PDB >>edit_leap.src 
 echo 'quit' >>edit_leap.src 
 
-fi
 
 echo "Adding solvent box with BUFFER SOLV= $BUFFER_SOLV" 
 rm -f leap.log
@@ -241,58 +230,54 @@ disp([ 'Na= ',num2str(num_Na)])
 disp([ 'Cl= ',num2str(num_Cl)])
 EOF
 
-cat mlog 
-
 NUM_NA=$(head -1 mlog  | awk '{print $2}')
 NUM_CL=$(tail -1 mlog  | awk '{print $2}')
+
+
+if [ $NUM_CL -lt 0 ] || [ $NUM_NA -lt 0 ]
+then
+        echo "Solute has $Q charge"
+        echo "NUM_NA=$NUM_NA  NUM_CL=$NUM_CL"
+        echo "Solvent box with BUFFER_SOLV=${BUFFER_SOLV} is too small!!"
+        if [ $NUM_NA -lt 0 ] 
+        then
+            echo "for including Na+ ions"
+        else
+            echo "for including Cl- ions"
+        fi
+        echo "Increase BUFFER_SOLV and run again do_system_edition"
+        rm -f *.top *.crd
+        exit
+fi
 
 if [ $NUM_NA -gt 0 ]  ||  [ $NUM_CL -gt  0 ]    # Only if counterions are needed !
 then 
 
-if [ "$FF" -eq 14 ]
-then 
-
-echo '# Force Field data' >edit_leap.src 
-echo 'source leaprc.DNA.bsc1'  >>edit_leap.src
-echo 'source leaprc.protein.ff14SB'  >>edit_leap.src
-echo "source leaprc.${GAFF}" >> edit_leap.src
-echo 'source leaprc.water.tip3p'  >>edit_leap.src
-echo 'loadamberparams frcmod.ionsjc_tip3p' >>edit_leap.src 
-if [ $OFFLIB == "YES" ]; then echo "loadoff ${MOL}.off" >> edit_leap.src ; fi 
-if [ $FRCMOD == "YES" ]; then echo "loadAmberParams ${MOL}.frcmod" >> edit_leap.src ; fi
-echo '# Build System' >>edit_leap.src 
-echo 'mol=loadpdb' $PDB_SOLUTE >>edit_leap.src 
-if [ $EXTRA == "YES" ]; then cat ${MOL}_extra.src  >> edit_leap.src ; fi
-echo 'alignaxes mol ' >>edit_leap.src
-echo 'solvateOct mol TIP3PBOX ' $BUFFER_SOLV >>edit_leap.src
-echo "addionsrand mol  Na+ $NUM_NA  Cl- $NUM_CL " >>edit_leap.src
-echo 'saveamberparm mol ' $TOP  $CRD >>edit_leap.src 
-echo 'savepdb mol ' $PDB >>edit_leap.src 
-echo 'quit' >>edit_leap.src 
-
-elif [ $FF -eq 19 ]
-then
-
 echo '# Force Field data' >edit_leap.src
-echo 'source leaprc.DNA.bsc1'  >>edit_leap.src
-echo 'source leaprc.protein.ff19SB' >> edit_leap.src
+echo "source leaprc.DNA.${DNAFF}"  >>edit_leap.src
+echo "source leaprc.protein.ff${FF}SB" >> edit_leap.src
 echo "source leaprc.${GAFF}" >> edit_leap.src
-echo 'WAT=OPC' >> edit_leap.src
-echo 'source leaprc.water.opc' >> edit_leap.src
-echo 'loadamberparams frcmod.ionslm_iod_opc' >>edit_leap.src 
+if [ $WATMODEL == "opc" ]; then echo 'WAT=OPC' >> edit_leap.src ; fi
+echo "source leaprc.water.${WATMODEL}" >> edit_leap.src
+echo "loadamberparams frcmod.${IONFF}" >>edit_leap.src 
 if [ $OFFLIB == "YES" ]; then echo "loadoff ${MOL}.off" >> edit_leap.src ; fi
 if [ $FRCMOD == "YES" ]; then echo "loadAmberParams ${MOL}.frcmod" >> edit_leap.src ; fi
 echo '# Build system' >>edit_leap.src 
 echo 'mol=loadpdb' $PDB_SOLUTE >>edit_leap.src 
 if [ $EXTRA == "YES" ]; then cat ${MOL}_extra.src  >> edit_leap.src ; fi
-echo 'alignaxes mol ' >>edit_leap.src
-echo "solvateOct mol OPCBOX  $BUFFER_SOLV" >>edit_leap.src
-echo "addionsrand mol  Na+ $NUM_NA  Cl- $NUM_CL " >>edit_leap.src
-echo 'saveamberparm mol ' $TOP  $CRD >>edit_leap.src 
-echo 'savepdb mol ' $PDB >>edit_leap.src 
-echo 'quit' >>edit_leap.src 
-
+if [ ${ALIGN} == "YES" ]; then echo 'alignaxes mol ' >>edit_leap.src; fi 
+echo "${SOLVATE} mol $WATBOX  $BUFFER_SOLV" >>edit_leap.src
+if [ $NUM_NA -gt 0 ]  &&  [ $NUM_CL -gt  0 ]
+then
+   echo "addionsrand mol  Na+ $NUM_NA  Cl- $NUM_CL " >>edit_leap.src
+elif [ $NUM_NA -gt 0 ]
+then
+   echo "addionsrand mol  Na+ $NUM_NA  " >>edit_leap.src
+else
+   echo "addionsrand mol  Cl- $NUM_CL " >>edit_leap.src
 fi
+echo 'saveamberparm mol ' $TOP  $CRD >>edit_leap.src 
+echo 'quit' >>edit_leap.src 
 
 echo "Adding again solvent box, but with $NUM_NA sodiums and $NUM_CL chlorides" 
 rm -f leap.log
@@ -301,7 +286,7 @@ mv leap.log  edit_leap.log
 tail -1 edit_leap.log
 
 echo 'Randomizing ion positions'
-NRES=$(grep 'ATOM  ' $PDB_SOLUTE | tail  -1  | awk '{print $5}')
+NRES=$(grep 'ATOM  ' $PDB_SOLUTE | grep -v 'WAT\|HOH\|Cl-\|Na+' | tail  -1  | awk '{print $5}')
 $AMBERHOME/bin/cpptraj $TOP <<EOF   > mlog 
 trajin  $CRD 
 autoimage
@@ -314,6 +299,38 @@ mv ${CRD}_rand.crd  $CRD
 
 fi 
 
+# Maybe some crystallographic waters or counterions were added to the 
+# initial PDB file. In such a case, it is necessary to filter the _solute. files
+
+NSOLV_IN_SOLUTE=$( sed '1,/FLAG RESIDUE_LABEL/d' $TOP_SOLUTE | sed '/FLAG/,$d'  |  grep 'WAT\|HOH\|Cl-\|Na+' | tr " \t" "\n" | grep -c 'WAT\|HOH\|Na+\|Cl-' )
+
+if [ ${NSOLV_IN_SOLUTE} -gt 0 ]
+then
+
+echo "WAT/NA+/Cl- detected in initial(solute) structure" 
+echo "Removing them from $TOP_SOLUTE, $CRD_SOLUTE and $PDB_SOLUTE"
+
+$AMBERHOME/bin/parmed -n $TOP_SOLUTE <<EOF
+strip :WAT,Na+,Cl-
+parmout tmp.top 
+go
+EOF
+mv tmp.top $TOP_SOLUTE
+grep -v 'WAT\|HOH\|Na+\|Cl-' $PDB_SOLUTE > tmp.pdb
+mv tmp.pdb $PDB_SOLUTE 
+$TOOLS/pdbcrd < $PDB_SOLUTE > $CRD_SOLUTE
+
+fi
+
+# For large systems, tLeap PDB file is not readable by Rasmol or other programs
+$AMBERHOME/bin/cpptraj $TOP<<EOF  > mlog
+trajin $CRD
+autoimage
+trajout ${PDB} dumpq include_ep
+go
+EOF
+
+# Size of the system.....
 NATOM_SOLUTE=$(grep -c 'ATOM  ' $PDB_SOLUTE ) 
 NATOM=$(grep -c 'ATOM  ' $PDB ) 
 echo "Total solute atoms = $NATOM_SOLUTE" 

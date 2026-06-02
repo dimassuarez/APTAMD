@@ -24,6 +24,7 @@ if [ -z "$BUFFER_SOLV" ]; then BUFFER_SOLV=16.0; echo 'Assuming BUFFER SOLV= 16.
 if [ -z "$MAXCYC" ]; then MAXCYC=500; echo 'Assuming MAXCYC=500 ' ; fi
 if [ -z "$WATMODEL" ]; then WATMODEL="tip3p"; echo "Assuming WATMODEL=$WATMODEL" ; fi
 if [ -z "$DNAFF" ]; then DNAFF="bsc1"; echo "Assuming DNAFF=$DNAFF" ; fi
+if [ -z "$BOX" ]; then BOX="OCT" ; fi
 
 # Checking water model 
 if [ $WATMODEL != "tip3p" ] && [  $WATMODEL != "opc" ]
@@ -53,6 +54,19 @@ else
 	IONFF="ionslm_126_opc"
 	echo "Using Li-Merz ion parameters for OPC"
 	WATBOX="OPCBOX"
+fi
+# BOX command
+if [ ${BOX} == "OCT" ]
+then
+   SOLVATE="solvateOct"
+   echo "Truncated Octahedral BOX will be used"
+elif [ ${BOX} == "CUBOID" ]
+then
+   SOLVATE="solvateBox"
+   echo "Cuboid BOX will be used"
+else
+   SOLVATE="solvateOct"
+   echo "Truncated Octahedral BOX will be used"
 fi
 # 
 if [ ! -e $INITIAL ]; then echo "$INITIAL does not exist in the current location"; exit; fi
@@ -144,7 +158,7 @@ if [ $WATMODEL == "opc" ]; then echo 'WAT=OPC' >> edit_leap.src; fi
 echo '# Build Aptamer' >>edit_leap.src 
 echo 'apt=loadpdb' $PDB_SOLUTE >>edit_leap.src 
 echo 'alignaxes apt' >>edit_leap.src
-echo "solvateOct apt $WATBOX $BUFFER_SOLV" >>edit_leap.src
+echo "${SOLVATE} apt $WATBOX $BUFFER_SOLV" >>edit_leap.src
 echo 'saveamberparm apt ' $TOP  $CRD >>edit_leap.src 
 echo 'savepdb apt ' $PDB >>edit_leap.src 
 echo 'quit' >>edit_leap.src 
@@ -187,7 +201,7 @@ if [ $WATMODEL == "opc" ]; then echo 'WAT=OPC' >> edit_leap.src; fi
 echo '# Build Aptamer' >>edit_leap.src
 echo 'apt=loadpdb' $PDB_SOLUTE >>edit_leap.src
 echo 'alignaxes apt' >>edit_leap.src
-echo "solvateOct apt ${WATBOX}  $BUFFER_SOLV " >>edit_leap.src
+echo "${SOLVATE} apt ${WATBOX}  $BUFFER_SOLV " >>edit_leap.src
 if [ $NUM_CL -gt 0 ]
 then
    echo "addionsrand apt  Na+ $NUM_NA  Cl- $NUM_CL " >>edit_leap.src
@@ -215,6 +229,14 @@ go
 EOF
 echo "$CRD contains now the randomized ion positions"
 mv ${CRD}_rand.crd  $CRD
+
+# For large systems, tLeap PDB file is not readable by Rasmol or other programs
+$AMBERHOME/bin/cpptraj $TOP<<EOF > mlog
+trajin $CRD
+autoimage
+trajout ${PDB} dumpq include_ep
+go
+EOF
 
 NATOM_SOLUTE=$(grep -c 'ATOM  ' $PDB_SOLUTE ) 
 NATOM=$(grep -c 'ATOM  ' $PDB ) 

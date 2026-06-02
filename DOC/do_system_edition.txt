@@ -7,10 +7,11 @@
   GOAL: 
   Starting from a pdb file, this script performs tLEaP edition
   adding counterions to satisfy the required ionic force. The pdb file
-  is expected to correspond to a peptide or protein molecule. 
+  is expected to correspond to a peptide, protein or even a complex with DNA molecule. 
   
   The script can select either the ff19SB(protein)/OPC(water) or 
-  the ff14SB/TIP3P force field models. To use other FFs, make a copy of the 
+  the ff14SB/TIP3P force field models. For DNA (if present), the bsc1 
+  or OL15/OL21/OL24 FFs can be selected.  To use other FFs, make a copy of the 
   script and adapt it to your particular choices.
 
   USAGE : do_system_edition.sh  MOL_initial.pdb 
@@ -34,11 +35,16 @@
     IONIC=0.150                # NaCl(aq) Ionic strength. Def is 0.150 M.
     BUFFER_SOLV=16.0           # Solvent buffer used to build the 
                                # octahedral periodic box. Def 16.0 Angstrom
-    FF=19                      # FF=14 selects the ff14SB/TIP3P FF while
+    FF=19                      # FF=14 selects the ff14SB/TIP3P FF 
                                # FF=19 selects ff19SB/OPC. Def is FF=19.
+                               # Ion parameters are determined by water model
+    DNAFF=bsc1                 # DNA FF bsc1 (default) or OL15/OL21/OL24
     BELLYMASK="NONE"           # If an AMBER mask is provided, the selected
-                               # atoms are relaxed prior to solvent box
-                               # edition 
+                               # atoms are relaxed prior to solvent box edition
+    BOC=OCT                    # Box shape OCT-> Truncated Octahedral Box
+                               # CUBOID --> Rectangular. Default is OCT
+                               # and recommended!
+
 
    Additional parameterization data can be provided in the following files:
 

@@ -34,12 +34,15 @@
     INITIAL="MOL_initial.pdb"  # PDB input filename
     IONIC=0.150                # NaCl(aq) Ionic strength. Def is 0.150 M.
     BUFFER_SOLV=16.0           # Solvent buffer used to build the 
-                               # octahedral periodic box. Def 16.0 Angstrom
+                               # periodic box. Def 16.0 Angstrom
     MAXCYC=500                 # Maximum opt cycles for sugar and backbone
-                               # relaxation. Def is 500.
+                               # relaxation. Defult is 500.
     DNAFF=bsc1                 # bsc1 / OL17 / OL21 / OL25 Default is bsc1
     WATMODEL=tip3p             # tip3p / opc   Default is tip3p      
                                # ion parameters are selected according to
                                # the water model 
+    BOC=OCT                    # Box shape OCT-> Truncated Octahedral Box
+                               # CUBOID --> Rectangular. Default is OCT
+                               # and recommended!
 
 ###############################################################################
