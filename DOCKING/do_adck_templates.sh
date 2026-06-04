@@ -34,6 +34,7 @@ fi
 if [ -z "$NPROCS" ]
 then
    NPROCS=$(cat /proc/cpuinfo | grep -c processor)
+   if [ $NPROCS -gt 12 ]; then NPROCS=8; fi 
    echo "Using NPROCS=$NPROCS available"
 else
    echo "Using NPROCS=$NPROCS as predefined "
@@ -393,6 +394,45 @@ sed -i 's/Ho/HD/' receptor.pdbqt
 # -U lps means that all atoms are preserved 
 echo "prepare_ligand4.py ligand.pdb "
 
+# Check if ligand has more than one TER record meaning different molecules 
+NTER=$(grep -c TER ligand.pdb)
+if [ $NTER -gt  1 ]
+then
+      echo "ligand.pdb has more than one TER record"
+      echo "prepare_ligand4.py will be applied sequentially on every fragment."
+      if [ $LIGFORMAT == "FLEX" ] || [ $LIGFORMAT == "TORS" ]
+      then
+            echo "Flexible docking with multimolecule ligand is NOT valid."
+            exit
+      fi
+      csplit -n 3 -s -f ligand_frag_  ligand.pdb  '/TER/' '{*}'
+      ifrag=0
+      echo 'ROOT' > ligand.pdbqt
+      for lfrag in $(ls ligand_frag_*)
+      do
+          NATFRAG=$(grep -c 'ATOM  ' $lfrag )
+          if [ $NATFRAG -eq 0 ]; then continue ; fi
+          let "ifrag=$ifrag+1"
+          rm -f ligand_frag.pdbqt 
+          grep 'ATOM  ' $lfrag > ligand_temp.pdb 
+	  if [ $LIGFORMAT == "ALLATOM" ]
+          then
+             echo "Selecting ligand_allatom_notors.pdbqt for fragment $ifrag"
+             $PYTHONSH $AUTODOCKTOOLS/Utilities24/prepare_ligand4.py -U lps -Z -l ligand_temp.pdb -o  ligand_frag.pdbqt
+          else
+             echo "Selecting ligand_notors.pdbqt for fragment $ifrag"
+             $PYTHONSH $AUTODOCKTOOLS/Utilities24/prepare_ligand4.py -Z -l ligand_temp.pdb -o ligand_frag.pdbqt
+          fi
+          grep 'ATOM ' ligand_frag.pdbqt >> ligand.pdbqt
+      done
+      rm -f ligand_frag* ligand_temp.pdb 
+      $TOOLS/fixq_pdbqt ligand.pdbqt tmp_ligand.pdbqt ligand_amber.pdb; mv -f tmp_ligand.pdbqt  ligand.pdbqt
+      echo 'ENDROOT' >> ligand.pdbqt
+      echo 'TORSDOF   0 ' >> ligand.pdbqt
+
+
+else
+
 if [ $LIGFORMAT == "ALLATOM" ]
 then
      echo "Selecting ligand_allatom_notors.pdbqt"
@@ -425,6 +465,9 @@ else
      grep 'ATOM ' ligand_notors.pdbqt >> ligand.pdbqt
      echo 'ENDROOT' >> ligand.pdbqt
      echo 'TORSDOF   0 ' >> ligand.pdbqt
+fi
+
+
 fi
 
 #Fix atom names in pdbqt
