@@ -303,10 +303,10 @@ if [ "$RELAX" == "YES" ]
 then 
 
 # Minimization of the nucleotide bases PO4 backbone fixed 
-echo "Relaxing RECEPTOR and LIGAND geometries"
+echo "Minimal relaxation of RECEPTOR and LIGAND geometries for ADCK atom typing"
 
 cat  <<EOF  >  sander_min.inp 
-Partial relaxation (PO4 backbone atom fixed)  Distance dependent eps
+Partial relaxation  Distance dependent eps
 &cntrl
  imin=1, ncyc=100,  maxcyc=100, ntmin=2, drms=0.02
  ntb=0, ntf=1, ntc=1, ntpr=500,
@@ -408,6 +408,7 @@ then
       csplit -n 3 -s -f ligand_frag_  ligand.pdb  '/TER/' '{*}'
       ifrag=0
       echo 'ROOT' > ligand.pdbqt
+      rm -f ligand.frag
       for lfrag in $(ls ligand_frag_*)
       do
           NATFRAG=$(grep -c 'ATOM  ' $lfrag )
@@ -423,13 +424,14 @@ then
              echo "Selecting ligand_notors.pdbqt for fragment $ifrag"
              $PYTHONSH $AUTODOCKTOOLS/Utilities24/prepare_ligand4.py -Z -l ligand_temp.pdb -o ligand_frag.pdbqt
           fi
-          grep 'ATOM ' ligand_frag.pdbqt >> ligand.pdbqt
+          grep 'ATOM  \|HETATM' ligand_frag.pdbqt >> ligand.pdbqt
+          NATFRAG=$(grep -c 'ATOM  \|HETATM' ligand_frag.pdbqt) 
+          echo $NATFRAG >> ligand.frag
       done
       rm -f ligand_frag* ligand_temp.pdb 
       $TOOLS/fixq_pdbqt ligand.pdbqt tmp_ligand.pdbqt ligand_amber.pdb; mv -f tmp_ligand.pdbqt  ligand.pdbqt
       echo 'ENDROOT' >> ligand.pdbqt
       echo 'TORSDOF   0 ' >> ligand.pdbqt
-
 
 else
 
@@ -466,7 +468,8 @@ else
      echo 'ENDROOT' >> ligand.pdbqt
      echo 'TORSDOF   0 ' >> ligand.pdbqt
 fi
-
+NATFRAG=$(grep -c 'ATOM  \|HETATM' ligand.pdbqt) 
+echo $NATFRAG > ligand.frag
 
 fi
 

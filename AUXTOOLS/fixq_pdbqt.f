@@ -1,5 +1,5 @@
       PROGRAM fixq_pdbqt
-      implicit real (a-h,o-z)
+      implicit real*8 (a-h,o-z)
 C
 C     D. Suarez 
 C
@@ -20,7 +20,7 @@ C
 C     PDBQT 1
 C
       dimension x1(maxatm),y1(maxatm),z1(maxatm)
-      dimension q1(maxatm),rad1(maxatm),qdock1(maxatm)
+      dimension q1(maxatm),rad1(maxatm),qdock1(maxatm),qw(maxatm)
       character*3  atype1(maxatm) 
       dimension nfa1(maxres),nla1(maxres)
       dimension Idatm1(maxres),Idres1(maxres)
@@ -55,11 +55,11 @@ C
       OPEN (10,file=finp1,status='unknown')
       CALL RDPDBQT (10,NAT1,NRES1,NFA1,NLA1,TA1,RESNAM1,
      &     IDATM1,IDRES1,X1,Y1,Z1,Q1,RAD1,QDOCK1,ATYPE1)
-      qsum=0.0
+      qsum=0.0d0
       DO i=1,nat1
         qsum=qsum+qdock1(i)
       ENDDO
-      WRITE(6,'(''Sum of charges in PDBQT input file ='',F8.2)') qsum
+      WRITE(6,'(''Sum of charges in PDBQT input file ='',F8.3)') qsum
 C
       NUMION=0
       NUMWAT=0
@@ -78,8 +78,8 @@ C     Fixing charges (DG Guanine residues
 C
       IDG=0
       DO IRES=1,NRES1
-         qg0=0.0
-         qg=0.0
+         qg0=0.0d0
+         qg=0.0d0
          IF ( INDEX(RESNAM1(IRES),'DG').ne.0 ) THEN
             IDG=IDG+1
             DO IAT=NFA1(IRES),NLA1(IRES)
@@ -93,19 +93,19 @@ C
             KAT=JAT+13
             DO IAT=JAT,KAT
                qa0=QDOCK1(IAT)
-               if (INDEX(TA1(IAT),'N9').ne.0) QDOCK1(IAT)=-0.29377
-               if (INDEX(TA1(IAT),'C8').ne.0) QDOCK1(IAT)= 0.22928
-               if (INDEX(TA1(IAT),'N7').ne.0) QDOCK1(IAT)=-0.27585
-               if (INDEX(TA1(IAT),'C5').ne.0) QDOCK1(IAT)= 0.20062
-               if (INDEX(TA1(IAT),'C6').ne.0) QDOCK1(IAT)= 0.32362
-               if (INDEX(TA1(IAT),'O6').ne.0) QDOCK1(IAT)=-0.32123
-               if (INDEX(TA1(IAT),'N1').ne.0) QDOCK1(IAT)=-0.30093
-               if (INDEX(TA1(IAT),'H1').ne.0) QDOCK1(IAT)= 0.18868
-               if (INDEX(TA1(IAT),'C2').ne.0) QDOCK1(IAT)= 0.21973
-               if (INDEX(TA1(IAT),'N2').ne.0) QDOCK1(IAT)=-0.39408
-               if (INDEX(TA1(IAT),'H2').ne.0) QDOCK1(IAT)= 0.17316
-               if (INDEX(TA1(IAT),'N3').ne.0) QDOCK1(IAT)=-0.23883
-               if (INDEX(TA1(IAT),'C4').ne.0) QDOCK1(IAT)= 0.19346
+               if (INDEX(TA1(IAT),'N9').ne.0) QDOCK1(IAT)=-0.29377d0
+               if (INDEX(TA1(IAT),'C8').ne.0) QDOCK1(IAT)= 0.22928d0
+               if (INDEX(TA1(IAT),'N7').ne.0) QDOCK1(IAT)=-0.27585d0
+               if (INDEX(TA1(IAT),'C5').ne.0) QDOCK1(IAT)= 0.20062d0
+               if (INDEX(TA1(IAT),'C6').ne.0) QDOCK1(IAT)= 0.32362d0
+               if (INDEX(TA1(IAT),'O6').ne.0) QDOCK1(IAT)=-0.32123d0
+               if (INDEX(TA1(IAT),'N1').ne.0) QDOCK1(IAT)=-0.30093d0
+               if (INDEX(TA1(IAT),'H1').ne.0) QDOCK1(IAT)= 0.18868d0
+               if (INDEX(TA1(IAT),'C2').ne.0) QDOCK1(IAT)= 0.21973d0
+               if (INDEX(TA1(IAT),'N2').ne.0) QDOCK1(IAT)=-0.39408d0
+               if (INDEX(TA1(IAT),'H2').ne.0) QDOCK1(IAT)= 0.17316d0
+               if (INDEX(TA1(IAT),'N3').ne.0) QDOCK1(IAT)=-0.23883d0
+               if (INDEX(TA1(IAT),'C4').ne.0) QDOCK1(IAT)= 0.19346d0
 c              WRITE(6,'(A3,'' q0='',F8.3,'' q='',F8.3)')
 c    &         TA1(IAT),qa0,QDOCK1(IAT)
             ENDDO
@@ -121,17 +121,17 @@ C
          WRITE(6,'(''No guanine residues found -> No fix applied'')')
       ELSE
          WRITE(6,'(I3,'' guanine residues found. Fix applied'')') IDG
-         qsum=0.0
+         qsum=0.0d0
          DO i=1,nat1
            qsum=qsum+qdock1(i)
          ENDDO
-         WRITE(6,'(''Sum of charges in fixed PDBQT file ='',F8.2)') qsum
+         WRITE(6,'(''Sum of fixed charges ='',F8.3)') qsum
       ENDIF
 C
 C     Identifying Z ADCK TYPE ATOMS: 
 C
       NDZ=0
-      qZ=0.0
+      qZ=0.0d0
       DO IRES=1,NRES1
          DO IAT=NFA1(IRES),NLA1(IRES)
             IF ( INDEX(ATYPE1(IAT),' Z ') .ne. 0 ) THEN
@@ -140,7 +140,7 @@ C
      &        '' Z covalent atom -> charged nullified '')') 
      &        RESNAM1(IRES),IRES,TA1(IAT)
               qz=qz+QDOCK1(IAT)
-              QDOCK1(IAT)=0.0
+              QDOCK1(IAT)=0.0d0
            ENDIF
          ENDDO
       ENDDO
@@ -149,27 +149,54 @@ C     Original CHARGE of Z ADCK atoms is redistributed
 C     to preserve charge integrity 
 C
       IF ( NDZ .gt. 0 )  THEN
-         qZ=qZ/FLOAT(NAT1-NDZ) 
+         qZ=qZ/DFLOAT(NAT1-NDZ) 
          DO IAT=1,NAT1
             IF ( INDEX(ATYPE1(IAT),' Z ') .eq. 0 ) 
      &      QDOCK1(IAT)=QDOCK1(IAT)+qZ 
          ENDDO
       ENDIF
 C
-C     Rounding off 
+C     Rounding off : an elaborate protocol is needed to
+C     minimize truncation errors due to F10.3 format of charges
 C
-      iq=NINT(qsum)
-      qdiff=(qsum-dfloat(iq))/dfloat(NAT1) 
       DO IAT=1,NAT1
-         QDOCK1(IAT)=QDOCK1(IAT)-qdiff
+         QDOCK1(IAT)=dfloat(nint(QDOCK1(IAT)*1000d0))/1000.d0
       ENDDO
-      qsum=0.0
+      qsum=0.0d0
       DO i=1,nat1
            qsum=qsum+qdock1(i)
       ENDDO
+      WRITE(6,'(''Sum of charges with F8.3 format='',F8.3)') qsum
+      qmax=maxval(abs(QDOCK1(1:NAT1)))
+      qmean=sum(abs(QDOCK1(1:NAT1)))/dfloat(NAT1)
+      q2mean=sum(abs(QDOCK1(1:NAT1)**2))/dfloat(NAT1)
+      qsig2=q2mean - qmean*qmean 
+      qsig2=qsig2*0.001d0
+C  qdiff correction is weighed by a very narrow normal distribution of
+C  of absolute value charges centered at the maximum absolute value
+      qw=0.0d0
+      DO IAT=1,NAT1
+         x = - ( ( abs(QDOCK1(IAT)) - qmax )**2)/(2.0d0*qsig2)
+         if ( x .lt. -50.d0 ) then
+            qw(IAT)=0.0d0
+         else
+         qw(IAT)= (1.0d0/sqrt( 2.0d0 * 3.14159265359d0 * qsig2) )  * 
+     &   exp ( x )
+         endif
+      ENDDO
+      qw=qw/sum(qw) 
+      qfsum= sum( dfloat ( nint ( QDOCK1(1:NAT1)*1000d0))  /1000.d0 )
+      iq=NINT(qfsum)
+      qdiff= qfsum - dfloat(iq)
+      DO IAT=1,NAT1
+         QDOCK1(IAT)=dfloat(nint(QDOCK1(IAT)*1000d0))/1000.d0
+     &                    - qw(IAT)*qdiff
+      ENDDO
+      qfsum= sum( dfloat(nint(QDOCK1(1:NAT1)*1000d0))/1000.d0 )
       WRITE(6,
-     &'(''Sum of (rounded) charges in output PDBQT file ='',F8.2)') 
-     &          qsum
+     &'(''Sum of charges in output PDBQT file='',F8.3)')
+     &          qfsum
+
 C
 C    Reading PDB reference for checking residue names
 C
@@ -232,7 +259,7 @@ C
 C     =============================================================
 C
 C"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-      implicit real  (a-h,o-z)
+      implicit real*8  (a-h,o-z)
       parameter(maxatm=500000,maxres=50000)
 C
 C     All cards  ATOM or HETATM in IUNIT are
@@ -284,16 +311,16 @@ C
               read(iunit,'(6X,I5,1X,A4,1X,A3,1X,I5,4X,3F8.3)',
      &        err=666,end=666)
      &        jat,tadum,tdum,jres,xr(iat),yr(iat),zr(iat)
-              q(iat)=1.000
-              rad(iat)=0.000
+              q(iat)=1.000d0
+              rad(iat)=0.000d0
               IF (index(tdum,'Na+').ne.0) THEN
-                  qdock(iat)=1.000
+                  qdock(iat)=1.000d0
                   atype(iat)=' SD'
               ELSEIF (index(tadum,'O').ne.0) THEN 
-                  qdock(iat)=-0.834
+                  qdock(iat)=-0.834d0
                   atype(iat)=' OA'
               ELSE
-                  qdock(iat)=0.417
+                  qdock(iat)=0.417d0
                   atype(iat)=' HD'
               ENDIF
 
@@ -358,7 +385,7 @@ C
 C     =============================================================
 C
 C"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-      implicit real  (a-h,o-z)
+      implicit real*8  (a-h,o-z)
       parameter(maxatm=500000,maxres=200000)
 C
 C     All cards  ATOM or HETATM in IUNIT are

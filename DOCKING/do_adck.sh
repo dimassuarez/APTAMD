@@ -35,6 +35,7 @@ else
  if [  -z "$LIGAND_PDB_LIST" ];   then echo 'Usage: do_adck.sh RECEPTOR_PDB_LIST LIGAND_PDB_LIST'; exit; fi
 fi
 
+# Num pf processors
 if [ -z "$NPROCS" ]
 then
    NPROCS=$(cat /proc/cpuinfo | grep -c processor)
@@ -42,11 +43,11 @@ then
 else
    echo "Using NPROCS=$NPROCS as predefined "
 fi
+# 
 if [ -z "$TOP_PERCEN" ]
 then
    TOP_PERCEN=10
 fi
-
 if [ -z $KEEPSOLV_REC ]
 then
     KEEPSOLV_REC="NO"
@@ -57,7 +58,26 @@ then
 fi 
 if [ $KEEPSOLV_REC == "NO" ] ; then echo 'Counterions and H2O molecules are removed from receptor coordinates' ; fi
 
-# AUTODOCK OPTIONS
+# For MM relaxation of Autodock poses
+if [ -z $RELAXOPT ]
+then
+    RELAXOPT="GBSA"
+fi
+if [ -z $CUTOFF ]; then CUTOFF="10.0"; fi  # For relaxation. Probably no necessary to change.
+if [ $RELAXOPT == "GBSA" ]
+then
+   echo "Autodock poses will be relaxed by MM/GBSA minimization prior to rescoring,"
+   echo "applying positional harmonic restraints to heavy atoms > $CUTOFF  Ang of the contact region"
+elif [ $RELAXOPT == "DIEL" ]
+then
+   echo "Autodock poses will be partially relaxed by dielectric-distance-dependant MM minimization prior to rescoring"
+   echo "Cutoff for atom selection in receptor-ligand complex = $CUTOFF"
+else
+   echo "RELAXOPT=$RELAXOPT not valed. It must be GBSA or DIEL"
+   exit
+fi
+
+# AUTODOCK OPTIONS (for rescoring)
 if [ -z "$GRID" ]
 then
    GRID="0.333"
@@ -65,16 +85,8 @@ then
 else
    echo "Using GRID=${GRID} as predefined "
 fi
-if [ -z "$GA_RUN" ]
-then
-   GA_RUN="50"
-   echo "Using GA_RUN=${GA_RUN}"
-else
-   echo "Using GA_RUN=${GA_RUN} as predefined "
-fi
 
 export OMP_NUM_THREADS=$NPROCS
-
 # Flow control 
 if [ -z "$DO_DOCKING" ]
 then
@@ -125,7 +137,7 @@ WORKDIR=$PWD
 echo "WORKDIR=$PWD"
 echo "No other working directory is made"
 
-for file in receptor.pdbqt ligand.pdbqt receptor.gpf receptor_ligand.dpf complex.top ligand.off input_leap_ligand.src
+for file in receptor.pdbqt ligand.pdbqt receptor.gpf receptor_ligand.dpf complex.top ligand.off input_leap_ligand.src ligand.frag receptor.pdb ligand.pdb 
 do
   if [ ! -e $file ]
   then
@@ -146,25 +158,30 @@ nres_rec=$(grep 'ATOM ' receptor.pdbqt | tail -1 | awk '{print $5}')
 nres_lig=$(grep 'ATOM  ' ligand.pdbqt | tail -1 | awk '{print $5}')
 
 #  SANDER input for MM/GBSA relaxation 
+#  For speed , cut=25.0 and rgbmax=15   Note that restraints apply
 cat << EOF > sander_min_gbsa.inp
-GBSA Minimization  
+GBSA Minimization IGB = 5  
 &cntrl  
- imin=1, maxcyc=1000, ntmin=2, drms=0.002 
- ntb=0, ntf=1, ntc=1, ntpr=10, 
- igb=1, gbsa=1, saltcon=150, rgbmax=999.0, 
+ imin=1, maxcyc=500, ntmin=2, drms=0.002 
+ ntb=0, ntf=1, ntc=1, ntpr=100, 
+ igb=5, gbsa=1, saltcon=0.150, rgbmax=15.0, 
  intdiel=1.0, extdiel=80.0, 
- cut=20.0, nsnb=50000,  
+ cut=25.0, nsnb=5000,  
+ ntr=1,
+ restraint_wt=25.0,
+ restraintmask='DUMMY_RSTMASK',
+ 
  / 
 EOF
 
 cat  <<EOF  >  sander_min_belly.inp 
 Distance dependent eps
 &cntrl
- imin=1, ncyc=100,  maxcyc=1000, ntmin=2, drms=0.02
- ntb=0, ntf=1, ntc=1, ntpr=500,
- cut=1000.0, nsnb=5000,  igb=0,
+ imin=1, ncyc=100,  maxcyc=500, ntmin=2, drms=0.02
+ ntb=0, ntf=1, ntc=1, ntpr=100,
+ cut=100.0, nsnb=5000,  igb=0,
  ibelly=1,
- bellymask="DUMMY_BELLY"
+ bellymask='DUMMY_BELLY',
  /
  &ewald
   eedmeth=5,
@@ -187,6 +204,8 @@ then
 fi
 if [ $IZATM -gt 0 ]
 then
+  echo "Z-potential defined in receptor.gpf/ligand.zatm: Autodock poses must be relaxed"
+  echo "by means of dielectric-distance-dependant MM minimization."
   cp sander_min_belly.inp sander_min.inp 
   BELLYMASK="!@"
   ZATM_REC=$(grep ZATM $WORKDIR/receptor.zatm | awk '{print $2}') 
@@ -214,10 +233,27 @@ then
   done
   sed -i "s/DUMMY_BELLY/${BELLYMASK}/" sander_min.inp
 
-else
+elif [ $RELAXOPT == "GBSA" ]
+then
    cp sander_min_gbsa.inp sander_min.inp 
+   NRESREC=$(grep 'ATOM  \|HETATM' receptor.pdb | awk '{printf("%3s %6i \n", $4,$5)}' |sort -n -k 2 | uniq | wc -l)
+   NRESLIG=$(grep 'ATOM  \|HETATM' ligand.pdb   | awk '{printf("%3s %6i \n", $4,$5)}' |sort -n -k 2 | uniq | wc -l)
+   let "IRES=$NRESREC+1" 
+   let "JRES=$NRESREC+$NRESLIG" 
+   RSTMASK="(( (:1-${NRESREC})\&(:${IRES}-${JRES}>@${CUTOFF}) ) | ((:${IRES}-${JRES})\&(:1-${NRESREC}>@${CUTOFF})) )\&(!@H=)"
+   sed -i "s/DUMMY_RSTMASK/${RSTMASK}/" sander_min.inp
+   
+elif [ $RELAXOPT == "DIEL" ]
+then
+   # Probably not adequate for DNA complexes 
+   cp sander_min_belly.inp sander_min.inp 
+   NRESREC=$(grep 'ATOM  \|HETATM' receptor.pdb | awk '{printf("%3s %6i \n", $4,$5)}' |sort -n -k 2 | uniq | wc -l)
+   NRESLIG=$(grep 'ATOM  \|HETATM' ligand.pdb   | awk '{printf("%3s %6i \n", $4,$5)}' |sort -n -k 2 | uniq | wc -l)
+   let "IRES=$NRESREC+1" 
+   let "JRES=$NRESREC+$NRESLIG" 
+   BELLYMASK="( (:1-${NRESREC})\&(:${IRES}-${JRES}<@${CUTOFF}) ) | ((:${IRES}-${JRES})\&(:1-${NRESREC}<@${CUTOFF})) | (:${IRES}-${JRES}\&@H=)"
+   sed -i "s/DUMMY_BELLY/${BELLYMASK}/" sander_min.inp
 fi
-
 
 if [ ${DO_DOCKING} == "YES" ]
 then 
@@ -328,13 +364,14 @@ fi    #  END of if DO_DOCKING
 
 cd $WORKDIR
 
-# PRESCORING Triple loop over receptor, ligand and pose files to get preliminay scores
-# before relaxaion 
+# Triple loop over receptor, ligand and pose files 
+# to get preliminay scores before relaxaion 
 
-if [ ${PRESCORE} == "YES" ]
-then 
+#  Note that for a given Autodock run: we get only energies and
+#  coordinates of the cluster representatives generated by the
+#  analysis command in Autodock
 
-rm -r -f PRESCORE*.dat
+rm -f PRESCORE*.dat
 
 for ((irec=1;irec<=nrec;irec++))
 do
@@ -349,7 +386,7 @@ cat <<EOF > TASK_extract_${irec}.sh
    do
       cd LIG_\${ilig}
       declare -a energy=""
-      energy=(\$(grep "Final Intermolecular Energy" receptor_ligand.dlg | grep DOCKED |  awk '{print \$8}'))
+      energy=(\$(grep "Final Intermolecular Energy" receptor_ligand.dlg | grep -v DOCKED |  awk '{print \$7}'))
       npose=\${#energy[@]}
       for ((ipose=1;ipose<=npose;ipose++))
       do 
@@ -380,6 +417,9 @@ sed -i 's/+/ /g' PRESCORE.dat
 sort -n -k 2 PRESCORE.dat > tmp; mv tmp PRESCORE.dat
 rm -f PRESCORE_*.dat
 
+if [ ${PRESCORE} == "YES"  ]   # Chopping PRESCORE file only when PRESCORE=YES
+then 
+
 NPOSES=$(cat PRESCORE.dat | wc -l)
 let "NCLEAN=$NPOSES * (100 - $TOP_PERCEN_PRESCORE ) / 100" 
 let "NKEEP=$NPOSES - $NCLEAN" 
@@ -389,12 +429,8 @@ then
   head -${NKEEP} PRESCORE.dat  > tmp; mv tmp PRESCORE.dat 
 fi 
 
-else
+fi
 
-rm -f PRESCORE.dat
-touch PRESCORE.dat 
-
-fi  # END OF PRESCORE
 
 # Check if TORSDOF is active 
 TORSDOF=$(grep TORSDOF ligand.pdbqt | awk '{print $NF}') 
@@ -432,7 +468,7 @@ iord=(${iord[*]})
       if [ -e OPT_MM ]; then rm -r -f OPT_MM; fi 
       mkdir OPT_MM
       ligand_atoms=\$(grep "ATOM" ligand.pdbqt | wc -l)
-      grep "DOCKED: ATOM " receptor_ligand.dlg | split -d -l \$ligand_atoms - ./OPT_MM/dock_ligand
+      grep 'ATOM \|HETATM' receptor_ligand.dlg | grep -v 'DOCKED:\|INPUT' | split -d -l \$ligand_atoms - ./OPT_MM/dock_ligand
       cd OPT_MM/
       ln -s ../../rec_${irec}.pdb receptor.pdb
       ipose=0
@@ -475,14 +511,27 @@ iord=(${iord[*]})
                  echo "\${FLINE["\$jline"]}" >> temp.pdb
              done
           fi
-          $TOOLS/reorder < temp.pdb > ligand.pdb 
+          $TOOLS/reorder < temp.pdb > ligand_noter.pdb 
+          iprev=0
+          rm -f ligand.pdb
+          for natfrag in \$(cat $WORKDIR/ligand.frag)
+          do
+              let "ifirst=\$iprev+1"
+              let "ilast=\$iprev+\$natfrag"
+              sed -n "\${ifirst},\${ilast}p" ligand_noter.pdb >> ligand.pdb
+              echo 'TER' >> ligand.pdb
+              let "iprev=\$iprev+\$natfrag"
+          done
+          rm -f ligand_noter.pdb
           pose=pose_\${ipose}
           $AMBERHOME/bin/tleap -f $WORKDIR/input_leap_ligand.src > mlog 
           mv  -f ligand_edited.pdb ligand.pdb
-          cat receptor.pdb ligand.pdb > receptor_ligand.pdb
+          cat receptor.pdb  > receptor_ligand.pdb
+          echo 'TER' >>                 receptor_ligand.pdb
+          cat  ligand.pdb >> receptor_ligand.pdb
           $TOOLS/pdbcrd < receptor_ligand.pdb > \${pose}.crd
           echo "cd $WORKDIR/REC_${irec}/LIG_\${ilig}/OPT_MM;  \
-          $AMBERHOME/bin/sander -O -i $WORKDIR/sander_min.inp -p $WORKDIR/complex.top -c \${pose}.crd -r \${pose}.rst -o \${pose}.out -inf \${pose}.inf" >>$WORKDIR/TASK_sander_${irec}.sh
+          $AMBERHOME/bin/sander -O -i $WORKDIR/sander_min.inp -p $WORKDIR/complex.top -c \${pose}.crd -ref \${pose}.crd -r \${pose}.rst -o \${pose}.out -inf \${pose}.inf" >>$WORKDIR/TASK_sander_${irec}.sh
 
           fi # End of icheck IF
 
@@ -517,7 +566,6 @@ cat TASK.sh  | $PARHOME/bin/parallel --silent --no-notice  -t -j$NPROCS
 fi  # End of DO_RELAX IF
 
 cd $WORKDIR
-     
 
 if [ $DO_RESCORE  == "YES"  ]
 then 
@@ -596,7 +644,7 @@ EOF
 done
 
 cd $WORKDIR
-echo "Running ADCK preparation tasks for rescoring in $PWD"
+echo "Running ADCK preparatory tasks for rescoring in $PWD"
 rm -f TASK.sh 
 for file in $(ls TASK_prep_*)
 do
@@ -618,10 +666,9 @@ rm -f TASK_prep_* TASK_adck_*
 fi   # END OF DO_RESCORE IF 
 
 # Triple loop over receptor, ligand and pose files to get final scores
-rm -r -f SCORING*.dat
+rm -f SCORING*.dat
 if [ -e  PDB_SCORING ] ; then rm -r -f PDB_SCORING ; fi
 mkdir PDB_SCORING
-
 
 for ((irec=1;irec<=nrec;irec++))
 do

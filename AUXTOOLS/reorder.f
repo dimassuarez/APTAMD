@@ -20,11 +20,13 @@ C
       dimension xr(maxatm),yr(maxatm),zr(maxatm)
       dimension nfa(maxres),nla(maxres),ncon(maxres)
       dimension f1(maxatm),f2(maxatm) 
+      integer   terline(maxatm)
       character*3  resnam(maxres)
       character*4  ta(maxatm)
-      character*26 info(maxatm)
+      character*36 info(maxatm)
+      character*1  icode,icode0
       character finp*40,fout*40
-      character line*80,head*4,tdum*3
+      character line*90,head*4,tdum*3
       character title*80,label*3
 C
 C     Reading Input file 
@@ -33,6 +35,8 @@ C
       iat=0
       ires=0
       idum0=0
+      icode0=' '
+      iter=0
 C
  10   read(5,'(A4)',end=20,err=666) head
 C
@@ -45,8 +49,12 @@ C
           ititl=1
           title=line
           write(6,'(A80)') title
-      ELSE IF ( head .eq. 'TER') THEN
+      ELSE IF ( head(1:3) .eq. 'TER') THEN
           idum0=-99
+          if (iat .gt. 0) then
+             iter=iter+1
+             terline(iter)=iat
+          endif
       ELSE IF ( head .eq. 'ENDM') THEN
           idum0=-99
       ELSE IF ( head .eq. 'MODE') THEN
@@ -55,14 +63,15 @@ C
      +         ( head .eq. 'HETA'))  THEN 
           backspace(5)
           iat=iat+1
-          read(5,'(12X,A4,1X,A3,2X,I4,4X,3F8.3,A)',err=666,end=777)
-     +    ta(iat),tdum,jres,xr(iat),yr(iat),zr(iat),info(iat)
-          IF ( idum0 .ne. jres) THEN
+          read(5,'(12X,A4,1X,A3,2X,I4,A1,3X,3F8.3,A)',err=666,end=777)
+     +    ta(iat),tdum,jres,icode,xr(iat),yr(iat),zr(iat),info(iat)
+          IF ((idum0 .ne. jres) .or. ( icode0 .ne. icode)) THEN
             ires=ires+1
             nfa(ires)=iat
             resnam(ires)=tdum
             ncon(ires)=0
             idum0=jres
+            icode0=icode
           ENDIF  
 C
  15       CONTINUE
@@ -74,8 +83,10 @@ C
 C
       numatm=iat
       numres=ires
+      nter=iter
 C     print*,numatm
 C     print*,numres
+C     print*,nter  
 C
       DO ires=1,numres-1
         nla(ires)=nfa(ires+1)-1
@@ -89,8 +100,11 @@ C
       zero=0.d0
       DO ires=1,numres
         DO I=nfa(ires),nla(ires)
-        write(6,'(''ATOM'',1X,I6,1X,A4,1X,A3,1X,I5,4X,3F8.3,A26)')
+        write(6,'(''ATOM'',1X,I6,1X,A4,1X,A3,1X,I5,4X,3F8.3,A)')
      +  I,ta(I),resnam(ires),ires,xr(I),yr(I),zr(I),info(I)
+        DO iter=1,nter
+           IF ( terline(iter) .eq. I ) WRITE(6,'(''TER'')')
+        ENDDO
         ENDDO
         IF (( ires .gt. 1 ) .and. (ires .lt. numres)) THEN 
          IF ((index(resnam(ires),'NME').ne.0) .and.
