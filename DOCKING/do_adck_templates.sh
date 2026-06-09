@@ -85,8 +85,8 @@ then
 else
    if [ $RECCHARGE != "GASTEIGER" ] && [ $RECCHARGE != "RESP" ] 
    then
-      echo "RECCHARG=$RECCHARG NOT VALID, SELECTING RECCHARG=GASTEIGER"
-      RECCHARG="GASTEIGER"
+      echo "RECCHARG=$RECCHARG NOT VALID, SELECTING RECCHARGE=GASTEIGER"
+      RECCHARGE="GASTEIGER"
    else
       echo "Using RECCHARGE=$RECCHARGE as predefined"
    fi
@@ -134,8 +134,40 @@ fi
 if [ $RELAX == "YES" ]; then echo "Relaxing structures before ADCK atom typing"; fi 
 # Force filed options 
 
+# FF options 
 if [ -z "$FF" ]; then FF=19; echo 'Assuming FF19SB  ' ; fi
+if [ -z "$WATMODEL" ]; then WATMODEL="tip3p"; echo "Assuming WATMODEL=$WATMODEL" ; fi
+if [ -z "$DNAFF" ]; then DNAFF="bsc1"; echo "Assuming DNAFF=$DNAFF" ; fi
+
+# Checking FF
 if [ "$FF" -ne 19 ] &&  [ "$FF" -ne 14 ] ; then echo "FF=14 or 19, but FF=$FF"; exit ; fi
+# Checking water model 
+if [ $WATMODEL != "tip3p" ] && [  $WATMODEL != "opc" ]
+then
+        echo "WATMODEL=$WATMODEL, but only tip3p or opc can be selected" 
+        exit
+fi
+# Checking DNA FF 
+if [ $DNAFF != "bsc1" ] && [  $DNAFF != "OL24" ]  && [  $DNAFF != "OL21" ]  && [  $DNAFF != "OL15" ]
+then
+        echo "DNA=$DNAFF, but only bsc1 or OL15/OL21/OL24 can be selected" 
+        exit
+fi
+if [ $WATMODEL == "tip3p" ] && [ $DNAFF != "bsc1" ]
+then
+        echo "$DNAFF / $WATMODEL combination NOT recommended"
+fi
+# Select ion parameters (+1/-1 ions)
+if [ $WATMODEL == "tip3p" ]
+then
+        IONFF="ionsjc_tip3p"
+        echo "Using Joung–Cheatham ion parameters for TIP3P"
+        WATBOX="TIP3PBOX"
+else
+        IONFF="ionslm_126_opc"
+        echo "Using Li-Merz ion parameters for OPC"
+        WATBOX="OPCBOX"
+fi
 
 if [ ! -z "$TOPOLOGY_REC" ]
 then
@@ -271,17 +303,13 @@ do
   then 
     echo "Creating ${molecule}.top"
     echo '# Force Field data' >  edition_${molecule}.src
-    echo 'source leaprc.DNA.bsc1'  >> edition_${molecule}.src
+    echo "source leaprc.DNA.${DNAFF}"  >>edition_${molecule}.src
     echo "source leaprc.protein.ff${FF}SB" >> edition_${molecule}.src
-    if  [ $ISOLV -gt 0 ] && [ "$FF" -eq 19 ]
+    if  [ $ISOLV -gt 0 ] 
     then
-       echo 'WAT=OPC' >> edition_${molecule}.src
-       echo 'source leaprc.water.opc' >> edition_${molecule}.src
-       echo 'loadamberparams frcmod.ionslm_iod_opc' >>edition_${molecule}.src 
-    elif [ $ISOLV -gt 0 ]
-    then 
-       echo 'source leaprc.water.tip3p' >>edition_${molecule}.src
-       echo 'loadamberparams frcmod.ionsjc_tip3p'>>edition_${molecule}.src
+       echo "source leaprc.water.${WATMODEL}"  >> edition_${molecule}.src
+       if [ $WATMODEL == "opc" ]; then echo 'WAT=OPC' >> edition_${molecule}.src; fi
+       echo "loadamberparams frcmod.${IONFF}" >>edition_${molecule}.src
     fi
     echo "mol=loadpdb  ${molecule}.pdb "  >> edition_${molecule}.src
     echo 'check mol ' >>   edition_${molecule}.src
@@ -632,25 +660,16 @@ else
   echo "...maybe additional edition commands are required!"
   echo "Check the edition.src file."
   echo '# Force Field data' >edition.src
-  echo '# DNA FF ' >>edition.src
-  echo 'source leaprc.DNA.bsc1' >>edition.src
-  echo '#  Protein and Solvent FFs ' >>edition.src
-  if [ "$FF" -eq 19 ]
-  then
-    echo 'source leaprc.protein.ff19SB' >> edition.src
-    echo 'WAT=OPC' >> edition.src
-    echo 'source leaprc.water.opc' >> edition.src
-    echo 'loadamberparams frcmod.ionslm_iod_opc' >>edition.src 
-  else 
-    echo 'source leaprc.protein.ff14SB'>>edition.src
-    echo 'source leaprc.water.tip3p' >>edition.src
-    echo 'loadamberparams frcmod.ionsjc_tip3p'>>edition.src
-  fi
+  echo "source leaprc.protein.ff${FF}SB" >> edition.src
+  echo "source leaprc.DNA.${DNAFF}"  >> edition.src
+  echo "source leaprc.water.${WATMODEL}"  >>edition.src
+  echo "loadamberparams frcmod.${IONFF}" >>edition.src
+  if [ $WATMODEL == "opc" ]; then echo 'WAT=OPC' >> edition.src; fi
   echo '# GLYCAM FF '>>edition.src
   echo '# source leaprc.GLYCAM_06j-1'>>edition.src
-  echo '#loadOff GLYCAM_amino_06j_12SB.lib'>>edition.src
-  echo '#loadOff GLYCAM_aminont_06j_12SB.lib'>>edition.src
-  echo '#loadOff GLYCAM_aminoct_06j_12SB.lib'>>edition.src
+  echo '# loadOff GLYCAM_amino_06j_12SB.lib'>>edition.src
+  echo '# loadOff GLYCAM_aminont_06j_12SB.lib'>>edition.src
+  echo '# loadOff GLYCAM_aminoct_06j_12SB.lib'>>edition.src
   echo 'receptor=loadpdb receptor_amber.pdb' >> edition.src
   echo 'ligand=loadpdb ligand_amber.pdb' >>edition.src
   echo 'complex=combine{receptor ligand}'>> edition.src

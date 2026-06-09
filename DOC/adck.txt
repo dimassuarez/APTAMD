@@ -25,8 +25,8 @@ the receptor and produce different binding poses.
 To sample the receptor/ligand conformational space, we use the genetic search algorithm 
 to generate 50 or more conformations that are clustered with an RMSD tolerance of 2.0 Å. 
 To remove band contacts, the docking poses are fully relaxed,  introducing thus some 
-flexibility in the docking protocol. Using SANDER, we run 1000 steps of conjugate gradient 
-minimization on each structure and using the Hawkins, Cramer, Truhlar pairwise 
+flexibility in the docking protocol. Using SANDER, we run 500 steps of conjugate gradient 
+minimization on each structure and using the Hawkins, Cram5r, Truhlar pairwise 
 generalized Born implicit solvent model. After geometry optimization, the 
 minimized structures are finally ranked using the Autodock scoring function. 
 

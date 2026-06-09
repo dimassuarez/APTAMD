@@ -42,10 +42,32 @@
     NPROCS=6           # Number of cores to be used. Def all available.
 
     GRID="0.333"       # Grid size of the Autogrid maps . Def =0.333 Ang
+                       # for rescoring 
 
     GA_RUN="50"        # Number of GA runs to request in the ADCK calcs.
                        # NOTE: A total of NREC x NLIG x GA poses will be
                        # produced. Def = 50 
 
+    PRESCORE="NO"      # If PRESCORE=YES only a given percentage of the top
+                       # poses generated in the docking calculations
+                       # will be relaxed and rescored.
+
+    TOP_PERCEN_PRESCORE=33   # Percentage of docking poses to keep .
+
+    RELAXOPT="GBSA"    # MM/GBSA minimization of docking poses prior
+                       # to rescoring. RELAXOPT="DIEL" requests in-vacuo
+                       # MM minimization with distance-dependant dielectric
+                       # constant (faster, not recommended for aptamers)
+
+    TOP_PERCEN=10     # Percentage of top docking poses to keep when 
+                      # using the clean_up_REC_LIG_data.sh script.
+                      # Ensemble docking generates a lot of intermediate
+                      # that should be removed to save disk space! 
+
+    # The following options are mainly used for debugging 
+    DO_GRIDMAP="YES"    # If YES calculate gridmaps. If NO then skip this step 
+    DO_DOCKING="YES"    # If YES calculate docking . If NO then skip this step 
+    DO_RELAX="YES"      # If YES relax poses . If NO then skip this step 
+    DO_RESCORING="YES"  # If YES rescore relaxed poses . If NO skip this step 
 
 ###############################################################################

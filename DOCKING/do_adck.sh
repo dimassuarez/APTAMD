@@ -44,7 +44,7 @@ else
    echo "Using NPROCS=$NPROCS as predefined "
 fi
 # 
-if [ -z "$TOP_PERCEN" ]
+if [ -z "$TOP_PERCEN" ]    # Percentage of top docking poses to keep when cleaning up directories
 then
    TOP_PERCEN=10
 fi
@@ -275,8 +275,8 @@ do
       continue
    fi 
    let "irec=$irec+1"
-   if [ $RM_RECDIR == "YES" ] && [ -d REC_${irec} ]; then rm -r -f REC_${irec} ; fi  
-   mkdir REC_${irec}
+   if [ $RM_RECDIR == "YES" ] && [ $DO_GRIDMAP == "YES" ] &&  [ -d REC_${irec} ]; then rm -r -f REC_${irec} ; fi  
+   if [ ! -d REC_${irec} ]; then mkdir REC_${irec} ; fi 
    if [ $KEEPSOLV_REC == "NO" ]
    then
        grep -v 'WAT\|HOH' $file | grep -v 'Na+' | grep -v 'K+' | grep -v 'Cl-' > temp.pdb
@@ -719,8 +719,9 @@ rm -f SCORING_*.dat
 cd $WORKDIR
 rm -f mlog TASK.sh
 
-echo 'If everything is OK, clean up intermediate files!'
-echo 'using clean_up_REC_LIG_data.sh'
+
+echo 'If everything is OK, you should clean up intermediate files:'
+echo '                    Run the clean_up_REC_LIG_data.sh script!'
 rm -f clean_up_REC_LIG_data.sh
 echo  "TOP_PERCEN=${TOP_PERCEN} " >> clean_up_REC_LIG_data.sh
 echo  "WORKDIR=$WORKDIR" >> clean_up_REC_LIG_data.sh
