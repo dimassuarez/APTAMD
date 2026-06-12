@@ -2,7 +2,7 @@
         APTAMD SUITE: Scripts for Automating Molecular Modelling Tasks
 ###############################################################################
   
-  SCRIPT's NAME:  do_rw_gamd.sh   
+  SCRIPT's NAME:  do_reweight_gamd.sh
 
   GOAL: 
 
@@ -35,8 +35,8 @@
 
     MOL='alias'        # System alias. Several aliases can be grouped
                        # into a single variable MD_TRAJ='MOL1 MOl2 ...'
-    EMAX='6.0'          # Upper threshold energy limit in the 2D map 
-                       # Def = 8.0 kcal/mol 
+    EMAX='6.0'         # Upper threshold energy limit in the 2D map 
+                       # Def = 8.0 kcal/mol . 
     FINEGRID='NO'      # Whether to use finer or coarser grid in
                        # binning of the 2D map. Usually better results
                        # are obtained with a regular (coarser) grid.
@@ -44,7 +44,17 @@
     NGRID_FINE='25'    # Number of bin intervals along each dimension
                        # in a fine grid. Def 25. 
     NGRID_REG='15'     # Bin intervals in a regular grid. Def 15.
-    RW_DIR='RW_GAMD_ENE'  # Directory in which to save the output files
+    
+    FRACMAX="0.0 0.0"  # In case of problematic 2D reweights because of
+    FRACMIN="0.0 0.0"  # poor sampling in outer bins, it is possible
+                       # reduce the interval of data to be processed 
+                       # by $APTAMD/RWGAMD/PyReweighting-2D.py. For example:
+                       # FRACMAX=" 0.05 0.0 " --> Maximum value for first 
+                       # coordinate  (e.g.,INF) = (1-0.05)*max(INF)
+                       # FRACMIN=" 0.00 0.2 " --> Minimum value for second 
+                       #  coordinate (e.g.,RMSD) = (1+0.02)*min(RMSD)
+
+    RW_DIR='RW_GAMD_ENE' # Directory in which to save the output files
     DO_INF_RMSD='YES'  # Build a 2D free energy map in terms of the 
                        # INF and RMSD coordinates. This is the default
                        # and recommended. 
@@ -53,8 +63,8 @@
                        # recommended. Def. NO. 
     DATA_DIR='STRUCT'  # Subdirectory containing the RMSD, RGYR 
                        # and INF data as calculated by do_struct.sh
-    SIEVE=1           # If a SIEVE > 1 was used when running 
-                      # do_struct.sh,  it must be used here too!
+    SIEVE=1            # If a SIEVE > 1 was used when running 
+                       # do_struct.sh,  it must be used here too!
 
     Since the script also selects some representative GAMD frames that 
     could be used for visualization and subsequent MD simulations, 

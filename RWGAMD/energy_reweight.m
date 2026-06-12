@@ -49,10 +49,10 @@ ny=(ymax-ymin)/ygrid+1;
 nx=round(nx);ny=round(ny);
 
 % Determining Relative Population of each 2D bin 
-POP=zeros(nx,ny);
+POP=zeros(nx+1,ny+1);
 
-ix=round (  ((X.-xmin)/xgrid).+1) ;
-iy=round (  ((Y.-ymin)/ygrid).+1) ;
+ix=round (  ((X-xmin)/xgrid)+1) ;
+iy=round (  ((Y-ymin)/ygrid)+1) ;
 
 % Reading bulk data Reaction coordinate 1 (RC1) and Reaction coordinate (RC2) 
 
@@ -60,12 +60,22 @@ RC=load('DUMMY_COORD.dat');
 n=length(RC);
 
 disp('RC1/RC2 data loaded')
-IRC(:,1)=round( (RC(:,1)/f1.-xmin)/xgrid.+1 );
-IRC(:,2)=round( (RC(:,2).-ymin)/ygrid.+1 );
+ixrc=round( (RC(:,1)/f1-xmin)/xgrid+1 );
+ixrc ( find ( ixrc > nx ) ) = nx+1;   % Discarded points
+ixrc ( find ( ixrc < 1  ) ) = nx+1;   
+iyrc=round( (RC(:,2)-ymin)/ygrid+1 );
+iyrc ( find ( iyrc > ny ) ) = ny+1;
+iyrc ( find ( iyrc < 1  ) ) = ny+1;
+IRC(:,1)=ixrc;
+IRC(:,2)=iyrc;
 disp('Building 2D Population map')
 for i=1:n
   POP( IRC(i,1) , IRC(i,2) ) =  POP( IRC(i,1) , IRC(i,2) ) + 1;
 end
+
+nout=fix( sum(POP(nx+1,:))+sum(POP(:,ny+1)) );
+disp('number of data points outside map')
+disp(nout)
 
 fid=fopen('2D_RW.dat','w');
 
@@ -73,7 +83,7 @@ disp('Population calculated')
 disp('# RC1, RC2,  E, Pop')
 fprintf(fid,'# RC1, RC2, E, Pop \n');
 for i=[1:ndat]
-   P(i)=POP(ix(i),iy(i))/n;
+   P(i)=POP(ix(i),iy(i))/(n-nout);
    printf(' %f, %f, %f, %15.12f, %i, %i \n',X(i),Y(i),E(i),P(i),ix(i),iy(i))
    fprintf(fid,' %f, %f, %f, %15.12f, %i, %i \n',X(i),Y(i),E(i),P(i),ix(i),iy(i))
 end
@@ -130,7 +140,7 @@ imagesc(XT,YT,DP',[Pmin Psup])
 axc=colorbar();
 
 if RC1 == 'INF' 
-  set(gca,'xtick',round(linspace(0,xmax,5)*100)/100)
+  set(gca,'xtick',round(linspace(xmin,xmax,5)*100)/100)
 end
 %set(gca,'ytick',[]);
 set(gca, 'FontName', 'Arial')
@@ -157,7 +167,7 @@ for i=[1:ndat]
     Esup=max(E(i),Esup);
     Emin=min(E(i),Emin);
 end
-D=D.-Emin;
+D=D-Emin;
 Esup=Esup-Emin;
 
 for jx=[1:nx]
@@ -260,7 +270,7 @@ for l=[ 1 : ndat ]
        snaps(1:nj,1)=ja;
        snaps(1:nj,2:3)=RC(ja,1:2);
        snaps(1:nj,4)=ID(ja);
-       snaps(1:nj,5)=GAMD(ja,7).+GAMD(ja,8);
+       snaps(1:nj,5)=GAMD(ja,7)+GAMD(ja,8);
 
        format long
        m=length(snaps);

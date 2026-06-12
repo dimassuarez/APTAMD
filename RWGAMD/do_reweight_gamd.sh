@@ -42,6 +42,13 @@ if [ -z "$PREFIX_MDCRD" ]; then echo 'Considering PREFIX_MDCRD=md_';  PREFIX_MDC
 if [ -z "$SUFFIX_MDCRD" ]; then echo 'Considering SUFFIX_MDCRD=_solute.mdcrd';  SUFFIX_MDCRD="_solute.mdcrd"; else echo "Using SUFFIX_MDCRD=$SUFFIX_MDCRD"; fi
 if [ -z "$SIEVE" ]; then echo 'Considering SIEVE=1';  SIEVE=1; else echo "Using SIEVE=$SIEVE"; fi
 if [ -z "$SUFFIX_GAMD" ]; then echo 'Considering SUFFIX_GAMD=.gamd_log';  SUFFIX_GAMD=".gamd_log"; else echo "Using SUFFIX_GAMD=$SUFFIX_GAMD"; fi
+# In case of problematic reweights because of poor sampling in specific bins
+# reduce the interval of descriptor values to be processed by $APTAMD/RWGAMD/PyReweighting-2D.py
+# For example    
+#            FRCMAX=" 0.05 0.0 " --> Maximum value for first coordinate  (e.g.,INF) = (1-0.05)*max(INF)
+#            FRCMAX=" 0.00 0.2 " --> Minimum value for second coordinate (e.g.,RMSD) = (1+0.02)*min(RMSD)
+if [ -z "$FRACMAX" ]; then FRACMAX="0.0 0.0"; fi
+if [ -z "$FRACMIN" ]; then FRACMIN="0.0 0.0"; fi
 
 
 echo "GAMD ENERGY REWEIGHTING JOB"
@@ -161,7 +168,7 @@ EOF
   rm -f gamd.log inf_rmsd.dat ID.dat rgyr_rmsd.dat
 
   file=$(ls ../../${MD_PROD}/md_001.gamd_log | head -1)
-  if [ -z $file ]; then echo " ../../${MD_PROD}/md_001.gamd_log missing" ; exit ;fi
+  if [ -z $file ]; then echo " ../../${MD_PROD}/md_001.gamd_log missing, but expected to get headers!" ; exit ;fi
   head -3 $file > gamd.log
  
   ls ../../${MD_PROD}/${PREFIX_MDCRD}???${SUFFIX_MDCRD} | sort > LIST_MDCRD
@@ -198,6 +205,7 @@ EOF
     mdcrd=$(basename $file) 
     nsnap_tot=$(ncdump -h $file | grep frame | grep UNLI | awk '{print $6}' | sed 's/(//')
     file=$(sed -n "${i},${i}p" LIST_LOG)
+    nlog=$(grep -v '#' $file | wc -l)
     grep -v '#'  $file  > temp.log 
     if [ ${SIEVE} -gt 1 ]
     then
@@ -225,7 +233,7 @@ EOF
     then 
       grep -v '#' ../${DATA_DIR}/${id}.inf | awk -F ',' '{print $(NF)*10}'  > temp.inf 
       ninf=$(cat temp.inf  | wc -l)
-      if [  "$nrmsd" -eq "$ninf" ]
+      if [  "$nrmsd" -eq "$ninf" ]  && [ "$nlog" -eq "$nrmsd" ] 
       then 
          echo "md_${i} has same # of data in INF $ninf and RMS $nrmsd" 
          paste temp.inf  temp.rmsd | sed 's/\t/   /g' >> inf_rmsd.dat 
@@ -240,10 +248,10 @@ EOF
          printf "%i \n" ${ID[*]} >>ID.dat 
          unset ID 
          let "nsnap=$nsnap+$nrmsd"
-      elif [ "$ninf" -lt "$nrmsd" ] 
+      elif [ "$ninf" -lt "$nrmsd" ]  && [  "$nlog" -eq "$nrmsd" ]
       then
          echo "md_${i} has different # of data in INF $ninf and RMS $nrmsd"
-         echo "Getting only $nrmsd data from RMSD and GAMD log"
+         echo "Getting only $ninf data from RMSD and GAMD log"
          head -$ninf temp.rmsd > temp ; mv temp temp.rmsd
          paste temp.inf temp.rmsd | sed 's/\t/   /g' >> inf_rmsd.dat
          head -$ninf temp.rgyr > temp ; mv temp temp.rgyr
@@ -258,13 +266,20 @@ EOF
          done
          printf "%i \n" ${ID[*]} >>ID.dat 
          unset ID 
-         let "nsnap=$nsnap+$nrmsd"
+         let "nsnap=$nsnap+$ninf"
+      elif [ "$nlog" -ne "$nrmsd" ]
+      then
+         echo "File # ${i} in LIST_LOG and LIST_RMSD differ in # of data points."
+         echo "nlog=$nlog   nrmsd=$nrmsd"
+         echo "Not used!"
       else 
          echo "md_${i} has different # of data in INF $ninf > RMS $nrmsd" 
          echo "Not used!"
       fi
       echo "$i  $ninf   $nrmsd   $nsnap_tot " >> SNAP.dat 
     else
+      if [ "$nrmsd" -eq "$nlog" ]
+      then 
          paste temp.rgyr temp.rmsd | sed 's/\t/   /g' >> rgyr_rmsd.dat 
          cat temp.log >> gamd.log 
          declare -a ID=""
@@ -276,6 +291,11 @@ EOF
          printf "%i \n" ${ID[*]} >>ID.dat 
          unset ID 
          let "nsnap=$nsnap+$nrmsd"
+      else
+         echo "File # ${i} in LIST_LOG and LIST_RMSD differ in # of data points."
+         echo "nlog=$nlog   nrmsd=$nrmsd"
+         echo "Not used!"
+      fi
     fi 
   done
 
@@ -349,10 +369,14 @@ EOF
 
   $OCTAVE -q <<EOF > ${COORD}.max_min
 A=load("${COORD}.dat");
-printf(' Max  %f  %f  \n',max(A))
-printf(' Min  %f  %f  \n',min(A))
-printf(' FineGrid  %f  %f  \n',abs(max(A)-min(A))/${NGRID_FINE})
-printf(' RegGrid  %f  %f  \n',abs(max(A)-min(A))/${NGRID_REG})
+fmax=1.00 - [ ${FRACMAX} ];
+fmin=1.00 + [ ${FRACMIN} ];
+Amax=max(A).*fmax;
+Amin=min(A).*fmin;
+printf(' Max  %f  %f  \n',Amax)
+printf(' Min  %f  %f  \n',Amin)
+printf(' FineGrid  %f  %f  \n',abs(Amax-Amin)/${NGRID_FINE})
+printf(' RegGrid  %f  %f  \n',abs(Amax-Amin)/${NGRID_REG})
 quit
 EOF
 
