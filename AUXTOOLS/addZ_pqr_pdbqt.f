@@ -30,7 +30,7 @@ C
       dimension i1match(maxatm)
       dimension i0match(maxatm)
 C
-      character finp0*256,finp1*256,fout*256,qopt*10
+      character finp0*256,finp1*256,fout*256,qopt*11
       character head*6 , ta_temp*4
       logical diffnat, EOF , keepQ
 C
@@ -55,7 +55,8 @@ C
         print*,'    print just the ordering list'
         STOP
       ENDIF
-      if (( qopt .eq. 'keep_charge').or.( qopt .eq. 'KEEP_CHARGE')) 
+      if ((index(qopt,'keep_charge').ne.0)
+     &    .or.( index(qopt,'KEEP_CHARGE').ne.0)) 
      &   keepQ=.true.
 C
 C     Reading File PDBQT
@@ -69,7 +70,7 @@ C
         qsum=qsum+qdock1(i)
       ENDDO
       WRITE(6,'(''Sum of charges in PDBQT1 input file ='',F8.2)') qsum
-
+      IF ( KEEPQ ) WRITE(6,'(''PDBQT charges preserved'')')
 C
 C     Reading PQR File 
 C
