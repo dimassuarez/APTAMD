@@ -71,7 +71,7 @@ if [ -z "$LIGCHARGE" ]
 then
    LIGCHARGE="GASTEIGER"
 else
-   if [ $LIGCHARGE != "GASTEIGER" ] && [ $LIGCHARGE != "RESP" ] 
+   if [ $LIGCHARGE != "GASTEIGER" ] && [ $LIGCHARGE != "RESP" ] && [ $LIGCHARGE != "GAS_ANTECHAMBER" ]
    then
       echo "LIGCHARGE=$LIGCHARG NOT VALID, SELECTING LIGCHARGE=GASTEIGER"
       LIGCHARGE="GASTEIGER"
@@ -83,7 +83,7 @@ if [ -z "$RECCHARGE" ]
 then
    RECCHARGE="GASTEIGER"
 else
-   if [ $RECCHARGE != "GASTEIGER" ] && [ $RECCHARGE != "RESP" ] 
+   if [ $RECCHARGE != "GASTEIGER" ] && [ $RECCHARGE != "RESP" ]  && [ $RECCHARGE != "GAS_ANTECHAMBER" ]
    then
       echo "RECCHARG=$RECCHARG NOT VALID, SELECTING RECCHARGE=GASTEIGER"
       RECCHARGE="GASTEIGER"
@@ -509,9 +509,17 @@ sed -i 's/Ho/HD/' ligand*pdbqt
 # Changing GASTEIGER charges by RESP charges if required
 if [ $LIGCHARGE == "RESP" ]
 then 
+     echo "Inserting RESP charges into ligand.pdbqt"
      $APTAMD/AUXTOOLS/addZ_pqr_pdbqt  ligand.pqr ligand.pdbqt temp.pdbqt
      mv temp.pdbqt ligand.pdbqt
+elif [ $LIGCHARGE == "GAS_ANTECHAMBER" ]
+then
+     echo "Inserting Gasteiger Antechamber charges into ligand.pdbqt"
+     $AMBERHOME/bin/antechamber -i ligand_amber.pdb -fi pdb -fo mpdb -o ligand_gas_antechamber.pqr -c gas -dr no -at gaff2 -pf yes
+     $APTAMD/AUXTOOLS/addZ_pqr_pdbqt  ligand_gas_antechamber.pqr ligand.pdbqt temp.pdbqt
+     mv temp.pdbqt ligand.pdbqt
 fi
+
 if [ $LIGCHARGE == "GASTEIGER" ] && [ $LIGFORMAT == "FLEX" ]
 then 
      $APTAMD/AUXTOOLS/addZ_pqr_pdbqt ligand.pqr ligand.pdbqt temp.pdbqt keep_charge
@@ -519,10 +527,16 @@ then
 fi
 if [ $RECCHARGE == "RESP" ]
 then 
+     echo "Inserting RESP charges into receptor.pdbqt"
      $APTAMD/AUXTOOLS/addZ_pqr_pdbqt  receptor.pqr receptor.pdbqt temp.pdbqt
      mv temp.pdbqt receptor.pdbqt
+elif [ $RECCHARGE == "GAS_ANTECHAMBER" ]
+then
+     echo "Inserting Gasteiger Antechamber charges into receptor.pdbqt"
+     $AMBERHOME/bin/antechamber -i receptor_amber.pdb -fi pdb -fo mpdb -o receptor_gas_antechamber.pqr -c gas -dr no -at gaff2  -pf yes
+     $APTAMD/AUXTOOLS/addZ_pqr_pdbqt  receptor_gas_antechamber.pqr receptor.pdbqt temp.pdbqt
+     mv temp.pdbqt receptor.pdbqt
 fi
-
 
 # Incoporating Z-ATM if defined
 if [ $ZPOT -eq  2 ]

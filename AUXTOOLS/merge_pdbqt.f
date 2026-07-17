@@ -367,6 +367,7 @@ C
       logical NUMI,NUMR
       dimension INDX(*),RX(*)
       dimension ibra(50),jbra(50)
+      integer Aleft
 C
       NUMI=.false.
       IF (( IOP .eq. 1) .or. (IOP .eq. 3)) NUMI=.true.
@@ -381,6 +382,9 @@ C
       nbra=0
       nleft=0
       nright=0
+C     Active tags
+      Aleft=0       
+C
       DO I=1,L
         ja=I-1
         jb=I
@@ -404,8 +408,11 @@ C
 C
      +  ( ((cc .ge. '0') .and. (cc .le.'9')) .or. 
      +    ((cc .eq. '.') .or.  (cc .eq.' ')) ) ) THEN 
-           nleft=nleft+1
-           ibra(nleft)=I
+           if (Aleft .eq.0) then 
+              nleft=nleft+1
+              ibra(nleft)=I
+              Aleft=1
+           endif
         ENDIF
 C
         IF ( ( ((ca .ge. '0') .and. (ca .le. '9')) .or.
@@ -413,9 +420,13 @@ C
      +          (ca .eq. ' ') )  .and. 
      +          ((cb .ge. '0') .and. (cb .le. '9')) 
      +          .and. ( cc .eq. ' ') )  THEN
-           nright=nright+1
-           jbra(nright)=I
+           if (Aleft .eq.1) then
+              nright=nright+1
+              jbra(nright)=I
+              Aleft=0
+           endif
         ENDIF
+         
       ENDDO
 C
 C
