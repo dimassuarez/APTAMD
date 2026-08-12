@@ -123,10 +123,11 @@ fi
 
 # Mask of atoms to search for closest waters around
 # Probably, this shouldn't be changed
-if [ -z $MASK ]
+if [ -z $SLVNTMASK ]
 then
-   MASK="!:WAT,Na+,Cl-"
+   SLVNTMASK=":WAT,Na+,Cl-,MG"
 fi
+GREPSLVNTMASK=$(echo $SLVNTMASK | sed 's/://' | sed 's/,/\\|/g')
 
 # Temp directory
 TT=$(date +%N)
@@ -161,7 +162,7 @@ done
 
 cat <<EOF >> input.cpptraj
 trajout tmp ncrestart
-watershell $MASK lower $RPEEL upper $RPEEL out tmp_WS.dat
+watershell $SLVNTMASK lower $RPEEL upper $RPEEL out tmp_WS.dat
 go
 EOF
 $AMBERHOME/bin/cpptraj.OMP $WORKDIR/$TOPOLOGY < input.cpptraj > output.cpptraj 
@@ -216,8 +217,8 @@ autoimage origin
 go
 EOF
 
-IPROT=$(grep 'ATOM  ' $REFPDB | grep -v 'WAT' | grep -v 'HOH' | grep -v 'Na+' | grep -v 'Cl-' | tail -1 | awk '{print $5}')
-ISOLV=$(grep 'ATOM  ' $REFPDB | grep  'WAT\|HOH'  | head -1 | awk '{print $5}')
+IPROT=$(grep 'ATOM  ' $REFPDB | grep -v "${GREPSLVNTMASK}" | tail -1 | awk '{print $5}')
+ISOLV=$(grep 'ATOM  ' $REFPDB | grep  'WAT'  | head -1 | awk '{print $5}')
 NTOPWAT=$(grep -c 'O   WAT' $REFPDB)
 
 let " ARES = $ISOLV - 1  + $NWAT + 1 "
@@ -254,11 +255,11 @@ do
   let "I=$I+1"
 
 # Note that the closest command selects water around solute
-# atoms only, but preserves the Na+/Cl- counterions
+# atoms only, but preserves the Na+/Mg2+/Cl- counterions
 cat <<EOF >> input.cpptraj
 trajout $WORKDIR/${FILE}_solutewat.mdcrd netcdf 
-autoimage origin anchor $MASK
-closest $NWAT $MASK solventmask :WAT oxygen 
+autoimage origin anchor !${SLVNTMASK}
+closest $NWAT !${SLVNTMASK} solventmask :WAT oxygen 
 go
 EOF
   mv input.cpptraj input.${I}
@@ -279,7 +280,7 @@ then
 rm -f TASK.sh
 
 $AMBERHOME/bin/parmed -n  $WORKDIR/$TOPOLOGY <<EOF
-strip :WAT,Na+,Cl-
+strip ${SLVNTMASK} 
 parmout solute.top
 go
 EOF
@@ -297,10 +298,10 @@ do
   let "I=$I+1"
 
 # Note that the closest command selects water around solute
-# atoms only, but preserves the Na+/Cl- counterions
+# atoms only, but preserves the Na+/Mg2+/Cl- counterions
 cat <<EOF >> input.cpptraj
 trajout $WORKDIR/${FILE}_solute.mdcrd netcdf 
-strip :WAT,Na+,Cl-
+strip   ${SLVNTMASK}
 go
 EOF
   mv input.cpptraj input.${I}

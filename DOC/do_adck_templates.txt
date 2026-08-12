@@ -52,6 +52,11 @@
     LIGCHARGE="GASTEIGER"  # Use prepare_ligand4.py Gasteiger charges.
                        # This is default and recommended. If LIGCHARGE=RESP
                        # then the RESP charges from topology are used instead.    
+                       # if LIGCHARGE=GAS_ANTECHAMBER then Gasteiger charges
+                       # assigned by the Antechamber program are considered.
+                       # The algorithms in prepare_ligand4.py may fail in
+                       # detecting formal charges (e.g. for nitro groups). 
+
     RECCHARGE="GASTEIGER"  #  Idem 
 
     KEEPSOLV_REC="NO"  # if KEEPSOLV_REC="YES" then Na+ ions and H2O molecules

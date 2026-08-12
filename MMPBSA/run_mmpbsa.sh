@@ -156,6 +156,12 @@ NWAT_FRAG[20]="DUMMY_NWAT_FRAG_20"
 DO_PEEL="DUMMY_DO_PEEL"
 PEEL="DUMMY_PEEL"
 
+# SOLVENT MASK including counterions
+SLVNTMASK="DUMMY_SLVNTMASK"
+GREPSLVNTMASK=$(echo $SLVNTMASK | sed 's/://' | sed 's/,/\\|/g')
+SLVNTMASK_O=${SLVNTMASK/WAT/WAT@O}
+
+
 # QM_MASKS and QM_CHARGE (for SCC-DFTB, QMMM ). These variables should be null ("") or commented
 # unless SCC-DFTB calculations are required. Note thar residue numbering is
 # local in each fragment
@@ -300,6 +306,8 @@ SNAP="DUMMY_SNAPSHOTS"
 PBNL="YES" 
 ISTRNG="DUMMY_ISTRNG"    # Ionic strength in mM units
 PDIE="DUMMY_PDIE" 
+SKIP_PBSA="NO"     # Mainly for debug
+
 
 # CAVITY/SURF calculations may or not include WAT/Counterions
 EXCL_SOLV_SURFCAV="YES" 
@@ -314,6 +322,7 @@ SKIPCMPLX="DUMMY_SKIPCMPLX"
 # change SKIPFRAG to yes
 SKIPFRAG="DUMMY_SKIPFRAG"
 
+
 # Use 3D-RISM method as implemented in SANDER. This is only feasible if
 # QM methods are NOT used. Note also that RISM deactivates PB calcs...
 # 
@@ -327,7 +336,7 @@ ADCK="DUMMY_ADCK"
 ADCK_ONLY="DUMMY_ADCK_ONLY"
 GRID="0.333"
 PDBQT_WAT="DUMMY_PDBQT_WAT"
-PDBQT_NA="DUMMY_PDBQT_NA"
+PDBQT_CNT="DUMMY_PDBQT_CNT"
 declare -a PDBQT_FRAG=""
 PDBQT_FRAG[1]="DUMMY_PDBQT_FRAG_01"
 PDBQT_FRAG[2]="DUMMY_PDBQT_FRAG_02"
@@ -390,8 +399,9 @@ if [ -z $MSMS ]; then echo "MSMS nore defined, but needed!"; exit; fi
 # AUTODOCK
 if [ $ADCK == "YES" ]
 then
-   if [ -z $ADFR ]; then echo "ADFR not defined, but needed"; exit; fi 
-   PYTHONSH="$ADFR/bin/pythonsh"
+# Specific MGLTOOLS to be used
+   AUTODOCKTOOLS="$MGLTOOLS/MGLToolsPckgs/AutoDockTools"
+   PYTHONSH="$MGLTOOLS/bin/pythonsh"
 fi
 
 # Auxiliary programs (in house; other tools could be used)
@@ -569,7 +579,7 @@ do
   done
 
   if [ ! -e ${PDBQT_WAT} ] ; then echo "${PDBQT_WAT} does not exist!"; exit; fi
-  if [ ! -e ${PDBQT_NA} ] ; then echo "${PDBQT_NA} does not exist!"; exit; fi
+  if [ ! -e ${PDBQT_CNT} ] ; then echo "${PDBQT_CNT} does not exist!"; exit; fi
 
   $REORDER < REC_template_${ISITE}.pdbqt > tmp.pdbqt; mv tmp.pdbqt REC_template_${ISITE}.pdbqt
 
@@ -585,18 +595,17 @@ fi
 
 sed '1,/FLAG RESIDUE_LABEL/d' $REFTOP | sed '/FLAG/,$d' > RESLAB.dat
 MAXWAT=$(grep 'WAT\|HOH' RESLAB.dat  | tr " \t" "\n" | grep -c 'WAT\|HOH' )
-MAXNA=$(grep 'Na+' RESLAB.dat  | tr " \t" "\n" | grep -c 'Na+')
-MAXCL=$(grep 'Cl-' RESLAB.dat | tr " \t" "\n" | grep -c 'Cl-')
+MAXCNT=$(grep "${GREPSLVNTMASK}"  RESLAB.dat  | tr " \t" "\n" | grep -v WAT |  grep -c "${GREPSLVNTMASK}")
 POINTERS=($(grep 'FLAG POINTERS' -A 4 $REFTOP |tail -3)) 
 MAXRES_REFTOP=${POINTERS[11]} 
 
-let " NRES = $MAXRES_REFTOP - $MAXWAT - $MAXNA - $MAXCL " 
+let " NRES = $MAXRES_REFTOP - $MAXWAT - $MAXCNT " 
 
-echo " $REFTOP has $NRES non-solvent resdidues, $MAXWAT waters, $MAXNA Na+ and $MAXCL Cl-" 
+echo " $REFTOP has $NRES non-solvent resdidues, $MAXWAT waters, $MAXCNT counterions" 
 
 #REF topology is stripped from counterions and box information
 $PARMED $REFTOP <<EOF
-strip :Na+,Cl-
+strip ${SLVNTMASK/WAT,/}
 parmout REF.top
 go
 EOF
@@ -666,14 +675,14 @@ go
 EOF
     $CPPTRAJ cmplxwat0.top <<EOF
 trajin  temp.pdb
-watershell !:WAT,Na+,Cl-  lower ${PEEL}  upper  ${PEEL}  out temp.iswat
+watershell !${SLVNTMASK}  lower ${PEEL}  upper  ${PEEL}  out temp.iswat
 go 
 EOF
    NWAT_IN=$(grep -v '#' temp.iswat | awk '{print $2}')
    $CPPTRAJ cmplxwat0.top <<EOF
 trajin  temp.pdb
 trajout temp_peeled.pdb pdb vdw include_ep
-closest ${NWAT_IN} !:WAT,Na+,Cl- solventmask :WAT@O,Na+,Cl- 
+closest ${NWAT_IN} !${SLVNTMASK} solventmask ${SLVNTMASK_O} 
 go
 EOF
    mv -f temp_peeled.pdb temp.pdb 
@@ -910,10 +919,6 @@ else
    fi
 fi
 
-
-if [ "$N_SELECTED_WATERS" -gt "0"  ]
-then 
-
 if [ ${SELECTED_WATER:0:1} == "," ]
 then
   ncar=${#SELECTED_WATER}
@@ -921,6 +926,9 @@ then
 else
   SELECTED_WATER=":"${SELECTED_WATER}
 fi
+
+if [ "$N_SELECTED_WATERS" -gt "0"  ]
+then 
 
 $PARMED  cmplxwat.top <<EOF
 strip "!:WAT | ${SELECTED_WATER}"
@@ -1118,7 +1126,7 @@ then
   if [ ! -e ref.pdb ] 
   then
      cp $REFPDB ref.pdb 
-     grep 'ATOM  ' ref.pdb | grep -v  'WAT\|HOH' | grep -v 'Na+' | grep -v 'Cl-' > temp.pdb_ref; mv temp.pdb_ref ref.pdb
+     grep 'ATOM  ' ref.pdb | grep -v  "${GREPSLVNTMASK}" > temp.pdb_ref; mv temp.pdb_ref ref.pdb
   fi 
 
 $CPPTRAJ <<EOF
@@ -1231,7 +1239,7 @@ rm -f temp.AREA
 
 # Using MSMS to make other CAVITY estimations (No Water or Na+ are considered) 
 # GCAV program estimates cavitation using various approx: here we select only the C-SPT one
-if [ "$EXCL_SOLV_SURFCAV" == "YES" ]; then grep -v 'WAT\| INA' cmplx.pdb > temp.pdb ; else cp cmplx.pdb temp.pdb ;fi 
+if [ "$EXCL_SOLV_SURFCAV" == "YES" ]; then grep -v 'WAT\| INA\| IK \| IXG' cmplx.pdb > temp.pdb ; else cp cmplx.pdb temp.pdb ;fi 
 awk '{printf(" %10.3f  %10.3f  %10.3f  %10.3f \n",$6,$7,$8,$10)}' temp.pdb | grep -v '  0.000 ' > temp.xyzr
 nspe=$(cat temp.xyzr | wc -l)
 $MSMS  -density 20.0 -probe_radius  1.4  -if temp.xyzr  -af temp.area  > temp.msms
@@ -1287,7 +1295,7 @@ EOF
 
 # Using MSMS to make other CAVITY estimations (No Water or Na+ are considered) 
 # GCAV program estimates cavitation using various approx: here we select only the C-SPT one
-  if [ "$EXCL_SOLV_SURFCAV" == "YES" ]; then grep -v 'WAT\| INA' frag_${ifrag}.pdb > temp.pdb ; else cp frag_${ifrag}.pdb temp.pdb ;fi 
+  if [ "$EXCL_SOLV_SURFCAV" == "YES" ]; then grep -v 'WAT\| INA\| IK \|IXG' frag_${ifrag}.pdb > temp.pdb ; else cp frag_${ifrag}.pdb temp.pdb ;fi 
   awk '{printf(" %10.3f  %10.3f  %10.3f  %10.3f \n",$6,$7,$8,$10)}' temp.pdb | grep -v '  0.000 ' > temp.xyzr
   nspe=$(cat temp.xyzr | wc -l)
   $MSMS  -density 20.0 -probe_radius  1.4  -if temp.xyzr  -af temp.area  > temp.msms
@@ -1330,25 +1338,25 @@ do
 
   cp frag_${IFRAG}.pdb ligand.pdb
   NWAT_PDBQT=$(grep -c 'O   WAT' ligand.pdb) 
-  NINA_PDBQT=$(grep -c 'INA  INA' ligand.pdb) 
-  if [ $NWAT_PDBQT -gt 0 ]  || [ $NINA_PDBQT -gt 0 ] 
+  NCNT_PDBQT=$(grep -c 'INA  INA' ligand.pdb) 
+  if [ $NWAT_PDBQT -gt 0 ]  || [ $NCNT_PDBQT -gt 0 ] 
   then
-      grep -v  'WAT\| INA ' ligand.pdb > ligand_solute.pdb
-      grep ' INA ' ligand.pdb > ligand_INA.pdb
+      grep -v  'WAT\| INA \|IK \|IXG' ligand.pdb > ligand_solute.pdb
+      grep ' INA \|IK \|IXG ' ligand.pdb > ligand_CNT.pdb
       grep ' WAT ' ligand.pdb > ligand_WAT.pdb
-      cat ligand_solute.pdb ligand_INA.pdb ligand_WAT.pdb > ligand.pdb
+      cat ligand_solute.pdb ligand_CNT.pdb ligand_WAT.pdb > ligand.pdb
       $REORDER < ligand.pdb > tmp; mv  tmp ligand.pdb
-      cat LIG_template_${ISITE}.pdbqt  > LIG_INAWAT_template_${ISITE}.pdbqt
-      for ((imol=1;imol<=NINA_PDBQT;imol++))
+      cat LIG_template_${ISITE}.pdbqt  > LIG_CNTWAT_template_${ISITE}.pdbqt
+      for ((imol=1;imol<=NCNT_PDBQT;imol++))
       do
-         cat ${PDBQT_NA} >> LIG_INAWAT_template_${ISITE}.pdbqt
+         cat ${PDBQT_CNT} >> LIG_CNTWAT_template_${ISITE}.pdbqt
       done
       for ((imol=1;imol<=NWAT_PDBQT;imol++))
       do
-         cat ${PDBQT_WAT} >> LIG_INAWAT_template_${ISITE}.pdbqt
+         cat ${PDBQT_WAT} >> LIG_CNTWAT_template_${ISITE}.pdbqt
       done
-      $REORDER < LIG_INAWAT_template_${ISITE}.pdbqt > tmp; mv tmp LIG_INAWAT_template_${ISITE}.pdbqt
-      $TOOLS/merge_pdbqt LIG_INAWAT_template_${ISITE}.pdbqt ligand.pdb ligand_ATOM.pdbqt
+      $REORDER < LIG_CNTWAT_template_${ISITE}.pdbqt > tmp; mv tmp LIG_CNTWAT_template_${ISITE}.pdbqt
+      $TOOLS/merge_pdbqt LIG_CNTWAT_template_${ISITE}.pdbqt ligand.pdb ligand_ATOM.pdbqt
   else
       $TOOLS/merge_pdbqt LIG_template_${ISITE}.pdbqt  ligand.pdb  ligand_ATOM.pdbqt
   fi
@@ -1363,25 +1371,25 @@ do
   done
   $REORDER < receptor.pdb > tmp; mv  tmp receptor.pdb 
   NWAT_PDBQT=$(grep -c 'O   WAT' receptor.pdb) 
-  NINA_PDBQT=$(grep -c 'INA  INA' receptor.pdb) 
-  if [ $NWAT_PDBQT -gt 0 ]  || [ $NINA_PDBQT -gt 0 ] 
+  NCNT_PDBQT=$(grep -c 'INA\|IK \|IXG' receptor.pdb) 
+  if [ $NWAT_PDBQT -gt 0 ]  || [ $NCNT_PDBQT -gt 0 ] 
   then
-      grep -v  'WAT\| INA ' receptor.pdb > receptor_solute.pdb
-      grep ' INA ' receptor.pdb > receptor_INA.pdb
+      grep -v  'WAT\| INA \|IK \|IXG ' receptor.pdb > receptor_solute.pdb
+      grep ' INA \|IK \|IXG ' receptor.pdb > receptor_CNT.pdb
       grep ' WAT ' receptor.pdb > receptor_WAT.pdb
-      cat receptor_solute.pdb receptor_INA.pdb receptor_WAT.pdb > receptor.pdb
+      cat receptor_solute.pdb receptor_CNT.pdb receptor_WAT.pdb > receptor.pdb
       $REORDER < receptor.pdb > tmp; mv  tmp receptor.pdb
-      cat REC_template_${ISITE}.pdbqt  > REC_INAWAT_template_${ISITE}.pdbqt
-      for ((imol=1;imol<=NINA_PDBQT;imol++))
+      cat REC_template_${ISITE}.pdbqt  > REC_CNTWAT_template_${ISITE}.pdbqt
+      for ((imol=1;imol<=NCNT_PDBQT;imol++))
       do
-         cat ${PDBQT_NA} >> REC_INAWAT_template_${ISITE}.pdbqt
+         cat ${PDBQT_CNT} >> REC_CNTWAT_template_${ISITE}.pdbqt
       done
       for ((imol=1;imol<=NWAT_PDBQT;imol++))
       do
-         cat ${PDBQT_WAT} >> REC_INAWAT_template_${ISITE}.pdbqt
+         cat ${PDBQT_WAT} >> REC_CNTWAT_template_${ISITE}.pdbqt
       done
-      $REORDER < REC_INAWAT_template_${ISITE}.pdbqt > tmp; mv tmp REC_INAWAT_template_${ISITE}.pdbqt
-      $TOOLS/merge_pdbqt REC_INAWAT_template_${ISITE}.pdbqt receptor.pdb receptor.pdbqt
+      $REORDER < REC_CNTWAT_template_${ISITE}.pdbqt > tmp; mv tmp REC_CNTWAT_template_${ISITE}.pdbqt
+      $TOOLS/merge_pdbqt REC_CNTWAT_template_${ISITE}.pdbqt receptor.pdb receptor.pdbqt
    else
       $TOOLS/merge_pdbqt REC_template_${ISITE}.pdbqt receptor.pdb receptor.pdbqt
    fi
@@ -1399,7 +1407,7 @@ do
   rm -f ligand_ATOM.pdbqt
 
  # Preparing input for AUTOGRID 
-  echo "parameter_file  ${APTAMD}/SOFT/mgltools_x86_64Linux2_1.5.7/MGLToolsPckgs/AutoDockTools/AD4_parameters.dat" > receptor.gpf
+  echo "parameter_file  ${APTAMD}/DOCKING/AD4_parameters.dat" > receptor.gpf
   echo " $PYTHONSH $AUTODOCKTOOLS/Utilities24/prepare_gpf4.py -l ligand.pdbqt -r receptor.pdbqt  -o tmp_receptor.gpf   -p npts=${SIZE} -p spacing="${GRID}" -p gridcenter="0.,0.,0.""
   $PYTHONSH $AUTODOCKTOOLS/Utilities24/prepare_gpf4.py -l ligand.pdbqt -r receptor.pdbqt  -o tmp_receptor.gpf \
 -p npts=${SIZE} -p spacing="${GRID}" -p gridcenter="0.,0.,0."
@@ -1414,7 +1422,7 @@ EOF
   rm -f tmp_receptor.gpf
 
   # Preparing input for AUTODOCK
-  echo "parameter_file  ${APTAMD}/SOFT/mgltools_x86_64Linux2_1.5.7/MGLToolsPckgs/AutoDockTools/AD4_parameters.dat" > receptor_ligand.dpf
+  echo "parameter_file  ${APTAMD}/DOCKING/AD4_parameters.dat" > receptor_ligand.dpf
   $PYTHONSH $AUTODOCKTOOLS/Utilities24/prepare_dpf4.py -l ligand.pdbqt -r receptor.pdbqt -o tmp_receptor_ligand.dpf -p ga_run="1"
   sed -n '1,/move/p' tmp_receptor_ligand.dpf >> receptor_ligand.dpf
   echo 'epdb' >> receptor_ligand.dpf
@@ -1682,14 +1690,18 @@ else
   else
 
     # PB calc
-    if [ "$PBNL" == "YES"  ]
-    then 
+    if [ "$PBNL" == "YES"  ] && [ $SKIP_PBSA == "NO" ]
+    then
       $PBSA -O -i pbsa_e80.inp  -p cmplx.top -c cmplx.crd
       cat mdout >> ${i/pdb/out3}
-    else
+    elif [ $SKIP_PBSA == "NO" ]
+    then
       $PBSA -O -i pbsa_lin.inp  -p cmplx.top -c cmplx.crd
       cat mdout >> ${i/pdb/out3}
-    fi 
+    else
+      echo "SKIP_PBSA=YES"  >> ${i/pdb/out3}
+    fi
+
 
   fi
 
@@ -1731,14 +1743,17 @@ else
 
     else
 
-      #PB calc
-      if [ "$PBNL" == "YES" ]
-      then 
+        #PB calc
+      if [ "$PBNL" == "YES" ]  && [ "$SKIP_PBSA" == "NO" ]
+      then
         $PBSA -O -i pbsa_e80.inp  -p frag_${ifrag}.top -c frag_${ifrag}.crd
         cat mdout >> ${i/pdb/}${ext}
-      else 
+      elif [ "$SKIP_PBSA" == "NO" ]
+      then
         $PBSA -O -i pbsa_lin.inp  -p frag_${ifrag}.top -c frag_${ifrag}.crd
         cat mdout >> ${i/pdb/}${ext}
+      else
+        echo "SKIP_PBSA=YES" >> ${i/pdb/}${ext}
       fi
 
     fi

@@ -18,8 +18,15 @@ then
 else
     INITIAL=$1
 fi
-if [ -z "$INITIAL" ]; then more $APTAMD/DOC/do_aptamer_edition.txt ; exit; fi
-if [ -z "$IONIC" ]; then IONIC="0.150"; echo 'Assuming IONIC STRENGTH=0.150 M' ; fi
+if [   -z "$INITIAL" ]; then more $APTAMD/DOC/do_aptamer_edition.txt ; exit; fi
+if [ ! -z "$IONIC" ] && [ -z "$NA_IONIC" ] && [ -z "$MG_IONIC" ] 
+then
+    echo "IONIC=$IONIC is interpretad as NA_IONIC=$IONIC MG_IONIC=0"
+    NA_IONIC=$IONIC
+    MG_IONIC=0
+fi
+if [ -z "$NA_IONIC" ]; then NA_IONIC="0.150"; echo 'Assuming NA_IONIC STRENGTH=0.150 M' ; fi
+if [ -z "$MG_IONIC" ]; then MG_IONIC="0.000"; echo 'Assuming MG_IONIC STRENGTH=0.000 M' ; fi
 if [ -z "$BUFFER_SOLV" ]; then BUFFER_SOLV=16.0; echo 'Assuming BUFFER SOLV= 16.0 A ' ; fi
 if [ -z "$MAXCYC" ]; then MAXCYC=500; echo 'Assuming MAXCYC=500 ' ; fi
 if [ -z "$WATMODEL" ]; then WATMODEL="tip3p"; echo "Assuming WATMODEL=$WATMODEL" ; fi
@@ -47,11 +54,26 @@ fi
 # Select ion parameters (+1/-1 ions)
 if [ $WATMODEL == "tip3p" ]
 then
-	IONFF="ionsjc_tip3p"
-	echo "Using Joung–Cheatham ion parameters for TIP3P"
+        if [ "${MG_IONIC}" == "0.000" ] || [ "${MG_IONIC}" == "0.00" ] || [ "${MG_IONIC}" == "0.0" ] || [ "${MG_IONIC}" == "0" ]
+        then
+	   echo "Using Joung–Cheatham ion parameters for TIP3P"
+	   IONFF_NA="ionsjc_tip3p"
+           IONFF_MG="none"
+        else
+	   echo "Using Li-Merz ion parameters for TIP3P"
+           IONFF_NA="ions1lm_126_tip3p"
+           IONFF_MG="ions234lm_1264_tip3p"
+        fi
 	WATBOX="TIP3PBOX"
 else
-	IONFF="ionslm_126_opc"
+        if [ "${MG_IONIC}" == "0.000" ] || [ "${MG_IONIC}" == "0.00" ] || [ "${MG_IONIC}" == "0.0" ] || [ "${MG_IONIC}" == "0" ]
+        then
+		IONFF_NA="ionslm_126_opc"
+		IONFF_MG="none"
+	else
+		IONFF_NA="ionslm_126_opc"
+ 	        IONFF_MG="ionslm_1264_opc"
+	fi
 	echo "Using Li-Merz ion parameters for OPC"
 	WATBOX="OPCBOX"
 fi
@@ -102,7 +124,6 @@ sed -i 's/ C A/DC A/' $INITIAL
 # Edition with tleap to build CH3 in Thymine.
 echo '# Force Field data' >edit_leap_solute.src 
 echo "source leaprc.DNA.${DNAFF}"  >>edit_leap_solute.src
-echo "loadamberparams frcmod.${IONFF}" >>edit_leap_solute.src 
 echo 'source leaprc.RNA.OL3'  >>edit_leap_solute.src
 echo '# Build Aptamer' >>edit_leap_solute.src 
 echo 'apt=loadpdb' $INITIAL >>edit_leap_solute.src 
@@ -153,7 +174,6 @@ EOF
 echo '# Force Field data' >edit_leap.src 
 echo "source leaprc.DNA.${DNAFF}"  >>edit_leap.src
 echo "source leaprc.water.${WATMODEL}"  >>edit_leap.src
-echo "loadamberparams frcmod.${IONFF}" >>edit_leap.src 
 if [ $WATMODEL == "opc" ]; then echo 'WAT=OPC' >> edit_leap.src; fi
 echo '# Build Aptamer' >>edit_leap.src 
 echo 'apt=loadpdb' $PDB_SOLUTE >>edit_leap.src 
@@ -172,20 +192,24 @@ rm -f mlog
 NWAT=$(grep -c 'O   WAT' $PDB)
 Q=$(grep 'Total unperturbed charge:' edit_leap_solute.log | awk '{print $4}')
 
-echo "System contains $NWAT waters. Solute charge = $Q. Ionic strenght= $IONIC (M) " 
+echo "System contains $NWAT waters. Solute charge = $Q. Ionic conc NA = $NA_IONIC MG $MG_IONIC (M) " 
 $OCTAVE -q  <<EOF  > mlog
-num_Na = round( ( ${IONIC} / 55 )* ${NWAT});
-num_Cl = num_Na - abs(${Q}) ; 
+num_Na = round( ( ${NA_IONIC} / 55 )* ${NWAT});
+num_Mg = round( ( ${MG_IONIC} / 55 )* ${NWAT});
+num_Cl = num_Na + 2 * num_Mg  - abs(${Q}) ; 
 disp([ 'Na= ',num2str(num_Na)])
 disp([ 'Cl= ',num2str(num_Cl)])
+disp([ 'Mg= ',num2str(num_Mg)])
 EOF
 
 NUM_NA=$(head -1 mlog  | awk '{print $2}')
-NUM_CL=$(tail -1 mlog  | awk '{print $2}')
+NUM_CL=$(head -2 mlog  | tail -1  | awk '{print $2}')
+NUM_MG=$(tail -1 mlog  | awk '{print $2}')
 
 if [ $NUM_CL -lt 0 ]
 then
-        echo "$NUM_NA Na+ ions for  NaCl conc=$IONIC "
+        echo "$NUM_NA Na+ ions for  NaCl   conc=$NA_IONIC "
+        echo "$NUM_MG Mg2+ ions for  MgCl2 conc=$MG_IONIC "
         echo "Solute has $Q charge"
         echo "Solvent box with BUFFER_SOLV=${BUFFER_SOLV} is too small!!"
         echo "Increase BUFFER_SOLV and run again do_aptamer_edition"
@@ -196,7 +220,8 @@ fi
 echo '# Force Field data' >edit_leap.src
 echo "source leaprc.DNA.${DNAFF}"  >>edit_leap.src
 echo "source leaprc.water.${WATMODEL}"  >>edit_leap.src
-echo "loadamberparams frcmod.${IONFF}" >>edit_leap.src
+echo "loadamberparams frcmod.${IONFF_NA}" >>edit_leap.src
+if [ $NUM_MG -gt  0 ] && [ $IONFF_NA != $IONFF_MG ]; then echo "loadamberparams frcmod.${IONFF_MG}" >>edit_leap.src ; fi
 if [ $WATMODEL == "opc" ]; then echo 'WAT=OPC' >> edit_leap.src; fi
 echo '# Build Aptamer' >>edit_leap.src
 echo 'apt=loadpdb' $PDB_SOLUTE >>edit_leap.src
@@ -208,12 +233,16 @@ then
 else
    echo "addionsrand apt  Na+ $NUM_NA  " >>edit_leap.src
 fi
+if [ $NUM_MG -gt 0 ]
+then
+   echo "addions apt  MG $NUM_MG  " >>edit_leap.src
+fi
 echo 'saveamberparm apt ' $TOP  $CRD >>edit_leap.src
 echo 'savepdb apt ' $PDB >>edit_leap.src
 echo 'quit' >>edit_leap.src
 
 
-echo "Adding again solvent box, but with $NUM_NA sodiums and $NUM_CL chlorides" 
+echo "Adding again solvent box, but with $NUM_NA sodiums, $NUM_MG magnesiums and $NUM_CL chlorides" 
 rm -f leap.log
 $AMBERHOME/bin/tleap -f edit_leap.src > mlog 
 mv leap.log  edit_leap.log
@@ -223,12 +252,32 @@ NRES=$(grep 'ATOM  ' $PDB_SOLUTE | tail  -1  | awk '{print $5}')
 $AMBERHOME/bin/cpptraj $TOP <<EOF   > mlog 
 trajin  $CRD 
 autoimage
-randomizeions @Na+,Cl- around :1-${NRES} by 6.0  overlap 4.0 
+randomizeions @Na+,Cl-,MG   around :1-${NRES} by 6.0  overlap 4.0 
 trajout ${CRD}_rand.crd restrt 
 go
 EOF
 echo "$CRD contains now the randomized ion positions"
 mv ${CRD}_rand.crd  $CRD
+
+if [ ${IONFF_MG} != "none" ]
+then
+
+for topology in ${TOP} ${TOP_SOLUTE}
+do
+
+rm -f temp_C4.top
+echo "Adding C4 parameters to ${topology} using parmed"
+$AMBERHOME/bin/parmed -n  ${topology} <<EOF
+setOverwrite True
+add12_6_4 :MG 
+outparm temp_C4.top  
+EOF
+mv -f temp_C4.top ${topology}
+done
+
+fi
+
+
 
 # For large systems, tLeap PDB file is not readable by Rasmol or other programs
 $AMBERHOME/bin/cpptraj $TOP<<EOF > mlog

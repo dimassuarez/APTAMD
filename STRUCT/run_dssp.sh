@@ -29,6 +29,14 @@ then
    exit
 fi
 
+if [ -z "$SLVNTMASK" ]
+then
+   SLVNTMASK=":WAT,Na+,Cl-,MG"
+fi
+GREPSLVNTMASK=$(echo $SLVNTMASK | sed 's/://' | sed 's/,/\\|/g')
+echo "SLVNTMASK=${SLVNTMASK}  including counterions"
+
+
 if [ -n "$OPTION_CRD" ] && [ "$OPTION_CRD" -eq "$OPTION_CRD" ] 2>/dev/null; then
   if [ ${OPTION_CRD} -eq 0 ]
   then 
@@ -150,9 +158,9 @@ then
    do
        if [ $PDBGZIP == "YES" ] 
        then 
-           zcat ${file}.gz | grep -v 'WAT\|Na+\|Cl-' > $TMPDIR/$file 
+           zcat ${file}.gz | grep -v "${GREPSLVNTMASK}" > $TMPDIR/$file 
        else
-           cat ${file} | grep -v 'WAT\|Na+\|Cl-' > $TMPDIR/$file 
+           cat ${file} | grep -v "${GREPSLVNTMASK}"  > $TMPDIR/$file 
        fi
        echo "trajin  $TMPDIR/$file  " >> pdb.in 
    done

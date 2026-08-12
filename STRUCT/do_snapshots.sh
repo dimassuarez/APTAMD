@@ -1,5 +1,8 @@
 #!/bin/bash
 
+#  This script extracts PDB snapshots from MDCRD trajectory files and
+#  performs counterion---solute analysis relevant for nucleic acids.
+
 if [ -z "$APTAMD" ]; then echo "APTAMD variable is not defined!" ; exit; fi
 if [ "$#" -eq 0 ]; then more $APTAMD/DOC/do_snapshots.txt ; exit; fi
 
@@ -23,7 +26,52 @@ if [ ! -z "$MOL" ] && [  -z "$MD_TRAJ" ]; then MD_TRAJ="${MOL}"; echo $MD_TRAJ; 
 if [ -z "$MD_TRAJ" ]; then echo 'Usage: do_snapshots.sh "MOL1   MOL2 .."   [ MD | GAMD ]  '; exit ; fi
 if [ -z "$MD_TYPE" ]; then echo 'Usage: do_snapshots.sh "MOL1   MOL2 .."   [ MD | GAMD ]  '; exit ; fi
 
-if [ -z "$MAX_NA_GLOBAL" ]; then echo 'Considering all Na+ in TOPOLOGY'; ALL_NA="YES"; else ALL_NA="NO"; echo "Considering MAX_NA_GLOBAL=$MAX_NA_GLOBAL" ; fi
+# Counterion options
+# Compatibilty keyword (do not use)
+if [ ! -z "$MAX_NA_GLOBAL" ] 
+then 
+	CNTION_LIST="Na+"
+	MAX_CNTION_GLOBAL=$MAX_NA_GLOBAL
+	echo "Interpreting MAX_NA_GLOBAL=$MAX_NA_GLOBAL as:" 
+	echo "      CNTION_LIST=Na+"
+	echo "      MAX_CNTION_GLOBAL=$MAX_NA_GLOBAL"
+	echo "Avoid declaring MAX_NA_GLOBAL"
+fi
+# List of counterions
+if [ -z "$CNTION_LIST" ] 
+then  
+	declare -a CNTION=("Na+") 
+else
+	declare -a CNTION=($CNTION_LIST) 
+fi
+NCNTION=${#CNTION[@]} 
+CNTIONMASK=""
+for ((I=0;I<=NCNTION-1;I++))
+do
+	echo "Counterion type $I   -   ${CNTION["$I"]}"
+	if [ $I -gt 0 ]; then CNTIONMASK="${CNTIONMASK},${CNTION["$I"]}"; else CNTIONMASK="${CNTION["$I"]}"; fi
+done
+
+if [ -z "$MAX_CNTION_GLOBAL" ] 
+then 
+   echo 'Considering all CNTION in TOPOLOGY' 
+   ALL_CNTION="YES"
+else 
+   ALL_CNTION="NO" 
+   declare -a MAX_CNTION_GLOBAL=($MAX_CNTION_GLOBAL)
+   Ncheck=${#MAX_CNTION_GLOBAL[@]}
+   if [ $Ncheck -eq $NCNTION ]
+   then
+	for ((I=0;I<=NCNTION-1;I++))
+		do
+		echo "Max number of ${CNTION["$I"]} to be selected ${MAX_CNTION_GLOBAL["$I"]}"
+ 	done
+   else
+	   echo "CNTION_LIST=$CNTION_LIST  and MAX_CNTION_GLOBAL=$MAX_CNTION_GLOBAL not compatible!"
+	   exit
+   fi
+fi
+
 if [ -z "$MD_PROD" ]; then MD_PROD="5.PRODUCTION"; else echo "Assuming MD_PROD=$MD_PROD"; fi
 if [ -z "$PEEL" ]; then echo 'Considering PEEL=14';  PEEL=16; else echo "Using PEEL=$PEEL"; fi
 if [ -z "$SIEVE" ]; then echo 'Considering SIEVE=50';  SIEVE=50; else echo "Using SIEVE=$SIEVE"; fi
@@ -67,10 +115,11 @@ do
      if [ -z $TOPOLOGY ]; then TOPOLOGY=${MOL}.top; fi
   elif [ ${SUFFIX_MDCRD} == "_solute.mdcrd" ]  && [ -z $TOPOLOGY ]
   then
-     echo "Processing solute trj files so that PEEL=0 MAX_NA=0"
+     echo "Processing solute trj files so that PEEL=0 MAX_CNTION=0"
      PEEL=0
-     MAX_NA=0
-     MAX_NA_GLOBAL=0
+     NCNTION=0
+     MAX_CNTION=0
+     MAX_CNTION_GLOBAL=0
      if [ -z $TOPOLOGY ]; then TOPOLOGY=${MOL}_solute.top; fi
   elif [ ${SUFFIX_MDCRD} == "_solutewat.mdcrd" ]   && [ -z $TOPOLOGY ]
   then
@@ -90,25 +139,44 @@ do
       echo "$TOPOLOGY not found in ${MOL}_MD. Exiting"
       exit
   fi
-  NTOP_SODIUM=$(sed  '/FLAG CHARGE/,$d' $TOPOLOGY | tr " \t" "\n" | grep -c 'Na+')
-  NTOP_WAT=$(sed  '1,/FLAG RESIDUE_LABEL/d' $TOPOLOGY | tr " \t" "\n" | grep -c 'WAT')
-  echo "$TOPOLOGY  has  NTOP_SODIUM=${NTOP_SODIUM}"
+
+  declare -a NTOP_CNTION=""
+  for ((I=0;I<=NCNTION-1;I++))
+  do
+	  NTOP_CNTION["$I"]=$(sed  '/FLAG CHARGE/,$d' $TOPOLOGY | tr " \t" "\n" | grep -c "${CNTION["$I"]}")
+	  echo "$TOPOLOGY has info for N=${NTOP_CNTION["$I"]}  ${CNTION["$I"]} counterions"
+  done
+  NTOP_WAT=$(sed  '1,/FLAG RESIDUE_LABEL/d' $TOPOLOGY | tr " \t" "\n" | grep -c  WAT)
   echo "$TOPOLOGY  has  NTOP_WAT=${NTOP_WAT}"
-  if [ "$ALL_NA" == "YES" ] 
+
+  if [ "$ALL_CNTION" == "YES" ] 
   then 
-     MAX_NA=${NTOP_SODIUM}
-     MAX_NA_GLOBAL=${NTOP_SODIUM} 
-     echo "Considering MAX_NA=$MAX_NA listed in $TOPOLOGY "
+     declare -a MAX_CNTION
+     declare -a MAX_CNTION_GLOBAL
+     for ((I=0;I<=NCNTION-1;I++))
+     do
+	  MAX_CNTION["$I"]=${NTOP_CNTION["$I"]} 
+	  MAX_CNTION_GLOBAL["$I"]=${NTOP_CNTION["$I"]} 
+          echo "Considering MAX_CNTION=${MAX_CNTION["$I"]} for ${CNTION["$I"]} listed in $TOPOLOGY "
+     done
   else
-     if [ $NTOP_SODIUM -gt $MAX_NA_GLOBAL ]
+     declare -a MAX_CNTION
+     for ((I=0;I<=NCNTION-1;I++))
+     do 	     
+     if [ ${NTOP_CNTION["$I"]} -gt ${MAX_CNTION_GLOBAL["$I"]}  ]
      then 
-         echo "Using MAX_NA=$MAX_NA_GLOBAL as defined by MAX_NA_GLOBAL instead of MAX_NA=$NTOP_SODIUM as listed in $TOPOLOGY "
-         MAX_NA=$MAX_NA_GLOBAL
+         echo "${CNTION["$I"]}  : using MAX_CNTION=${MAX_CNTION_GLOBAL["$I"]} as defined by MAX_CNTION_GLOBAL instead of MAX_CNTION=${NTOP_CNTION["$I"]} as listed in $TOPOLOGY "
+         MAX_CNTION["$I"]=${MAX_CNTION_GLOBAL["$I"]}
+     elif [ ${NTOP_CNTION["$I"]} -lt ${MAX_CNTION_GLOBAL["$I"]}  ]
+     then
+         echo "${CNTION["$I"]} : MAX_CNTION_GLOBAL=${MAX_CNTION_GLOBAL["$I"]} , but only ${NTOP_CNTION["$I"]}  available in $TOPOLOGY "
+         MAX_CNTION["$I"]=${NTOP_CNTION["$I"]}
      else
-         echo "MAX_NA_GLOBAL=$MAX_NA_GLOBAL, but only MAX_NA=$NTOP_SODIUM available as listed in $TOPOLOGY "
-         MAX_NA=${NTOP_SODIUM}
+         MAX_CNTION["$I"]=${MAX_CNTION_GLOBAL["$I"]}
      fi
+     done
   fi
+
   if [ $NTOP_WAT  -eq  0 ]
   then 
      echo "Since $TOPOLOGY has no water, then PEEL=0"
@@ -174,7 +242,7 @@ NRES=$NRES
 NFRAG=$NFRAG
 
 SNAPSHOTS_DIR=$SNAPSHOTS_DIR
-MAX_NA_GLOBAL=$MAX_NA_GLOBAL
+MAX_CNTION_GLOBAL=(${MAX_CNTION_GLOBAL[*]})
 PEEL=$PEEL
 SIEVE=$SIEVE
 DISLIM=$DISLIM
@@ -200,7 +268,7 @@ EOF
   do 
       let "ifile=$ifile+1"
       NSNAP=$(ncdump -h $file |grep frame | grep UNLI | awk '{print $6}' | sed 's/(//')
-      ncheck=$(grep "$file" processed_files.txt | grep -c "$file  1 ${NSNAP} ${SIEVE} ${PEEL} ${MAX_NA}" )      
+      ncheck=$(grep "$file" processed_files.txt | grep -c "$file  1 ${NSNAP} ${SIEVE} ${PEEL} ${MAX_CNTION[*]}" )      
       if [ $ncheck -eq 0 ]
       then 
           let "jfile=$jfile+1"
@@ -210,7 +278,7 @@ EOF
           echo "$file  1 $NSNAP ${SIEVE} already processed."
           let "INIT=$INIT + ${NSNAP}/${SIEVE}"
       fi
-      echo "$file  1 $NSNAP ${SIEVE} ${PEEL} ${MAX_NA}"  >> current_processed_files.txt
+      echo "$file  1 $NSNAP ${SIEVE} ${PEEL} ${MAX_CNTION[*]}"  >> current_processed_files.txt
   done
   nfile=$ifile
   echo "nfile=$nfile"
@@ -225,7 +293,7 @@ EOF
       do 
           let "ifile=$ifile+1"
           NSNAP=$(ncdump -h $file |grep frame | grep UNLI | awk '{print $6}' | sed 's/(//')
-          ncheck=$(grep "$file" processed_files.txt | grep -c "$file  1 ${NSNAP} ${SIEVE} ${PEEL} ${MAX_NA}" )      
+          ncheck=$(grep "$file" processed_files.txt | grep -c "$file  1 ${NSNAP} ${SIEVE} ${PEEL} ${MAX_CNTION[*]}" )      
           if [ $ncheck -eq 0 ]
           then 
               let "jfile=$jfile+1"
@@ -235,7 +303,7 @@ EOF
               echo "$file  1 $NSNAP ${SIEVE} already processed."
               let "INIT=$INIT + ${NSNAP}/${SIEVE}"
           fi
-          echo "$file  1 $NSNAP ${SIEVE} ${PEEL} ${MAX_NA}"  >> current_processed_files.txt
+          echo "$file  1 $NSNAP ${SIEVE} ${PEEL} ${MAX_CNTION[*]}"  >> current_processed_files.txt
       done
       nfile=$ifile
       if [ $nfile -eq 0 ]
@@ -260,8 +328,8 @@ EOF
   if [ "$SKIP_PDB" != "YES" ]
   then
 
-  echo "$APTAMD/SCRIPTS/peel_cpptraj.sh ../../$TOPOLOGY   lista.txt  $PEEL ":1-${NRES},Na+"  ${MOL}  ${INIT}"
-  $APTAMD/STRUCT/peel_cpptraj.sh ../../$TOPOLOGY lista.txt $PEEL ":1-${NRES},Na+"  ${MOL}   ${INIT}  
+  echo "$APTAMD/STRUCT/peel_cpptraj.sh ../../$TOPOLOGY   lista.txt  $PEEL ":1-${NRES},${CNTIONMASK}"  ${MOL}  ${INIT}"
+  $APTAMD/STRUCT/peel_cpptraj.sh ../../$TOPOLOGY lista.txt $PEEL ":1-${NRES},${CNTIONMASK}"  ${MOL}   ${INIT}  
   if [ $jfile != $ifile ]; then ls ${MOL}*.pdb.gz | sed 's/.gz//' > current_LISTA; fi 
   ls ${MOL}*.pdb >  LISTA.tmp
   cat LISTA.tmp >> current_LISTA
@@ -282,12 +350,30 @@ EOF
      if [ -e LISTA ] ; then cp LISTA current_LISTA; fi
   fi
 
+# LOOP OVER CNT IONS 
 
-  if [ ${MAX_NA_GLOBAL} -gt 0 ]
+for ((I=0;I<=NCNTION-1;I++))
+do
+
+
+  if [ ${MAX_CNTION_GLOBAL["$I"]} -gt 0 ]
   then
 
-# Get Na+ contacts data for each fragment 
+  nion=${MAX_CNTION["$I"]}
+  ion=${CNTION["$I"]}
+  if [ ${ion} == 'Na+' ]
+  then
+	  ionup="INA"
+  elif [ ${ion} == 'K+' ]
+  then
+	  ionup="IK"
+  elif [ ${ion} == 'MG' ]
+  then
+	  ion="MG "
+	  ionup="IXG"
+  fi
 
+# LOOP over solute fragments 
   for ((IFRAG=0;IFRAG<=NFRAG;IFRAG++))
   do
 
@@ -301,42 +387,42 @@ EOF
 
   KRES=${IRES["$IFRAG"]} 
   LRES=${JRES["$IFRAG"]} 
-  echo "Getting Na+ contacts for fragment $JFRAG = $KRES : $LRES"
+  echo "Getting ${CNTION["$I"]} contacts for fragment $JFRAG = $KRES : $LRES"
 
   else
 
   KRES="1"
   LRES="$NRES"
   JFRAG="full"
-  echo "Getting Na+ contacts for all solute atoms"
+  echo "Getting ${CNTION["$I"]}  contacts for all solute atoms"
 
   fi
 
   if [ $jfile -gt 0 ]
   then 
-     cat trajin.txt > closest_${JFRAG}.in 
-     cat <<EOF >>  closest_${JFRAG}.in 
-closest ${MAX_NA}  :${KRES}-${LRES} solventmask :Na+ closestout closestmols_${JFRAG}.dat
-hbond HB-Ion avgout contacts_${JFRAG}.dat solventacceptor :Na+ solventdonor :Na+
+     cat trajin.txt > closest_${I}_${JFRAG}.in 
+     cat <<EOF >>  closest_${I}_${JFRAG}.in 
+closest ${MAX_CNTION}  :${KRES}-${LRES} solventmask :${CNTION["$I"]} closestout closestmols_${I}_${JFRAG}.dat
+hbond HB-Ion avgout contacts_${I}_${JFRAG}.dat solventacceptor :${CNTION["$I"]} solventdonor :${CNTION["$I"]}
 go
 
 EOF
-     $AMBERHOME/bin/cpptraj.OMP ../../$TOPOLOGY < closest_${JFRAG}.in > closest_${JFRAG}.out 
-     if [ -e CLOSEST_${JFRAG}.dat ]
+     $AMBERHOME/bin/cpptraj.OMP ../../$TOPOLOGY < closest_${I}_${JFRAG}.in > closest_${I}_${JFRAG}.out 
+     if [ -e CLOSEST_${I}_${JFRAG}.dat ]
      then 
-          sed '1,1d' closestmols_${JFRAG}.dat >> CLOSEST_${JFRAG}.dat
-          rm -f closestmols_${JFRAG}.dat 
+          sed '1,1d' closestmols_${I}_${JFRAG}.dat >> CLOSEST_${I}_${JFRAG}.dat
+          rm -f closestmols_${I}_${JFRAG}.dat 
      else
-          mv closestmols_${JFRAG}.dat CLOSEST_${JFRAG}.dat
+          mv closestmols_${I}_${JFRAG}.dat CLOSEST_${I}_${JFRAG}.dat
      fi
   fi
 
 
-cat <<EOF > na_${JFRAG}.m 
-fid_1=fopen('NA_SORTED_${JFRAG}.INFO','w');
-fid_2=fopen('NA_DIST_${JFRAG}.INFO','w');
-A=load('CLOSEST_${JFRAG}.dat');
-nion=${MAX_NA};
+cat <<EOF > cntion_${ionup}_${JFRAG}.m
+fid_1=fopen('${ionup}_SORTED_${JFRAG}.INFO','w');
+fid_2=fopen('${ionup}_DIST_${JFRAG}.INFO','w');
+A=load('CLOSEST_${I}_${JFRAG}.dat');
+nion=${nion};
 DISLIM=${DISLIM};
 nsnap=length(A(:,1))/nion;
 DIS=A(:,3);
@@ -375,10 +461,10 @@ for i=[1:length(P)]
     end
 end
 fprintf(fid_2,' =============================================================== \n ')
-fprintf(fid_2,'Na···Solute Distance Distribution for #ion= %i  \n ',k)
+fprintf(fid_2,'${ion}···Solute Distance Distribution for #ion= %i  \n ',k)
 fprintf(fid_2,'=============================================================== \n ')
-fprintf(fid_2,'Prob  ( DIS < %5.2f ) for %i Na+ ions = %6.4f \n ',DISLIM,k,prob)
-fprintf(fid_2,'   PMF  Na+···X  \n ')
+fprintf(fid_2,'Prob  ( DIS < %5.2f ) for %i ${ion} ions = %6.4f \n ',DISLIM,k,prob)
+fprintf(fid_2,'   PMF  ${ion}···X  \n ')
 for i=[1:length(P)]
    if ( P(i) > 0.001 )
       fprintf(fid_2,' %6.4f  %6.4f \n ',P(i),X(i))
@@ -407,10 +493,10 @@ for i=[1:length(P)]
     end
 end
 fprintf(fid_2,' ========================================================================== \n ')
-fprintf(fid_2,'Na···Solute AVERAGE Distance Distribution for #ion= %i \n ',k)
+fprintf(fid_2,'${ion} ···Solute AVERAGE Distance Distribution for #ion= %i \n ',k)
 fprintf(fid_2,'========================================================================== \n ')
-fprintf(fid_2,'Prob  ( AVG-DIS < %5.2f ) for %i Na+ ions = %6.4f \n ',DISLIM,k,prob)
-fprintf(fid_2,'   PMF  AVG_Na+···X  \n ')
+fprintf(fid_2,'Prob  ( AVG-DIS < %5.2f ) for %i ${ion} ions = %6.4f \n ',DISLIM,k,prob)
+fprintf(fid_2,'   PMF  AVG_${ion}···X  \n ')
 for i=[1:length(P)]
    if (P(i) > 0.001 )
       fprintf(fid_2,' %6.4f  %6.4f \n ',P(i),X(i))
@@ -444,7 +530,7 @@ xlim([ xmin  xmax ])
 ylim([ 0 0.20])
 xlabel(' r ') 
 ylabel('frequency')
-title([' Frag${JFRAG}---Na+ Dist Closest ',num2str(k),' ions'])
+title([' Frag${JFRAG}---${ion} Dist Closest ',num2str(k),' ions'])
 text(xmin+wx/2,0.18,'Average','Fontsize',18)
 text(xmin+2*wx,0.18,['P(<',num2str(DISLIM,'%4.2f'),')=',num2str(prob,'%4.2f')],'Fontsize',14)
 set(gca,'xtick',[xmin:wx:xmax])
@@ -470,7 +556,7 @@ set(gca,'ticklength',[0.01 0.01])
 set(gca,'Fontsize',18)
 set(gca,'Fontname','Times')
 
-print(h,['hist_${JFRAG}_',num2str(k),'.png'],'-dpng','-color')
+print(h,['hist_cntion_${ionup}_${JFRAG}_',num2str(k),'.png'],'-dpng','-color')
 
 end
 
@@ -478,21 +564,23 @@ fclose(fid_1);
 fclose(fid_2);
 
 EOF
-  $OCTAVE --no-gui -W -q  na_${JFRAG}.m  > mlog
-  paste current_LISTA NA_SORTED_${JFRAG}.INFO | sed 's/\t/,/g' >  TMP ; mv -f TMP NA_SORTED_${JFRAG}.INFO
+  $OCTAVE --no-gui -W -q  cntion_${ionup}_${JFRAG}.m  > mlog
+  paste current_LISTA ${ionup}_SORTED_${JFRAG}.INFO | sed 's/\t/,/g' >  TMP ; mv -f TMP ${ionup}_SORTED_${JFRAG}.INFO
 
   if [ $JFRAG -eq 1 ] && [ $NFRAG -eq 1 ]; then break; fi
 
-  done 
+  done  #  LOOP over fragments
 
   fi
 
-  unset TOPOLOGY 
+done  # Loop over CNTION
 
-  mv -f  current_LISTA  LISTA
-  mv -f  current_processed_files.txt  processed_files.txt
+mv -f  current_LISTA  LISTA
+mv -f  current_processed_files.txt  processed_files.txt
 
-  cd $WORKDIR_TRJ 
+unset TOPOLOGY 
+cd $WORKDIR_TRJ 
 
-done 
+done # Loop over MOL names
+
 

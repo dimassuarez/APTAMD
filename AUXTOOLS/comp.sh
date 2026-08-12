@@ -15,7 +15,7 @@ fi
 
 if [ $ARG == "all" ]
 then
-    list_f=$(ls *.f)
+    list_f=$(ls *.f *.f90)
 elif [ $ARG == "nmode" ]
 then
      list_f=""

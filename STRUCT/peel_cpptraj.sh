@@ -11,8 +11,8 @@ TOP=$1
 COORD=$2
 # Thickness of the water shell
 RPEEL=$3
-# Solute Mask: Default is !:WAT,Na+,Cl-
-MASK=$4
+# Solute Mask: Default is !:WAT,Na+,Cl-,MG
+SOLUTEMASK=$4
 # ID for the PDB files to be printed ouf
 IDMOL=$5
 # Initial numbering for PDBs
@@ -61,10 +61,18 @@ else
   fi
 fi
 
-if [ -z $MASK ]
+if [ -z $SOLUTEMASK ]
 then
-   MASK="!:WAT,Na+,Cl-"
+   SOLUTEMASK="!:WAT,Na+,Cl-,MG"
 fi
+if [ -z $SLVNTMASK ]
+then
+   SLVNTMASK=":WAT,Na+,Cl-,MG"
+fi
+SLVNTMASK_O=${SLVNTMASK/WAT/WAT@O}
+echo "SLVNTMASK=${SLVNTMASK}  including counterions"
+
+
 if [ -z $IDMOL ]
 then
    IDMOL="md_peel"
@@ -105,7 +113,7 @@ if [ $IPEEL -eq 0 ]; then echo "PDBs will contain only solute atoms"; fi
 
 cat <<EOF >> input.cpptraj
 trajout tmp ncrestart
-watershell $MASK lower $RPEEL upper $RPEEL out tmp_WS.dat
+watershell $SOLUTEMASK lower $RPEEL upper $RPEEL out tmp_WS.dat
 go
 EOF
 
@@ -152,8 +160,8 @@ do
 cat <<EOF > input.${icoord}
 trajin  tmp.${icoord}
 trajout $WORKDIR/${IDMOL}_${txt}.pdb pdb vdw include_ep
-autoimage origin anchor $MASK
-closest $NWAT $MASK solventmask :WAT@O,Na+,Cl- 
+autoimage origin anchor $SOLUTEMASK
+closest $NWAT $SOLUTEMASK solventmask ${SLVNTMASK_O}
 go
 EOF
 
@@ -162,8 +170,8 @@ EOF
 cat <<EOF > input.${icoord}
 trajin  tmp.${icoord}
 trajout $WORKDIR/${IDMOL}_${txt}.pdb pdb vdw include_ep
-strip   :WAT,Na+,Cl- 
-autoimage origin anchor $MASK
+strip   ${SLVNTMASK}
+autoimage origin anchor $SOLUTEMASK
 go
 EOF
 

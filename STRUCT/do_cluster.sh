@@ -32,7 +32,7 @@ if [ -z "$PREFIX_MDCRD" ]; then echo 'Considering PREFIX_MDCRD=md_';  PREFIX_MDC
 if [ -z "$CLUSTER_DIR" ]; then echo 'Considering CLUSTER_DIR=CLUSTER';  CLUSTER_DIR="CLUSTER"; else echo "Using CLUSTER_DIR=$CLUSTER_DIR"; fi
 if [ -z "$MASK" ]; then MASK='NONE'; MASK_READ="NO"; echo "Guessing MASK for RMSD";  else echo "Using MASK=$MASK"; MASK_READ="YES";   fi
 if [ -z "$TSNE" ]; then TSNE='NO';  echo "TSNE clustering is not performed";  fi
-if [ -z "$DSSP" ]; then DSSP='NO';  echo "DSSP analsysis will not be performed";  fi
+if [ -z "$DSSP" ]; then DSSP='NO';  echo "DSSP analysis will not be performed";  fi
 # Optionally onty a fraction of data is used
 if [ -z "$PERCEN" ]
 then

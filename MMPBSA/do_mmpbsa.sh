@@ -41,7 +41,7 @@ if [ -z "$MD_TYPE" ]; then  EXIT="YES" ; fi
 
 if [ "$EXIT" == "YES" ]
 then
-   echo 'Usage: do_mmpbsa.sh "MOL1   MOL2 .."   [ MD | GAMD ]  "NSODIUM_FRAG_1  NSODIUM_FRAG_2 .." '
+   echo 'Usage: do_mmpbsa.sh "MOL1   MOL2 .."   [ MD | GAMD ]  '
    echo
    echo 'Many, many other options about activating RISM, QMMM, ADCK, are controlled by defining' 
    echo 'external BASH variables. '
@@ -65,24 +65,65 @@ then
   echo  "Using TOPOLOGY=$TOPOLOGY for ALL systems in ${MD_TRAJ}"
 fi 
 
-if [ -z "$NSODIUM_LIMIT" ] 
-then 
-  NSODIUM_LIMIT=0 ; 
-  echo "Using NSODIUM_LIMIT=${NSODIUM_LIMIT}"
-else
-  echo "Using NSODIUM_LIMIT=${NSODIUM_LIMIT} as predefined"
-fi
-# SODIUM ions can be separated fragments or just aggregated to cmplx/receptor/ligand fragments
-if [ -z "$SODIUM_FRAG" ]; then SODIUM_FRAG="NO"; fi
-if [ "$SODIUM_FRAG" == "NO" ] && [ $NSODIUM_LIMIT  -gt  0 ]
-then 
-  echo "Na+ and hydrating waters are assigned to CMPLX/FRAGs"
-elif [ "$SODIUM_FRAG" == "YES" ] && [ $NSODIUM_LIMIT  -gt  0 ] 
+# For compatibility with former datasets
+if [ ! -z "$NSODIUM_LIMIT" ] &&  [ -z "$CNTION_LIST" ]  &&  [ -z "$NCNTION_LIMIT" ]
 then
-  echo "Na+ and hydrating waters are treated as additional fragments."
+	CNTION_LIST="Na+"
+	ix=0
+	NCNTION_LIMIT=""
+	for x in $(echo $NSODIUM_LIMIT)
+	do
+		let "ix=$ix+1"
+		if [ $ix -eq 1 ]
+		then
+		NCNTION_LIMIT="${x}"
+         	else
+		NCNTION_LIMIT="${NCNTION_LIMIT}:${x}"
+		fi
+	done
+	if [ ! -z "$SODIUM_FRAG" ]  &&  [ -z "$CNTION_FRAG" ]; then CNTION_FRAG="$SODIUM_FRAG"; fi
+	echo "Interpreting NSODIUM_LIMIT=$NSODIUM_LIMIT as "
+	echo "             CNTION_LIST=Na+"
+	echo "             NCNTION_LIMIT=${NCNTION_LIMIT}"
+	echo "Avoid declaring NSODIUM_LIMIT"
 fi
 
-# SOME  MMPBSA parameters 
+
+# List of counterions
+if [ -z "$CNTION_LIST" ]
+then
+        declare -a CNTION=("Na+")
+else
+        declare -a CNTION=($CNTION_LIST)
+fi
+NCNTION=${#CNTION[@]}
+if [ -z "$NCNTION_LIMIT" ] 
+then 
+  declare -a NCNTION_LIMIT=(0)  
+else
+  declare -a NCNTION_LIMIT=(${NCNTION_LIMIT})  
+fi
+if [ ${NCNTION} -eq ${#NCNTION_LIMIT[@]} ]
+then
+     for ((I=0;I<=NCNTION-1;I++))
+     do
+        echo "${NCNTION_LIMIT["$I"]} ${CNTION["$I"]} ions to be selected "
+     done
+else
+      echo "CNTION_LIST=$CNTION_LIST and NCNTION_LIMIT=${NCNTION_LIMIT[*]} not compatible!"
+      exit
+fi
+# CNTION ions can be separated fragments or just aggregated to cmplx/receptor/ligand fragments
+if [ -z "$CNTION_FRAG" ]; then CNTION_FRAG="NO"; fi
+if [ "$CNTION_FRAG" == "NO" ] && [ $NCNTION_LIMIT  -gt  0 ]
+then 
+  echo "counterions and hydrating waters are assigned to CMPLX/FRAGs"
+elif [ "$CNTION_FRAG" == "YES" ] && [ ${NCNTION_LIMIT[0]}  -gt  0 ] 
+then
+  echo "counterions and hydrating waters are treated as additional fragments."
+fi
+
+# SOME MMPBSA parameters 
 if [ -z "$PDIE_LIST" ]
 then
    PDIE_LIST="1" 
@@ -93,9 +134,9 @@ fi
 if [ -z "$ISTRNG" ]
 then
    ISTRNG="150"
-   echo "Using ISTRNG=${ISTRNG}"
+   echo "Using ISTRNG=${ISTRNG} mM"
 else
-   echo "Using ISTRNG=${ISTRNG} as predefined "
+   echo "Using ISTRNG=${ISTRNG} mM as predefined "
 fi
 if [ -z "$PEEL" ]
 then
@@ -331,19 +372,35 @@ else
 fi
 if [ -z $SNAPSHOTS_DIR ]; then  SNAPSHOTS_DIR="SNAPSHOTS"; fi 
 
+# Solvent mask including counterions
+if [ -z $SLVNTMASK ]
+then
+   SLVNTMASK=":WAT,Na+,Cl-,MG"
+fi
+GREPSLVNTMASK=$(echo $SLVNTMASK | sed 's/://' | sed 's/,/\\|/g')
+
+# Counting  ions
+declare -a NCNTION_TOT=""
+declare -a NCNTION_FRAG=""
+for ((I=0;I<=NCNTION-1;I++))
+do
+	XTEMP=${NCNTION_LIMIT["$I"]}
+        J=0
+	K=0
+	for X in ${XTEMP//:/ }
+	do
+		let "J=$J+$X"
+		let "K=$K+1"
+	done
+	NCNTION_TOT["$I"]=$J
+	NCNTION_FRAG["$I"]=$K
+	echo "Considering a total of $J ions of type ${CNTION["$I"]} distributed on $K fragments"
+done
+
+
+
 
 WORKDIR_TRJ=$PWD
-
-# NSODIUM data
-declare -a NSODIUM_LIST=""
-NSODIUM_LIST=($(echo $NSODIUM_LIMIT))
-NSODIUM_TERMS=${#NSODIUM_LIST[@]}
-NSODIUM=0
-for ((i=0;i<=NSODIUM_TERMS-1;i++))
-do
-    let "NSODIUM=${NSODIUM_LIST["$i"]}+$NSODIUM"
-done
-echo "Considering a total of $NSODIUM ions"
 
 for MOL in $MD_TRAJ 
 do
@@ -403,21 +460,23 @@ EOF
     else
         echo "Detected $NFRAG fragments"
     fi
-    if [ $NFRAG -ne $NSODIUM_TERMS ]
+
+    for ((I=0;I<=NCNTION-1;I++))
+    do
+
+    if [ $NFRAG -ne ${NCNTION_FRAG["$I"]}  ]
     then 
-       echo "Detected $NFRAG fragments in $MOL, but NSODIUM is specified for $NSODIUM_TERMS fragments"
-       if [ $NSODIUM_TERMS -eq 1 ]
-       then
-           echo "Assuming that NSODIUM=${NSODIUM_LIST["0"]} applies to FRAG 1"
-           for ((IFRAG=1;IFRAG<=NFRAG-1;IFRAG++))
-           do
-               NSODIUM_LIST["$IFRAG"]=0
-           done
-           NSODIUM_TERMS=$NFRAG
+      echo "Detected $NFRAG fragments in $MOL, but NCNTION_LIMIT of ${CNTION["$I"]} ions is specified for $NCNTION_FRAG["$I"] fragments"
+      if [ $NCNTION_FRAG["$I"] -eq 1 ]
+      then
+           echo "Assuming that NCNTION=${NCNTION_LIMIT["$I"]} applies to FRAG 1"
       else
            exit
       fi
     fi
+
+    done 
+
     declare -a IRES=""
     declare -a JRES=""
     JRES=($(grep TER $SOLUTE_PDB | awk '{print $4}'))
@@ -435,21 +494,58 @@ EOF
     cd ../
   fi
 
-  if [ ${NSODIUM} -gt 0  ]
+  NRES_NOION=${NRES} 
+  NFRAG_NOION=${NFRAG} 
+  NCNTION_ACCUM=0
+  rm -f tmp_CNTION.info
+  declare -a FRAG_NWAT=""
+  declare -a FRAG_WATMASK=""
+  for ((i=0;i<=20;i++))
+  do
+	  FRAG_NWAT["$i"]=0
+	  FRAG_WATMASK["$i"]=""
+  done
+
+  for ((I=0;I<=NCNTION-1;I++)) 
+  do
+
+  LINE_CNTION_INFO=""
+
+  if [ ${NCNTION_TOT["$I"]} -gt 0  ]
   then
-#
-#  We process the TOPOLOGY file to modify the atom/resname for Na+
-#  Na+---> INA ( INA atoms will be kept in MMPBSA analyses)
-#
-       echo  "NSODIUM=${NSODIUM} to be considered as solute atoms"
-       cp $TOPOLOGY ${MOL}_solutewat_INA.top
-       TOPOLOGY="${MOL}_solutewat_INA.top"
+       ion=${CNTION["$I"]}
 
-       NTOP_SODIUM=$(sed  '/FLAG CHARGE/,$d' $TOPOLOGY | tr " \t" "\n" | grep -c 'Na+')
+	if [ ${ion} == 'Na+' ]
+	then
+          ionup="INA"
+	elif [ ${ion} == 'K+' ]
+	then
+          ionup="IK"
+	elif [ ${ion} == 'MG' ]
+	then
+          ion="MG "
+          ionup="IXG"
+	fi
 
-       if [ ${NTOP_SODIUM} -lt ${NSODIUM} ] 
+       LINE_CNTION_INFO=" ${CNTION["$I"]} ${ionup}  "
+
+       echo "Fixing $TOPOLOGY original label = $ion new label = $ionup "
+#
+#  We process the TOPOLOGY file to modify the atom/resname for Na+, MG, ...
+#  ---> ION ( ION atoms will be kept in MMPBSA analyses)
+#
+       echo  "NCNTION=${NCNTION_TOT["$I"]} ${CNTION["$I"]} ions  to be considered as solute atoms"
+       if [ ! -e ${MOL}_solutewat_ION.top ]
        then
-          echo "Not enough Na+ in $TOPOLOGY  NSODIUM=${NSODIUM}  NTOP_SODIUM=${NTOP_SODIUM}"
+          cp $TOPOLOGY ${MOL}_solutewat_ION.top
+          TOPOLOGY="${MOL}_solutewat_ION.top"
+       fi
+
+       NTOP_CNTION=$(sed  '/FLAG CHARGE/,$d' $TOPOLOGY | tr " \t" "\n" | grep -c "${CNTION["$I"]}" )
+
+       if [ ${NTOP_CNTION} -lt ${NCNTION_TOT["$I"]} ] 
+       then
+          echo "Not enough ${CNTION["$I"]} in $TOPOLOGY  NCNTION=${NCNTION_TOT["$I"]}  NTOP_CNTION=${NTOP_CNTION}"
           exit
        fi
 
@@ -460,24 +556,24 @@ EOF
        for file in temp_A.top temp_B.top 
        do
             declare -a iline=""
-            iline=($(grep -n 'Na+' $file | sed 's/:/  /' | awk '{print $1}'))
+            iline=($(grep -n "${CNTION["$I"]}" $file | sed 's/:/  /' | awk '{print $1}'))
             nlines=${#iline[@]} 
-            NUM_INA=0
+            NUM_CNT=0
             for ((i=1;i<=nlines;i++))
             do
                let "j=$i-1"
                jline=${iline["$j"]}
-               NSODIUM_LINE=$(sed -n "${jline},${jline}p"  $file | tr " \t" "\n" | grep -c 'Na+') 
-               if [ ${NUM_INA} -lt ${NSODIUM} ]
+               NCNTION_LINE=$(sed -n "${jline},${jline}p"  $file | tr " \t" "\n" | grep -c "${CNTION["$I"]}") 
+               if [ ${NUM_CNT} -lt ${NCNTION_TOT["$I"]} ]
                then
-                   let "NUM_INA_NEED=${NSODIUM}-${NUM_INA}"
-                   if [ ${NSODIUM_LINE} -le ${NUM_INA_NEED} ]
+                   let "NUM_CNT_NEED=${NCNTION_TOT["$I"]}-${NUM_CNT}"
+                   if [ ${NCNTION_LINE} -le ${NUM_CNT_NEED} ]
                    then 
-                       sed -i "${jline}s/Na+/INA/g" $file
-                       let "NUM_INA=${NUM_INA} + ${NSODIUM_LINE}"
+                       sed -i "${jline}s/${ion}/${ionup}/g" $file
+                       let "NUM_CNT=${NUM_CNT} + ${NCNTION_LINE}"
                    else
-                       for ((k=1;k<=NUM_INA_NEED;k++)); do sed -i "${jline}s/Na+/INA/" $file; done
-                       let "NUM_INA=${NUM_INA} + ${NUM_INA_NEED}"
+                       for ((k=1;k<=NUM_CNT_NEED;k++)); do sed -i "${jline}s/${ion}/${ionup}/" $file; done
+                       let "NUM_CNT=${NUM_CNT} + ${NUM_CNT_NEED}"
                    fi
                else
                    break
@@ -487,31 +583,14 @@ EOF
        cat temp_A.top temp_B.top temp_C.top > $TOPOLOGY
        rm -f temp_A.top temp_B.top temp_C.top
 
-#      Fixing some variables according to the number of sodium ions
-       
-       if [ $NSODIUM -eq ${NSODIUM_LIST[0]} ]
-       then
-           MMPBSA_DIR=${MMPBSA_DIR}_NA_${NSODIUM}
-       else
-           MMPBSA_DIR=${MMPBSA_DIR}_NA
-           for ((IFRAG=0;IFRAG<=NFRAG-1;IFRAG++))
-           do
-              MMPBSA_DIR=${MMPBSA_DIR}_${NSODIUM_LIST["$IFRAG"]}
-           done
-       fi
+#      Fixing some variables according to the number of counterions
+       MMPBSA_DIR=${MMPBSA_DIR}_${ionup/I/}_${NCNTION_LIMIT["$I"]}
 
-       declare -a FRAG_NWAT=""
-       declare -a FRAG_WATMASK=""
 
-       if [ ${SODIUM_FRAG} == "YES" ]
+       if [ ${CNTION_FRAG} == "YES" ]
        then
 
-          for ((i=0;i<=NFRAG-1;i++))
-          do
-             FRAG_NWAT["$i"]=0
-             FRAG_WATMASK["$i"]=""
-          done
-          for ((i=1;i<=NSODIUM;i++))
+          for ((i=1;i<=${NCNTION_TOT["$I"]};i++))
           do
              let " j=${NRES} + $i "
              let " k=${NFRAG} -1 + $i "
@@ -520,46 +599,62 @@ EOF
              FRAG_NWAT["$k"]=6
              FRAG_WATMASK["$k"]=":${j}"
           done
-          let "NFRAG=${NFRAG}+${NSODIUM}"
-          NRES_NOION=${NRES} 
-          let "NRES=${NRES}+${NSODIUM}"
+          let "NFRAG=${NFRAG}+${NCNTION_TOT["$I"]}"
+          let "NRES=${NRES}+${NCNTION_TOT["$I"]}"
+	  LINE_CNTION_INFO="${LINE_CNTION_INFO}  ${NCNTION_TOT["$I"]} "
      
        else
 
-        NSODIUM_ACCUM=0
         for ((IFRAG=0;IFRAG<=NFRAG-1;IFRAG++))
         do
 
          let "JFRAG=$IFRAG+1"
-         NSODIUM_FRAG=${NSODIUM_LIST["$IFRAG"]} 
 
-         if [ $NSODIUM_FRAG -gt 0 ] 
+	 if [ ${NCNTION_FRAG["$I"]} -eq 1 ] && [ $IFRAG -gt 1 ]
          then 
-            txt=" 6 "
-            let " j=${NRES} + 1 + ${NSODIUM_ACCUM}  "
-            watmask=" :${j} "
-            for ((i=2;i<=NSODIUM_FRAG;i++))
+            NCNTION_FRAG_SPLIT=0
+	 else 
+            NCNTION_FRAG_SPLIT=$(echo ${NCNTION_LIMIT["$I"]} | sed 's/:/\n/g' | head -${JFRAG} | tail -1)
+	 fi
+
+         if [ ${NCNTION_FRAG_SPLIT} -gt 0 ] 
+         then 
+            let " j=${NRES} + 1 "
+            if [ ${I} -eq 0 ]  
+	    then 
+		 watmask=" :${j} "  
+		 txt=" 6 "   # first cntion type
+            else
+                 txt="${txt} ; 6 "
+                 watmask="${watmask} ; :${j} "
+	    fi
+            for ((i=2;i<=NCNTION_FRAG_SPLIT;i++))
             do
-               let " j=${NRES} + $i + ${NSODIUM_ACCUM}"
+               let " j=${NRES} + $i + ${NCNTION_ACCUM}"
                txt="${txt} ; 6 "
                watmask="${watmask} ; :${j} "
             done
             FRAG_NWAT["$JFRAG"]=${txt}
             FRAG_WATMASK["$JFRAG"]=${watmask}
-            let "NSODIUM_ACCUM=${NSODIUM_ACCUM}+${NSODIUM_FRAG}"
+            let "NCNTION_ACCUM=${NCNTION_ACCUM}+${NCNTION_FRAG_SPLIT}"
+	    LINE_CNTION_INFO="${LINE_CNTION_INFO}  ${NCNTION_FRAG_SPLIT} "
          else
             FRAG_NWAT["$JFRAG"]=""
             FRAG_WATMASK["$JFRAG"]=""
+	    LINE_CNTION_INFO="${LINE_CNTION_INFO}  0 "
          fi
 
         done
 
-        NRES_NOION=${NRES} 
-        let "NRES=${NRES}+${NSODIUM}"
+        let "NRES=${NRES}+${NCNTION_TOT["$I"]}"  
 
        fi
+
+       echo "${LINE_CNTION_INFO}" >> tmp_CNTION.info
        
   fi
+
+  done  # End of loop over NCNTION
        
   if [ ! -e 6.ANALYSIS ]
   then 
@@ -570,7 +665,7 @@ EOF
   if [ ! -e $SNAPSHOTS_DIR ]
   then 
       echo "$SNAPSHOTS_DIR directory not found in ${MOL}_MD/6.ANALYSIS"
-      if [ $NSODIUM -eq 0 ]
+      if [ $NCNTION -eq 0 ]
       then 
           SNAPSHOTS_DIR="SNAPSHOTS_NA"
           if [ ! -e $SNAPSHOTS_DIR ]
@@ -591,7 +686,7 @@ EOF
 
   if [ -e  ${MMPBSA_DIR}  ]
   then 
-      echo " ${MMPBSA_DIR} found in ${MOL}_MD/6.ANALYSIS"
+      echo "${MMPBSA_DIR} found in ${MOL}_MD/6.ANALYSIS"
   else
       mkdir ${MMPBSA_DIR}
   fi 
@@ -599,26 +694,51 @@ EOF
   cd ${MMPBSA_DIR}
   WORKDIR=$PWD 
   cp ../${SNAPSHOTS_DIR}/LISTA .
-  if [  ${NSODIUM} -gt 0 ]; then mv ../../${TOPOLOGY} . ; fi 
+  if [  ${NCNTION} -gt 0 ]; then mv ../../${TOPOLOGY} . ; mv ../../tmp_CNTION.info CNTION.info ; fi 
 
-  for ((JFRAG=1;JFRAG<=NFRAG;JFRAG++))
+  for ((I=0;I<=NCNTION-1;I++))
   do
+  ion=${CNTION["$I"]}
+    if [ ${ion} == 'Na+' ]
+  then
+          ionup="INA"
+  elif [ ${ion} == 'K+' ]
+  then
+          ionup="IK"
+  elif [ ${ion} == 'MG' ]
+  then
+          ion="MG "
+          ionup="IXG"
+  fi
 
-     if [ ${NSODIUM} -gt 0 ]  &&  [ ! -e ../${SNAPSHOTS_DIR}/NA_SORTED_${JFRAG}.INFO  ]
+  for ((JFRAG=1;JFRAG<=NFRAG_NOION;JFRAG++))
+  do
+     if [ ${NCNTION_TOT["$I"]} -gt 0 ]  &&  [ ! -e ../${SNAPSHOTS_DIR}/${ionup}_SORTED_${JFRAG}.INFO  ]  \
+                                        &&  [ ! -e ../${SNAPSHOTS_DIR}/${ionup/I/}_SORTED_${JFRAG}.INFO  ]
      then 
-         echo " ../${SNAPSHOTS_DIR}/NA_SORTED_${JFRAG}.INFO does not exist!"
+         echo " ../${SNAPSHOTS_DIR}/${ionup}_SORTED_${JFRAG}.INFO does not exist!"
+         echo " ../${SNAPSHOTS_DIR}/${ionup/I/}_SORTED_${JFRAG}.INFO does not exist!"
          exit
      fi
-    
-     if [ ${NSODIUM} -gt 0 ]; then ln -s ../${SNAPSHOTS_DIR}/NA_SORTED_${JFRAG}.INFO NA_SORTED_${JFRAG}.INFO; fi
-
+     if [ ${NCNTION_TOT["$I"]} -gt 0 ] 
+     then 
+	    if [ -e ../${SNAPSHOTS_DIR}/${ionup}_SORTED_${JFRAG}.INFO ] 
+	    then  
+	        ln -s ../${SNAPSHOTS_DIR}/${ionup}_SORTED_${JFRAG}.INFO ${ionup}_SORTED_${JFRAG}.INFO
+            else
+	        ln -s ../${SNAPSHOTS_DIR}/${ionup/I/}_SORTED_${JFRAG}.INFO ${ionup}_SORTED_${JFRAG}.INFO
+            fi
+    fi
   done 
+
+  done
 
   cp $APTAMD/MMPBSA/run_mmpbsa.sh run_mmpbsa.sh
 
   sed -i "s/DUMMY_CMPLX_MASK/:1-${NRES}/" run_mmpbsa.sh
+  sed -i "s/DUMMY_SLVNTMASK/${SLVNTMASK}/" run_mmpbsa.sh
 
-  if [ "$NFRAG" -eq 1 ]  &&  [ ${NSODIUM} -gt 0 ] &&  [ ${SODIUM_FRAG} != "YES" ]
+  if [ "$NFRAG" -eq 1 ]  &&  [ ${NCNTION} -gt 0 ] &&  [ ${CNTION_FRAG} != "YES" ]
   then
 
      txt="01"
@@ -634,41 +754,51 @@ EOF
   then
      sed -i "s/DUMMY_NFRAG/${NFRAG}/"  run_mmpbsa.sh
      if [ $NFRAG -gt 20 ]; then echo "Too many frags. Adapt run_mmpbsa.sh!"; exit; fi
-     NSODIUM_ACCUM=0
+
+     NCNTION_ACCUM=0
+     for ((I=0;I<=NCNTION-1;I++))
+     do
+
      for ((i=0;i<=NFRAG-1;i++))
      do
          let "ifrag=$i+1"
          MASK=":${IRES["$i"]}-${JRES["$i"]}"
          if [ ${ifrag} -lt 10 ]; then txt="0${ifrag}"; else  txt=$ifrag; fi
-         if [ ${NSODIUM} -gt 0 ] &&  [ ${SODIUM_FRAG} != "YES" ]
+
+         if [ ${NCNTION_TOT["$I"]} -gt 0 ] &&  [ ${CNTION_FRAG} != "YES" ]
          then
-            NSODIUM_FRAG=${NSODIUM_LIST["$i"]}
-            if [ $NSODIUM_FRAG -gt 0 ]
+            if [ ${NCNTION_FRAG["$I"]} -eq 1 ] && [ $ifrag -gt 1 ]
+            then
+               NCNTION_FRAG_SPLIT=0
+            else
+               NCNTION_FRAG_SPLIT=$(echo ${NCNTION_LIMIT["$I"]} | sed 's/:/\n/g' | head -${ifrag} | tail -1)
+            fi
+            if [ $NCNTION_FRAG_SPLIT -gt 0 ]
             then 
-               for ((j=1;j<=NSODIUM_FRAG;j++))
+               for ((j=1;j<=NCNTION_FRAG_SPLIT;j++))
                do  
-                    let "k=${NRES_NOION}+$j+${NSODIUM_ACCUM}"
+                    let "k=${NRES_NOION}+$j+${NCNTION_ACCUM}"
                     MASK="${MASK},${k}"
                done
                j=${FRAG_NWAT["$ifrag"]} 
                mask=${FRAG_WATMASK["$ifrag"]} 
                sed -i "s/DUMMY_NWAT_FRAG_${txt}/${j}/" run_mmpbsa.sh
                sed -i "s/DUMMY_WAT_FRAG_${txt}/${mask}/" run_mmpbsa.sh
-               let "NSODIUM_ACCUM=${NSODIUM_ACCUM}+${NSODIUM_FRAG}"
+               let "NCNTION_ACCUM=${NCNTION_ACCUM}+${NCNTION_FRAG_SPLIT}"
             fi
          fi
          sed -i "s/DUMMY_FRAG_${txt}/${MASK}/" run_mmpbsa.sh
+     done
+
      done
   elif [ "$NFRAG" -eq 1 ]
   then
      sed -i "s/DUMMY_NFRAG/0/"  run_mmpbsa.sh
   fi
-  sed -i "s/DUMMY_FRAG_..//" run_mmpbsa.sh
-  sed -i "s/DUMMY_WAT_FRAG_..//" run_mmpbsa.sh
-  sed -i "s/DUMMY_NWAT_FRAG_..//" run_mmpbsa.sh
 
-  if [ ${NSODIUM} -gt 0 ]  &&  [ ${SODIUM_FRAG} == "YES" ]
+  if [ ${NCNTION} -gt 0 ]  &&  [ ${CNTION_FRAG} == "YES" ]
   then 
+     if [ $NFRAG -gt 20 ]; then echo "Too many frags. Adapt run_mmpbsa.sh!"; exit; fi
      for ((i=0;i<=NFRAG-1;i++))
      do
          let "ifrag=$i+1"
@@ -678,17 +808,19 @@ EOF
          sed -i "s/DUMMY_NWAT_FRAG_${txt}/${j}/" run_mmpbsa.sh
          sed -i "s/DUMMY_WAT_FRAG_${txt}/${mask}/" run_mmpbsa.sh
      done
-
   fi
 
+  sed -i "s/DUMMY_FRAG_..//" run_mmpbsa.sh
+  sed -i "s/DUMMY_WAT_FRAG_..//" run_mmpbsa.sh
+  sed -i "s/DUMMY_NWAT_FRAG_..//" run_mmpbsa.sh
   sed -i 's/DUMMY_DO_PEEL/YES/' run_mmpbsa.sh 
   sed -i "s/DUMMY_PEEL/${PEEL}/" run_mmpbsa.sh 
-  TMP_PREPARE="${APTAMD}/MMPBSA/prepare_snap.sh ${NSODIUM_LIMIT} "
+  TMP_PREPARE="${APTAMD}/MMPBSA/prepare_snap.sh ${WORKDIR_TRJ}/${MOL}_${MD_TYPE}/6.ANALYSIS/${MMPBSA_DIR}/CNTION.info "
   TMP_PREPARE=${TMP_PREPARE//\//\\\/}
   sed -i 's/# PREPARE_SNAP=/PREPARE_SNAP=/' run_mmpbsa.sh
   sed -i "s/DUMMY_PREPARE/${TMP_PREPARE}/" run_mmpbsa.sh
     
-  if [ $NSODIUM -gt 0 ]
+  if [ $NCNTION -gt 0 ]
   then
       TMP_TOPOLOGY="${WORKDIR_TRJ}/${MOL}_${MD_TYPE}/6.ANALYSIS/${MMPBSA_DIR}/${TOPOLOGY}"
   else
@@ -895,19 +1027,19 @@ EOF
          TMP_PDBQT_FILE=${PDBQT_FILE//\//\\\/}
          sed -i "s/DUMMY_PDBQT_FRAG_${txt}/${TMP_PDBQT_FILE}/" run_mmpbsa.sh
       done
-      if [ "$NSODIUM" -gt 0 ] && [ -z $PDBQT_WAT ] 
+      if [ "$NCNTION" -gt 0 ] && [ -z $PDBQT_WAT ] 
       then
             echo " A PDBQT template for WAT is also required "
             echo " Define PDBQT_WAT variable"      
             exit
       fi
-      if [ "$NSODIUM" -gt 0 ] && [ -z $PDBQT_NA ] 
+      if [ "$NCNTION" -gt 0 ] && [ -z $PDBQT_CNTION ] 
       then
-            echo " A PDBQT template for Na+ is also required "
-            echo " Define PDBQT_NA variable"      
+            echo " A PDBQT template for counterions is also required "
+            echo " Define PDBQT_CNTION variable"      
             exit
       fi
-      if [ $NSODIUM -gt 0 ]
+      if [ $NCNTION -gt 0 ]
       then
            TMP_PDBQT_FILE=${PDBQT_WAT//\//\\\/}
            sed -i "s/DUMMY_PDBQT_WAT/${TMP_PDBQT_FILE}/" run_mmpbsa.sh

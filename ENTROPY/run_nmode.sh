@@ -132,6 +132,14 @@ NWAT_FRAG[20]="DUMMY_NWAT_FRAG_20"
 DO_PEEL="DUMMY_DO_PEEL"
 PEEL="DUMMY_PEEL"
 
+# TEMPERATURE
+TEMPERATURE="DUMMY_TEMPERATURE"
+
+# SOLVENT MASK including counterions
+SLVNTMASK="DUMMY_SLVNTMASK"
+GREPSLVNTMASK=$(echo $SLVNTMASK | sed 's/://' | sed 's/,/\\|/g')
+SLVNTMASK_O=${SLVNTMASK/WAT/WAT@O}
+
 # REFERENCE TOPOLOGY FILE (must contain more water molecules than any snapshot)
 # WE USE CPPTRAJ COMMANDS TO STRIP OFF THE REFERENCE TOPOLOGY FILE AND GET
 # THE COORDINATES FOR ANALYSES
@@ -196,6 +204,7 @@ echo '    ntrun = 1, cut=999.0, ntx=2, ' >> nmode.inp
 echo '    drms = 100.0 ,  ilevel=1,' >> nmode.inp
 echo '    scnb=2.0, scee=1.2, dielc=1.0, idiel=1 ' >> nmode.inp
 echo '    ismem=1,  nvect=0,  ' >> nmode.inp 
+echo "    t=${TEMPERATURE},  " >> nmode.inp 
 echo '    ibelly=1, ' >> nmode.inp
 echo '&end '>> nmode.inp
 
@@ -205,18 +214,17 @@ echo '&end '>> nmode.inp
 
 sed '1,/FLAG RESIDUE_LABEL/d' $REFTOP | sed '/FLAG/,$d' > RESLAB.dat
 MAXWAT=$(grep 'WAT\|HOH' RESLAB.dat  | tr " \t" "\n" | grep -c 'WAT\|HOH' )
-MAXNA=$(grep 'Na+' RESLAB.dat  | tr " \t" "\n" | grep -c 'Na+')
-MAXCL=$(grep 'Cl-' RESLAB.dat | tr " \t" "\n" | grep -c 'Cl-')
-POINTERS=($(grep 'FLAG POINTERS' -A 4 $REFTOP |tail -3)) 
-MAXRES_REFTOP=${POINTERS[11]} 
+MAXCNT=$(grep "${GREPSLVNTMASK}"  RESLAB.dat  | tr " \t" "\n" | grep -v WAT |  grep -c "${GREPSLVNTMASK}")
+POINTERS=($(grep 'FLAG POINTERS' -A 4 $REFTOP |tail -3))
+MAXRES_REFTOP=${POINTERS[11]}
 
-let " NRES = $MAXRES_REFTOP - $MAXWAT - $MAXNA - $MAXCL " 
+let " NRES = $MAXRES_REFTOP - $MAXWAT - $MAXCNT "
 
-echo " $REFTOP has $NRES non-solvent resdidues, $MAXWAT waters, $MAXNA Na+ and $MAXCL Cl-" 
+echo " $REFTOP has $NRES non-solvent resdidues, $MAXWAT waters, $MAXCNT counterions"
 
 #REF topology is stripped from counterions and box information
 $CPPTRAJ $REFTOP <<EOF
-parmstrip :Na+,Cl-
+parmstrip ${SLVNTMASK/WAT,/}
 parmbox nobox
 parmwrite out REF.top.parm7
 go
@@ -247,7 +255,7 @@ then
 # Uncompressing input PDB file
 zcat  $SNAP/$i   >  $i
 
-# PREPAREATE task here 
+# PREPARE task here 
 if [ "$PREPARE_SNAP" ]
 then 
   echo "Preparing snapshot"
@@ -274,14 +282,14 @@ go
 EOF
     $CPPTRAJ cmplxwat0.top <<EOF
 trajin  temp.pdb
-watershell !:WAT,Na+,Cl-  lower ${PEEL}  upper  ${PEEL}  out temp.iswat
+watershell  !${SLVNTMASK}  lower ${PEEL}  upper  ${PEEL}  out temp.iswat
 go 
 EOF
    NWAT_IN=$(grep -v '#' temp.iswat | awk '{print $2}')
    $CPPTRAJ cmplxwat0.top <<EOF
 trajin  temp.pdb
 trajout temp_peeled.pdb pdb vdw include_ep
-closest ${NWAT_IN} !:WAT,Na+,Cl- solventmask :WAT@O,Na+,Cl- 
+closest ${NWAT_IN} !${SLVNTMASK} solventmask ${SLVNTMASK_O}
 go
 EOF
    mv -f temp_peeled.pdb temp.pdb

@@ -30,7 +30,8 @@ fi
 export OMP_NUM_THREADS=$NPROCS
 
 # Probably, this shouldn't be changed
-if [ -z $SOLUTE_MASK ]; then SOLUTE_MASK='!:WAT,Na+,Cl-' ; fi
+if [ -z $SLVNTMASK   ]; then SLVNTMASK=':WAT,Na+,Cl-,MG' ; fi
+if [ -z $SOLUTE_MASK ]; then SOLUTE_MASK="!${SLVNTNASK}" ; fi
 
 MD="md"               # alias of MD files
 INPUT="md_npt.inp"    # MD input file 
@@ -116,7 +117,7 @@ fi
 $AMBERHOME/bin/cpptraj.OMP $WORKDIR/$TOPOLOGY <<EOF
 trajin ${MDCRD}
 autoimage 
-strip :WAT,Cl-,Na+
+strip ${SLVNTMASK} 
 trajout ${MD}_${txt}_solute.mdcrd netcdf nobox
 go
 EOF

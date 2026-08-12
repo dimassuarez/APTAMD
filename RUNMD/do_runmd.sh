@@ -46,6 +46,7 @@ if [ -z $PEEL ]; then PEEL=14; fi
 if [ -z $PEELONLY ]; then PEELONLY="NO"; fi 
 if [ -z $SIEVE ]; then SIEVE=20 ; fi 
 if [ -z $MULTI_MD ]; then MULTI_MD=1 ; fi 
+if [ -z $SLVNTMASK  ]; then SLVNTMASK=":WAT,Na+,Cl-,MG" ; fi 
 
 # Filenames 
 REFTAR="$APTAMD/RUNMD/inputfiles_${MD_TYPE}.tar" 
@@ -120,7 +121,7 @@ then
 
 # Only solute atoms topology
   $AMBERHOME/bin/parmed  ../$TOPOLOGY  <<EOF
-strip ":WAT,Cl-,Na+"
+strip ${SLVNTMASK}
 parmout ../${MOL}_solute.top
 go
 EOF

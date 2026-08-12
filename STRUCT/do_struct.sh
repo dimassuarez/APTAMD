@@ -35,6 +35,12 @@ if [ -z "$DO_SURF" ]; then DO_SURF="NO"; else echo "Considering DO_SURF=$DO_SURF
 if [ -z "$STRUCT_DIR" ]; then echo 'Considering STRUCT_DIR=STRUCT';  STRUCT_DIR="STRUCT"; else echo "Using STRUCT_DIR=$STRUCT_DIR"; fi
 if [ -z "$COMPLETE" ]; then  COMPLETE="NO"; else echo "Considering COMPLETE=$COMPLETE"; fi
 if [ -z "$MASK" ]; then MASK='NONE'; MASK_READ="NO"; echo "Guessing MASK for RMSD";  else echo "Using MASK=$MASK"; MASK_READ="YES";   fi
+if [ -z "$SLVNTMASK" ]
+then
+   SLVNTMASK=":WAT,Na+,Cl-,MG"
+fi
+GREPSLVNTMASK=$(echo $SLVNTMASK | sed 's/://' | sed 's/,/\\|/g') 
+echo "SLVNTMASK=${SLVNTMASK}  including counterions"
 
 if [ -n "$PBS_ENVIRONMENT" ] ; then
   NPROCS=$(cat $PBS_NODEFILE | wc -l)
@@ -104,8 +110,8 @@ do
   else
      echo "Using REFPDB=$REFPDB"
   fi
-  NRES=$(grep 'ATOM  '  $REFPDB | grep -v 'WAT\|Na+\|Cl-' | tail -1 | awk '{print $5}')
-  NAT=$(grep -v 'WAT\|Na+\|Cl-' $REFPDB  | grep -c  'ATOM  ' )
+  NRES=$(grep 'ATOM  '  $REFPDB | grep  -v "${GREPSLVNTMASK}" | tail -1 | awk '{print $5}')
+  NAT=$(grep  -v "${GREPSLVNTMASK}" $REFPDB  | grep -c  'ATOM  ' )
   if [ $NRES -gt 10 ]
   then
      IRES=3
@@ -304,7 +310,10 @@ EOF
   TMPLOG=${SCRATCH}/tmp_${USER}_${TT}
  
   I=0
-  for file in $(ls ../../${MD_PROD}/${PREFIX_MDCRD}???${SUFFIX_MDCRD}  )
+  ls  ../../${MD_PROD}/${PREFIX_MDCRD}?${SUFFIX_MDCRD} | sort  > tmp.list
+  ls  ../../${MD_PROD}/${PREFIX_MDCRD}??${SUFFIX_MDCRD}| sort  >> tmp.list
+  ls  ../../${MD_PROD}/${PREFIX_MDCRD}???${SUFFIX_MDCRD} | sort  >> tmp.list
+  for file in $(cat tmp.list)
   do 
     let "I=$I+1"
     if [ $I -lt 10 ]
@@ -347,7 +356,7 @@ EOF
        then
            echo "${id}.inf and ${id}.rmsd data files have different size."
           echo "we get only ${nl_inf} lines out of ${nl_rmsd} in ${id}.rmsd" 
-        fi
+       fi
        grep -v '#' ${id}.inf  | awk -F ',' '{print $NF}' >> INF.dat 
        grep -v '#' ${id}.rmsd | head -${nl_inf} | awk '{print $2}' >> RMSD.dat
        grep -v '#' ${id}.rgyr | head -${nl_inf} | awk '{print $2}' >> RGYR.dat
@@ -359,7 +368,7 @@ EOF
   else
      cat md_*.rmsd | grep -v '#' | awk '{print $2}' > RMSD.dat
      cat md_*.rgyr | grep -v '#' | awk '{print $2}' > RGYR.dat
-     if [ $DO_SURF == "YES" ]; then cat md_*.surf | grep -v '#' |  awk '{print $2}' >> SURF.dat; fi
+     if [ $DO_SURF == "YES" ]; then cat md_*.surf | grep -v '#' |  awk '{print $2}' > SURF.dat; fi
      $OCTAVE --no-gui  -q $APTAMD/STRUCT/rmsd_rgyr_surf_plot.m
   fi
 

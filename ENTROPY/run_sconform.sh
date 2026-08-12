@@ -67,10 +67,16 @@ if [ $DO_CC_MLA -le 1 ] && [ $DO_S2 -le 1 ]
 then
 
 # MASK DEFINITION  
+if [ -z "$SLVNTMASK" ]
+then
+   SLVNTMASK=":WAT,Na+,Cl-,MG"
+fi
+echo "SLVNTMASK=${SLVNTMASK}  including counterions"
+
 if [ -z "$MOL_MASK" ]
 then
    echo "MOL_MASK not defined... then keeping only solute atoms"
-   MOL_MASK="!:WAT,Na+,Cl-"
+   MOL_MASK="!${SLVNTMASK}"
 fi
 echo "Using MOL_MASK=$MOL_MASK"
 # GETTOR OPTIONS 

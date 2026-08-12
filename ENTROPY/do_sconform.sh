@@ -45,13 +45,7 @@ if [ -z "$IFRAG" ]; then IFRAG=0;  fi
 if [ -z "$DO_CC_MLA" ]; then DO_CC_MLA=0 ; fi 
 if [ $PRSTOP == "YES"  ]; then more $APTAMD/DOC/do_sconform.txt ; exit; fi 
 #GETTOR options
-if [ -z "$GETTOR_OPT" ]
-then
-     GETTOR_OPT="-puck -noMet -noArom"
-     echo "Using default GETTOR_OPT=$GETTOR_OPT"
-else
-     echo "Using GETTOR_OPT=$GETTOR_OPT"
-fi
+if [ -z "$GETTOR_OPT" ]; then echo 'Choosing GETTOR_OPT=-puck -noMet'; GETTOR_OPT="-puck -noMet"; else echo "Using GETTOR_OPT=$GETTOR_OPT"; fi
 # CCMLA calcs
 if [ $DO_CC_MLA -eq 0 ] || [ $DO_CC_MLA == "NO" ]  
 then

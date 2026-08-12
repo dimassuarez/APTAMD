@@ -1,0 +1,60 @@
+###############################################################################
+        APTAMD SUITE: Scripts for Automating Molecular Modelling Tasks
+###############################################################################
+  
+  RRHO ENTROPY CALCULATIONS 
+
+See https://pubs.acs.org/doi/10.1021/acs.jcim.8b00805 
+    https://doi.org/10.1002/wcms.1195
+and references cited therein.
+
+The translational– rotational–vibrational entropy terms
+for each minimzed structure are computed with the well-known
+statistical-thermodynamic formulas as implemented in NMODE.
+After separating the translational motion of the center
+of mass and the internal motions, the statistical
+formulas are derived by introducing the rigid
+rotor-harmonic oscillator (RRHO) approximation,
+which splits the internal motions into rotational
+and vibrational contributions.
+These entropy contributions depend on
+fundamental constants and on molecular parameters
+(total mass , moments of inertia and harmonic vibrational
+frequencies.  In addition, the translational term depends on 
+the standard state which is specified by the volume V occupied
+by the N molecules. The sum of these entropic
+contributions gives an estimate of the third-law
+entropy,
+
+     S_RRHO = S_trans + S_rot + S_vib
+
+which can be denoted as the RRHO entropy owing to the essential 
+role played by the RRHO approximation in its derivation.
+
+The RRHO entropies of solute molecules in aqueous solution are calculated
+with the MM potential used during the MD simulations. A set of 500-1000 
+equally-spaced MD snapshots is normally considered for the calculations . 
+The structures must be subject to geometry optimization setting a 
+tight tolerance in the energy gradient, but avoiding that the minima 
+deviate significantly from the sampled structures in solution. 
+To this end, the solvated MD snapshots were truncated by keeping 
+the coordinates of the solute atoms and those of a buffer layer of 
+waters with a ∼8 Å thickness around the solute atoms. 
+The sander program is used to relax the internal geometry of the solute, 
+until the RMSD of the elements in the gradient vector is less than 
+1E-6  kcal/( mol Å ). Subsequently, the calculation of the
+Hessian matrix of second derivatives and its diagonalization to
+obtain the normal modes are  restricted to the active region
+comprising the solute atoms using a locally modified version of
+the NMODE program. A similar protocol has been shown to 
+reduce the statistical uncertainty of the entropy terms 
+and give improved MM/PBSA scorings.
+
+
+The final RRHO entropy corresponds to the simple average 
+of S_RRHO over the set of structures with a statistical uncertainty 
+given by the standard error of the mean.  Interestingly,
+Reasonably converged values of S_RRHO can be calculated considering only 
+around 100 snapshots. 
+
+###############################################################################

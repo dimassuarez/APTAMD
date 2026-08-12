@@ -35,8 +35,15 @@
     MOL='alias'        # Project alias. Several aliases can be grouped
                        # into a single variable MD_TRAJ='MOL1 MOl2 ...'
     MD_TYPE='MD'       # Either MD or GAMD
-    MAX_NA_GLOBAL=10   # Maximum number of the closest Na+ ions to be 
-                       # considered. Def All Na+ ions.
+    
+    CNTION_LIST="Na+ MG"  # List of counterion residue names to be 
+    # considered for the counterion···solute contact analysis.
+    # Default is "Na+" 
+
+    MAX_CNTION_GLOBAL="10 2"   # Maximum number of the closest counterions 
+    # of the correspoding type . Default is to consider all counterions
+    # defined in the topology file.
+
     PEEL=14            # Thickness of the solvent layer around the
                        # solute atoms. Def 14
     SIEVE=50           # PDB files are extracted every #SIEVE of frames

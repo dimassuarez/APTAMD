@@ -33,6 +33,11 @@
 
     INITIAL="MOL_initial.pdb"  # PDB input filename
     IONIC=0.150                # NaCl(aq) Ionic strength. Def is 0.150 M.
+
+                               # To select NaCl / MgCl2 buffer use
+                                 NA_IONIC=0.150
+                                 MG_IONIC=0.010
+
     BUFFER_SOLV=16.0           # Solvent buffer used to build the 
                                # octahedral periodic box. Def 16.0 Angstrom
     FF=19                      # FF=14 selects the ff14SB/TIP3P FF 
@@ -41,7 +46,7 @@
     DNAFF=bsc1                 # DNA FF bsc1 (default) or OL15/OL21/OL24
     BELLYMASK="NONE"           # If an AMBER mask is provided, the selected
                                # atoms are relaxed prior to solvent box edition
-    BOX=OCT                    # Box shape OCT-> Truncated Octahedral Box
+    BOC=OCT                    # Box shape OCT-> Truncated Octahedral Box
                                # CUBOID --> Rectangular. Default is OCT
                                # and recommended!
 

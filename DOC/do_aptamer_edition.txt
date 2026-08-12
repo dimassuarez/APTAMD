@@ -33,16 +33,24 @@
 
     INITIAL="MOL_initial.pdb"  # PDB input filename
     IONIC=0.150                # NaCl(aq) Ionic strength. Def is 0.150 M.
+                               
+                               # To select NaCl / MgCl2 buffer use 
+                                 NA_IONIC=0.150
+                                 MG_IONIC=0.010
+
+
     BUFFER_SOLV=16.0           # Solvent buffer used to build the 
                                # periodic box. Def 16.0 Angstrom
     MAXCYC=500                 # Maximum opt cycles for sugar and backbone
                                # relaxation. Defult is 500.
-    DNAFF=bsc1                 # bsc1 / OL15 / OL21 / OL24 Default is bsc1
+    DNAFF=bsc1                 # bsc1 / OL17 / OL21 / OL25 Default is bsc1
     WATMODEL=tip3p             # tip3p / opc   Default is tip3p      
                                # ion parameters are selected according to
-                               # the water model 
+                               # the water model and ion type (for Mg2`+
+                               # 12-6-4 LJ parameters are selected)
     BOX=OCT                    # Box shape OCT-> Truncated Octahedral Box
                                # CUBOID --> Rectangular. Default is OCT
                                # and recommended!
+    
 
 ###############################################################################

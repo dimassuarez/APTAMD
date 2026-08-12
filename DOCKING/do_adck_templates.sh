@@ -515,7 +515,21 @@ then
 elif [ $LIGCHARGE == "GAS_ANTECHAMBER" ]
 then
      echo "Inserting Gasteiger Antechamber charges into ligand.pdbqt"
-     $AMBERHOME/bin/antechamber -i ligand_amber.pdb -fi pdb -fo mpdb -o ligand_gas_antechamber.pqr -c gas -dr no -at gaff2 -pf yes
+     if [ -e ligand.top ]
+     then  # Better to use mol2 format with atom type included
+        $APTAMD/AUXTOOLS/pdbcrd < ligand_amber.pdb > temp.crd
+        $AMBERHOME/bin/ambpdb -p ligand.top -c temp.crd -mol2  > ligand_amber.mol2
+        rm -f temp.crd
+        $AMBERHOME/bin/antechamber -i ligand_amber.mol2 -fi mol2 -fo mpdb -o ligand_gas_antechamber.pqr -c gas -dr no -at gaff2 -pf yes
+     else # Using PDB may give errors
+        $AMBERHOME/bin/antechamber -i ligand_amber.pdb -fi pdb -fo mpdb -o ligand_gas_antechamber.pqr -c gas -dr no -at gaff2 -pf yes
+     fi
+     icheck=$(cat ligand_gas_antechamber.pqr| wc -l)
+     if [ $icheck -eq 0 ]
+     then
+             echo "ligand_gas_antechamber.pqr has no information!"
+             exit
+     fi
      $APTAMD/AUXTOOLS/addZ_pqr_pdbqt  ligand_gas_antechamber.pqr ligand.pdbqt temp.pdbqt
      mv temp.pdbqt ligand.pdbqt
 fi
@@ -533,10 +547,25 @@ then
 elif [ $RECCHARGE == "GAS_ANTECHAMBER" ]
 then
      echo "Inserting Gasteiger Antechamber charges into receptor.pdbqt"
-     $AMBERHOME/bin/antechamber -i receptor_amber.pdb -fi pdb -fo mpdb -o receptor_gas_antechamber.pqr -c gas -dr no -at gaff2  -pf yes
+     if [ -e receptor.top ]
+     then  # Better to use mol2 format with atom type included
+        $APTAMD/AUXTOOLS/pdbcrd < receptor_amber.pdb > temp.crd
+        $AMBERHOME/bin/ambpdb -p receptor.top -c temp.crd -mol2  > receptor_amber.mol2
+        rm -f temp.crd
+        $AMBERHOME/bin/antechamber -i receptor_amber.mol2 -fi mol2 -fo mpdb -o receptor_gas_antechamber.pqr -c gas -dr no -at gaff2 -pf yes
+     else # Using PDB may give errors
+        $AMBERHOME/bin/antechamber -i receptor_amber.pdb -fi pdb -fo mpdb -o receptor_gas_antechamber.pqr -c gas -dr no -at gaff2 -pf yes
+     fi
+     icheck=$(cat receptor_gas_antechamber.pqr| wc -l)
+     if [ $icheck -eq 0 ]
+     then
+             echo "receptor_gas_antechamber.pqr has no information!"
+             exit
+     fi
      $APTAMD/AUXTOOLS/addZ_pqr_pdbqt  receptor_gas_antechamber.pqr receptor.pdbqt temp.pdbqt
      mv temp.pdbqt receptor.pdbqt
 fi
+
 
 # Incoporating Z-ATM if defined
 if [ $ZPOT -eq  2 ]
