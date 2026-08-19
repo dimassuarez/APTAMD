@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Returns 0 if the argument is a valid integer, 1 otherwise
+is_integer() {
+    # Double brackets [[ ]] safely handle empty or unset variables
+    [[ -n "$1" && "$1" =~ ^[+-]?[0-9]+$ ]]
+}
+
 # This is the main script in the MMPBSA (and QM/MMPBSA) mess performed
 # by the APTAMD suite. 
 
@@ -34,6 +40,7 @@ then
 else
    echo "Using $NPROCS processors as predefined "
 fi
+if ! is_integer $NPROCS ; then echo "NPROCS=$NPROCS is not an integer number"; exit; fi 
 
 EXIT="NO"
 if [ -z "$MD_TRAJ" ]; then  EXIT="YES"; fi
@@ -105,10 +112,14 @@ else
 fi
 if [ ${NCNTION} -eq ${#NCNTION_LIMIT[@]} ]
 then
+     NCNTION_TOT_FULL=0
      for ((I=0;I<=NCNTION-1;I++))
      do
+        if ! is_integer ${NCNTION_LIMIT["$I"]} ; then echo "NCNTION_LIMIT[${I}]=${NCNTION_LIMIT["$I"]} is not an integer number"; exit; fi 
         echo "${NCNTION_LIMIT["$I"]} ${CNTION["$I"]} ions to be selected "
+        let "NCNTION_TOT_FULL=$NCNTION_TOT_FULL + ${NCNTION_LIMIT["$I"]}"
      done
+     echo "Total number of ions to be selected = $NCNTION_TOT_FULL"
 else
       echo "CNTION_LIST=$CNTION_LIST and NCNTION_LIMIT=${NCNTION_LIMIT[*]} not compatible!"
       exit
@@ -136,6 +147,7 @@ then
    ISTRNG="150"
    echo "Using ISTRNG=${ISTRNG} mM"
 else
+   if  ! is_integer ${ISTRNG} ; then echo "ISTRNG=${ISTRNG} is not an integer number"; exit; fi 
    echo "Using ISTRNG=${ISTRNG} mM as predefined "
 fi
 if [ -z "$PEEL" ]
@@ -165,7 +177,8 @@ fi
 if [ -z "$SIEVE" ] 
 then
    SIEVE="1"
-else 
+else  
+   if  ! is_integer ${ISTRNG} ; then echo "SIEVE=${SIEVE} is not an integer number"; exit; fi
    echo "Processing only a fraction of PDB files"
    echo "SIEVE=$SIEVE"
 fi
@@ -396,8 +409,6 @@ do
 	NCNTION_FRAG["$I"]=$K
 	echo "Considering a total of $J ions of type ${CNTION["$I"]} distributed on $K fragments"
 done
-
-
 
 
 WORKDIR_TRJ=$PWD
@@ -694,7 +705,7 @@ EOF
   cd ${MMPBSA_DIR}
   WORKDIR=$PWD 
   cp ../${SNAPSHOTS_DIR}/LISTA .
-  if [  ${NCNTION} -gt 0 ]; then mv ../../${TOPOLOGY} . ; mv ../../tmp_CNTION.info CNTION.info ; fi 
+  if [  ${NCNTION_TOT_FULL} -gt 0 ]; then mv ../../${TOPOLOGY} . ; mv ../../tmp_CNTION.info CNTION.info ; fi 
 
   for ((I=0;I<=NCNTION-1;I++))
   do
@@ -820,7 +831,7 @@ EOF
   sed -i 's/# PREPARE_SNAP=/PREPARE_SNAP=/' run_mmpbsa.sh
   sed -i "s/DUMMY_PREPARE/${TMP_PREPARE}/" run_mmpbsa.sh
     
-  if [ $NCNTION -gt 0 ]
+  if [ $NCNTION_TOT_FULL -gt 0 ]
   then
       TMP_TOPOLOGY="${WORKDIR_TRJ}/${MOL}_${MD_TYPE}/6.ANALYSIS/${MMPBSA_DIR}/${TOPOLOGY}"
   else
@@ -1027,19 +1038,19 @@ EOF
          TMP_PDBQT_FILE=${PDBQT_FILE//\//\\\/}
          sed -i "s/DUMMY_PDBQT_FRAG_${txt}/${TMP_PDBQT_FILE}/" run_mmpbsa.sh
       done
-      if [ "$NCNTION" -gt 0 ] && [ -z $PDBQT_WAT ] 
+      if [ "$NCNTION_TOT_FULL" -gt 0 ] && [ -z $PDBQT_WAT ] 
       then
             echo " A PDBQT template for WAT is also required "
             echo " Define PDBQT_WAT variable"      
             exit
       fi
-      if [ "$NCNTION" -gt 0 ] && [ -z $PDBQT_CNTION ] 
+      if [ "$NCNTION_TOT_FULL" -gt 0 ] && [ -z $PDBQT_CNTION ] 
       then
             echo " A PDBQT template for counterions is also required "
             echo " Define PDBQT_CNTION variable"      
             exit
       fi
-      if [ $NCNTION -gt 0 ]
+      if [ "$NCNTION_TOT_FULL" -gt 0 ]
       then
            TMP_PDBQT_FILE=${PDBQT_WAT//\//\\\/}
            sed -i "s/DUMMY_PDBQT_WAT/${TMP_PDBQT_FILE}/" run_mmpbsa.sh
