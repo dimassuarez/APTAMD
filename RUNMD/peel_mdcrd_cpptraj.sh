@@ -1,4 +1,4 @@
-#!/bin/bash
+
 
 if [ -z "$APTAMD" ]; then echo "APTAMD variable is not defined!" ; exit; fi
 source $APTAMD/ENV/aptamd_env.sh
@@ -129,6 +129,12 @@ then
 fi
 GREPSLVNTMASK=$(echo $SLVNTMASK | sed 's/://' | sed 's/,/\\|/g')
 
+# Sieve for water counting (probably better not to modify) 
+if [ -z $SIEVE_SLVCOUNT ]
+then
+	SIEVE_SLVCOUNT=2
+fi
+
 # Temp directory
 TT=$(date +%N)
 TMPDIR=${SCRATCH}/TMPDIR_${TT}
@@ -152,20 +158,28 @@ then
 
 I=0
 
-rm -f input.trajin
+rm -f input.cpptraj
 for ((ISET=1;ISET<=$NSET;ISET++))
 do
   COORD=$(sed -n "${ISET},${ISET}p" LISTA_COORD)
   FILE=$(echo $COORD | awk '{print $1}')
-  echo  "trajin $WORKDIR/$FILE 1 last $SIEVE " >> input.cpptraj
+  echo  "trajin $WORKDIR/$FILE 1 last $SIEVE_SLVCOUNT " >> input.cpptraj
 done
 
 cat <<EOF >> input.cpptraj
-trajout tmp ncrestart
-watershell $SLVNTMASK lower $RPEEL upper $RPEEL out tmp_WS.dat
+watershell !$SLVNTMASK  lower $RPEEL upper $RPEEL out tmp_WS.dat $SLVNTMASK
 go
 EOF
-$AMBERHOME/bin/cpptraj.OMP $WORKDIR/$TOPOLOGY < input.cpptraj > output.cpptraj 
+
+if [ -e $AMBERHOME/bin/cpptraj.MPI ]
+then
+ 	$MPI_HOME/bin/mpirun -np $NPROCS $AMBERHOME/bin/cpptraj.MPI $WORKDIR/$TOPOLOGY < input.cpptraj > output.cpptraj 
+elif [ -e $AMBERHOME/bin/cpptraj.OMP ] 
+then
+	$AMBERHOME/bin/cpptraj.OMP $WORKDIR/$TOPOLOGY < input.cpptraj > output.cpptraj 
+else
+	$AMBERHOME/bin/cpptraj     $WORKDIR/$TOPOLOGY < input.cpptraj > output.cpptraj 
+fi
 
 sed -i '1,1d' tmp_WS.dat
 ncoord=$(cat tmp_WS.dat | wc -l)
@@ -264,7 +278,7 @@ go
 EOF
   mv input.cpptraj input.${I}
 
-  echo "$AMBERHOME/bin/cpptraj $WORKDIR/$TOPOLOGY < input.${I} > output.${I}; rm -f tmp.${I}" >> TASK.sh
+  echo "$AMBERHOME/bin/cpptraj $WORKDIR/$TOPOLOGY < input.${I} > output.${I}" >> TASK.sh
 
 done
 
