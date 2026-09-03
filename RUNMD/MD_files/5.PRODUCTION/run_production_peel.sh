@@ -31,7 +31,7 @@ export OMP_NUM_THREADS=$NPROCS
 
 # Probably, this shouldn't be changed
 if [ -z $SLVNTMASK   ]; then SLVNTMASK=':WAT,Na+,Cl-,MG' ; fi
-if [ -z $SOLUTE_MASK ]; then SOLUTE_MASK="!${SLVNTNASK}" ; fi
+if [ -z $SOLUTE_MASK ]; then SOLUTE_MASK="!${SLVNTMASK}" ; fi
 
 MD="md"               # alias of MD files
 INPUT="md_npt.inp"    # MD input file 

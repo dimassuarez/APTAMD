@@ -29,7 +29,7 @@ fi
 export OMP_NUM_THREADS=$NPROCS
 
 # Probably, this should not be changed 
-if [ -z $SLVNTMASK   ]; then SLVNTMASK=':WAT,Na+,Cl-' ; fi
+if [ -z $SLVNTMASK   ]; then SLVNTMASK=':WAT,Na+,Cl-,MG' ; fi
 if [ -z $SOLUTE_MASK ]; then SOLUTE_MASK="!${SLVNTMASK}" ; fi
 
 MD="md"               # alias of MD files
@@ -118,7 +118,7 @@ else
 fi
 mv gamd.log $WORKDIR/$GAMDLOG
 
-# Textracting solute coordinates
+# Extracting solute coordinates
 $AMBERHOME/bin/cpptraj.OMP $WORKDIR/$TOPOLOGY <<EOF
 trajin ${MDCRD}
 autoimage 
