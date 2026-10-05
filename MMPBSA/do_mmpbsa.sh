@@ -477,8 +477,8 @@ EOF
 
     if [ $NFRAG -ne ${NCNTION_FRAG["$I"]}  ]
     then 
-      echo "Detected $NFRAG fragments in $MOL, but NCNTION_LIMIT of ${CNTION["$I"]} ions is specified for $NCNTION_FRAG["$I"] fragments"
-      if [ $NCNTION_FRAG["$I"] -eq 1 ]
+      echo "Detected $NFRAG fragments in $MOL, but NCNTION_LIMIT of ${CNTION["$I"]} ions is specified for ${NCNTION_FRAG["$I"]} fragments"
+      if [ ${NCNTION_FRAG["$I"]} -eq 1 ]
       then
            echo "Assuming that NCNTION=${NCNTION_LIMIT["$I"]} applies to FRAG 1"
       else
