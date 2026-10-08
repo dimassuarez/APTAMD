@@ -133,6 +133,7 @@ then
    echo "A LEaP extra src file ${MOL}_extra.src is present in the edition directory"
    echo "It will be incorporated into the edition scripts after loading coordinates"
    echo "Typically, this is needed to fix some missing detail in the parameterization"
+   echo "or to load additional force field datasets (e.g., for Mg cofactors)" 
    echo "Prepare carefully ${MOL}_extra.src and use only mol as unit name"
    EXTRA="YES"
 else
@@ -155,7 +156,6 @@ CRD=${MOL}.crd
 PDB=${MOL}.pdb
 
 # Edition with tleap 
-
 echo '# Force Field data' >edit_leap_solute.src 
 echo "source leaprc.DNA.${DNAFF}"  >>edit_leap_solute.src
 echo "source leaprc.protein.ff${FF}SB" >> edit_leap_solute.src
@@ -167,10 +167,6 @@ echo 'loadOff GLYCAM_aminont_06j_12SB.lib'>>edit_leap_solute.src
 echo 'loadOff GLYCAM_aminoct_06j_12SB.lib'>>edit_leap_solute.src
 if [ $OFFLIB == "YES" ]; then echo "loadoff ${MOL}.off" >> edit_leap_solute.src ; fi
 if [ $FRCMOD == "YES" ]; then echo "loadAmberParams ${MOL}.frcmod" >> edit_leap_solute.src ; fi
-if [ $WATMODEL == "opc" ]; then echo 'WAT=OPC' >> edit_leap_solute.src ; fi 
-echo "source leaprc.water.${WATMODEL}" >> edit_leap_solute.src
-echo "loadamberparams frcmod.${IONFF_NA}" >>edit_leap_solute.src
-if [ $IONFF_NA != $IONFF_MG ]; then echo "loadamberparams frcmod.${IONFF_MG}" >>edit_leap_solute.src ; fi
 echo '# Build System' >>edit_leap_solute.src 
 echo 'mol=loadpdb' $INITMOL >>edit_leap_solute.src 
 if [ $EXTRA == "YES" ]; then cat ${MOL}_extra.src  >> edit_leap_solute.src ; fi
@@ -235,8 +231,6 @@ echo 'loadOff GLYCAM_aminont_06j_12SB.lib'>>edit_leap.src
 echo 'loadOff GLYCAM_aminoct_06j_12SB.lib'>>edit_leap.src
 if [ $WATMODEL == "opc" ]; then echo 'WAT=OPC' >> edit_leap.src ; fi
 echo "source leaprc.water.${WATMODEL}" >> edit_leap.src
-echo "loadamberparams frcmod.${IONFF_NA}" >>edit_leap.src
-if [ $IONFF_NA != $IONFF_MG ]; then echo "loadamberparams frcmod.${IONFF_MG}" >>edit_leap.src ; fi
 if [ $OFFLIB == "YES" ]; then echo "loadoff ${MOL}.off" >> edit_leap.src ; fi
 if [ $FRCMOD == "YES" ]; then echo "loadAmberParams ${MOL}.frcmod" >> edit_leap.src ; fi
 echo '# Build system' >>edit_leap.src 
@@ -269,6 +263,8 @@ disp([ 'Cl= ',num2str(num_Cl)])
 disp([ 'Mg= ',num2str(num_Mg)])
 EOF
 
+cat mlog
+
 NUM_NA=$(head -1 mlog  | awk '{print $2}')
 NUM_CL=$(head -2 mlog  | tail -1  | awk '{print $2}')
 NUM_MG=$(tail -1 mlog  | awk '{print $2}')
@@ -298,7 +294,7 @@ echo 'loadOff GLYCAM_aminoct_06j_12SB.lib'>>edit_leap.src
 if [ $WATMODEL == "opc" ]; then echo 'WAT=OPC' >> edit_leap.src ; fi
 echo "source leaprc.water.${WATMODEL}" >> edit_leap.src
 echo "loadamberparams frcmod.${IONFF_NA}" >>edit_leap.src
-if [ $IONFF_NA != $IONFF_MG ]; then echo "loadamberparams frcmod.${IONFF_MG}" >>edit_leap.src ; fi
+if [ $NUM_MG -gt  0 ] && [ $IONFF_NA != $IONFF_MG ]; then echo "loadamberparams frcmod.${IONFF_MG}" >>edit_leap.src ; fi
 if [ $OFFLIB == "YES" ]; then echo "loadoff ${MOL}.off" >> edit_leap.src ; fi
 if [ $FRCMOD == "YES" ]; then echo "loadAmberParams ${MOL}.frcmod" >> edit_leap.src ; fi
 echo '# Build system' >>edit_leap.src 

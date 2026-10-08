@@ -14,7 +14,7 @@ Only waters and counterions move
    ntp=1,
    ntc=1,
    ibelly=1,
-   bellymask=':WAT,Cl-,Na+' 
+   bellymask='DUMMY_SLVNT' 
    ntwe=5000, ntwx=5000,
  /
  &ewald

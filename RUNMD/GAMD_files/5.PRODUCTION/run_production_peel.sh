@@ -118,7 +118,7 @@ else
 fi
 mv gamd.log $WORKDIR/$GAMDLOG
 
-# Extracting solute coordinates
+# Textracting solute coordinates
 $AMBERHOME/bin/cpptraj.OMP $WORKDIR/$TOPOLOGY <<EOF
 trajin ${MDCRD}
 autoimage 

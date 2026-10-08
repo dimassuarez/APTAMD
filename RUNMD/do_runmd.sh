@@ -82,6 +82,9 @@ NAT=$(grep -c 'ATOM  ' initial.pdb)
 export NPROCS
 export USE_GPU
 
+# Adjust SLVNTMASK in 2.RELAX_SOLVENT
+sed -i "s/DUMMY_SLVNT/${SLVNTMASK}/g"   2.RELAX_SOLVENT/*.inp
+
 # THERMALIZATION AND PRESSURIZATION 
 cd 2.RELAX_SOLVENT
 touch ../running_2.RELAX_SOLVENT

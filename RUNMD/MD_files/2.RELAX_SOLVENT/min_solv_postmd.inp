@@ -7,7 +7,7 @@
    nsnb=25,
    ntc=1,
    ibelly=1,
-   bellymask=':WAT,Cl-,Na+' 
+   bellymask='DUMMY_SLVNT' 
  /
  &ewald
    dsum_tol=0.000005,

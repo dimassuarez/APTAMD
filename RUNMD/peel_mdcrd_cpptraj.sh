@@ -331,5 +331,5 @@ fi  # ENDIF of SOLUTE condition
 
 cd $WORKDIR
 
-rm -r -f $TMPDIR
+# rm -r -f $TMPDIR
 
